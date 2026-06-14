@@ -1,0 +1,6 @@
+# Never commit anything that could carry credentials or session state.
+node_modules/
+.userdata/
+*.env
+.env
+package-lock.json

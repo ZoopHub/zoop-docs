@@ -27,15 +27,17 @@ The per-tenant limit means that if you run multiple integrations (for example, a
 
 ## Handling 429 responses
 
-When a limit is exceeded, Zoop returns HTTP `429 Too Many Requests`. The response includes a `Retry-After` header with the number of seconds to wait before retrying.
+When a limit is exceeded, Zoop returns HTTP `429 Too Many Requests`. The response includes a `Retry-After` header with the number of seconds to wait before retrying. The body is a JSON-RPC error envelope with code `-32003`:
 
 ```http
 HTTP/1.1 429 Too Many Requests
 Retry-After: 12
 Content-Type: application/json
+
+{ "jsonrpc": "2.0", "error": { "code": -32003, "message": "Rate limited" }, "id": null }
 ```
 
-<Callout type="warning">TODO(verify): confirm the exact JSON body returned on a 429 — the rate-limit middleware returns only the `Retry-After` value; the response body shape is set in the route handler layer which was not reviewed.</Callout>
+Always read the `Retry-After` header rather than parsing the body — the header carries the wait time, and the `id` is always `null` on a rate-limit rejection because the request never reaches your tool call.
 
 The `Retry-After` value is the ceiling of the milliseconds remaining until the oldest request in your window expires, converted to whole seconds (minimum 1).
 

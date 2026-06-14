@@ -81,11 +81,9 @@ You can combine multiple chips — for example, select **Job** and **Invoice** t
 
 ## Pin and unpin
 
-Only the note's author can pin or unpin it from the feed. Pinned notes float above the day-grouped feed.
+The hover actions on a feed card — pin, edit, and delete — show only on notes you wrote. Even an account owner doesn't see the bookmark icon on a teammate's note in the feed; owners can still pin or unpin any note through the API. Pinned notes float above the day-grouped feed.
 
-To pin or unpin from the feed, hover a card and select the bookmark icon. The same icon appears inside the composer when you're creating or editing a note.
-
-<Callout type="warning">TODO(verify): confirm whether account owners can pin or unpin notes they did not author (the server authorization allows owners to mutate notes, but the hover actions in the feed are only shown to the note's author).</Callout>
+To pin or unpin one of your own notes from the feed, hover a card and select the bookmark icon. The same icon appears inside the composer when you're creating or editing a note.
 
 ## Edit a note
 
@@ -99,9 +97,9 @@ Every save creates a new version. The note body, author, and timestamp of each v
 
 <Steps>
   <Step title="Open version history">
-    Open a note in the composer and look for the version history option.
+    Open the version history panel for the note.
 
-    <Callout type="warning">TODO(verify): confirm the exact UI entry point for opening version history from the composer or note card (the panel component exists in code but the trigger location in the composer UI needs verification).</Callout>
+    <Callout type="warning">TODO(verify): no UI entry point for version history is wired up yet. The panel component (`version-history-panel.tsx`) and its backend routes (`/api/notes/[id]/versions`, `/api/notes/[id]/restore-version`) all exist, but the panel is not rendered or triggered anywhere in the notes UI — not from the composer, the note card, or the feed. Confirm where (and whether) the trigger ships before publishing this step.</Callout>
   </Step>
   <Step title="Browse versions">
     The panel lists every version newest-first. Select a version row to expand a line-by-line diff showing what changed — added lines in green, removed lines in red.
@@ -115,9 +113,9 @@ Every save creates a new version. The note body, author, and timestamp of each v
 
 ## Delete a note
 
-Hover a note card and select the delete (trash) icon. Confirm the prompt. Deletion is permanent — there is no recovery path after confirming.
+Hover a note card and select the delete (trash) icon. Confirm the prompt. The note disappears from the feed right away, and there is no in-app way to bring it back.
 
-<Callout type="warning">TODO(verify): confirm whether note deletion also removes attached photos from storage, or whether orphaned attachments are cleaned up separately.</Callout>
+Deleting a note doesn't erase its photos on the spot. Zoop marks the note deleted and hides it; a daily cleanup job removes the attached photos from storage 30 days later. Within that window the underlying files still exist, even though the note is no longer visible anywhere in Zoop.
 
 ## Notes on entity detail pages
 

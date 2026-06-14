@@ -116,7 +116,7 @@ The "Likely late" badge appears on:
 
 The badge fires only when a job has a hard-window flexibility type and the projected arrival breaks its promised window. Stops without a promised window, flexible jobs (same-day or multi-day), or stops where the ETA is within the window show no marker.
 
-<Callout type="warning">TODO(verify): confirm whether the at-risk ETA walk runs automatically in the background or requires a manual trigger (cron watcher behavior).</Callout>
+This runs on its own. Every 15 minutes a background watcher recomputes each active route's projected arrivals, re-checks every stop against its promised window, and updates the risk state. You don't trigger it — the "Likely late" badge stays current on its own as the day unfolds.
 
 ---
 
@@ -124,7 +124,7 @@ The badge fires only when a job has a hard-window flexibility type and the proje
 
 The **Route intelligence** page gives owners and office managers a weekly view of how efficiently the team's routes are running. It covers the current week and requires operational-reports access.
 
-<Callout type="warning">TODO(verify): confirm where Route intelligence appears in the sidebar navigation — the current source places the page at a top-level URL separate from the Scheduler submenu.</Callout>
+Route intelligence is not in the Scheduler submenu — it isn't in the sidebar at all. Open it from the **Route intelligence** card on your Dashboard. The page lives at its own top-level URL, `/route-intelligence`.
 
 <Callout type="info">TODO(screenshot): the Route intelligence page showing the capacity table and profitability table.</Callout>
 
@@ -159,7 +159,7 @@ A table showing, per day:
 | Miles | Total distance driven |
 | Drive vs billable | Drive time as a share of on-site time — useful for spotting routes where travel is eating into productive hours |
 
-<Callout type="warning">TODO(verify): confirm whether Route intelligence is available on all plans or requires a specific tier.</Callout>
+Route intelligence isn't tied to a plan tier. Access is by role: any owner or office-role member can open it. The profitability table is the one exception — it's owner-only.
 
 ---
 

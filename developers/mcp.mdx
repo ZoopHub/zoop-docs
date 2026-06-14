@@ -124,9 +124,7 @@ Most MCP clients accept a server config block. The minimal config you need:
 
 </CodeGroup>
 
-<Callout type="warning">
-TODO(verify): The Claude Desktop config format above follows the smoke test in the codebase. If your version of Claude Desktop uses stdio-only transport and requires a proxy such as `mcp-remote`, update this config accordingly.
-</Callout>
+Both blocks point the client straight at the HTTP endpoint with a `url` and an `Authorization` header. Zoop's MCP server is a streamable HTTP server — you do not need a stdio proxy such as `mcp-remote` to connect.
 
 Replace `<your-zoop-base-url>` with the canonical base URL for your environment (resolve from `/.well-known/oauth-protected-resource`). Replace `<your-api-key-or-token>` with a `zoop_uk_` or `zoop_tk_` key from [API keys](/developers/authentication/api-keys).
 

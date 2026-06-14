@@ -1,0 +1,12 @@
+{
+  "name": "zoop-docs-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Captures screenshots from the live Zoop app into ../../images per manifest.json. Not published.",
+  "scripts": {
+    "capture": "node capture-screenshots.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

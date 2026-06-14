@@ -4,51 +4,39 @@ description: Text and email customers from Zoop and keep every conversation in o
 audience: end-user
 ---
 
-Zoop lets you send SMS messages and emails to customers without leaving the app. Every message you send — and every reply you receive — lands in a single timeline on the customer's record, so nothing falls through the cracks.
+Zoop keeps every text and email tied to a customer in one place. Each customer's record has a timeline showing every message — sent, received, or sent automatically by Zoop — so nothing falls through the cracks.
 
-<Callout type="info">TODO(screenshot): customer communications timeline showing a mix of inbound and outbound SMS and email entries.</Callout>
+<Callout type="info">TODO(screenshot): customer timeline showing a mix of inbound and outbound SMS and email entries.</Callout>
 
 ## How messaging works
 
 Zoop sends SMS through Twilio and email through Resend. You do not need accounts with either provider — Zoop handles the infrastructure. Outbound messages go from your business name and number (or email address) that Zoop has provisioned for your account.
 
+Most messaging happens automatically — invoice notifications and receipts go out on their own (see [Automated messages](#automated-messages) below). To send a one-off text or email to a customer, use the messaging endpoints in the [API](/developers/introduction); there's no free-form compose screen in the app yet.
+
 Replies from customers come back into the same thread. Zoop matches an inbound message to a customer by the phone number or email address on their contact record.
 
-## Sending an SMS
+## Viewing a customer's messages
 
 <Steps>
   <Step title="Open a customer">
-    Go to [Customers](/using-zoop/customers) and open the customer you want to contact.
+    Go to [Customers](/using-zoop/customers) and open the customer you want.
   </Step>
-  <Step title="Go to the messages tab">
-    Select the **Messages** tab on the customer page to see their communication timeline.
+  <Step title="Go to the timeline tab">
+    Select the **Timeline** tab on the customer page to see their communication history.
   </Step>
-  <Step title="Compose your message">
-    Select **Send SMS**, type your message, then send.
-  </Step>
-</Steps>
-
-<Callout type="info">TODO(screenshot): SMS compose panel on a customer record.</Callout>
-
-**SMS requires a phone number with SMS enabled.** If the customer's contact has no phone number on file, or if the number is marked as SMS-disabled, the send button will be disabled. Add or update the number from the [Customers](/using-zoop/customers) page first.
-
-## Sending an email
-
-<Steps>
-  <Step title="Open a customer">
-    Open the customer you want to email.
-  </Step>
-  <Step title="Go to the messages tab">
-    Select the **Messages** tab.
-  </Step>
-  <Step title="Compose your email">
-    Select **Send email**, fill in a subject line and body, then send.
+  <Step title="Filter by channel">
+    Use the chips at the top — **All**, **SMS**, **Email**, **Calls**, **AI sessions** — to narrow the timeline to one channel.
   </Step>
 </Steps>
 
-<Callout type="info">TODO(screenshot): email compose panel on a customer record.</Callout>
+<Callout type="info">TODO(screenshot): customer Timeline tab with the channel filter chips.</Callout>
 
-**Email requires an address on the contact.** If none is on file, add it from the customer's contact details first.
+## Sending a one-off message
+
+Free-form texts and emails are sent through the [API](/developers/introduction), not from a screen in the app. The SMS and email endpoints take the customer, the message body, and an idempotency key. Zoop resolves the recipient from the customer's contact record — the primary contact by default, or a specific contact if you pass one.
+
+**SMS requires a phone number with SMS enabled.** If the contact has no phone on file, or the number isn't marked SMS-enabled, the send is rejected. **Email requires an address on the contact.** Add or update either from the [Customers](/using-zoop/customers) page first.
 
 ## The message timeline
 
@@ -68,9 +56,9 @@ Statuses for outbound messages move through: **queued → sending → delivered*
 
 When a customer replies to an SMS or email, Zoop matches the incoming message back to their record using their phone number or email address. The reply appears in the timeline automatically.
 
-**What happens when a message can't be matched?** If the sender's number or email is not on any customer contact, Zoop holds the message in a quarantine queue so it is not lost.
+**What happens when a message can't be matched?** If the sender's number or email is not on any customer contact, Zoop holds the message in a quarantine queue so it is not lost. The full message is stored, not just a notification.
 
-<Callout type="warning">TODO(verify): confirm whether the UI exposes a way to review quarantined inbound messages and assign them to a customer, or whether this is operator/admin-only today. Add a screenshot once confirmed.</Callout>
+There is no in-app screen for reviewing quarantined messages today. The quarantine is handled on Zoop's side — if a message lands there, reach out to support to recover it. Once the inbound address is on a customer's contact record, future replies route straight to that customer.
 
 ## Automated messages
 
@@ -78,32 +66,30 @@ Zoop sends some messages on your behalf automatically, without you having to com
 
 ### Invoice notifications
 
-When you send an invoice to a customer, Zoop can deliver it by SMS, email, or both. The message includes the invoice total and — if you have a payment link available — a direct link for online payment. If you have offline payment instructions set up in your account settings, those are included too.
-
-<Callout type="info">TODO(screenshot): invoice send dialog showing the SMS and email delivery options.</Callout>
+When you send an invoice to a customer, Zoop delivers it by SMS, email, or both. There's nothing to pick — sending an invoice is a single action, and Zoop sends to whichever channels the customer can receive: email if they have an email address, SMS if they have a phone number with SMS enabled. The message includes the invoice total and — if you have online payments connected — a direct link to pay. If you have offline payment instructions set up in your account settings, those are included too.
 
 ### Payment receipts
 
 After a payment is recorded on an invoice, Zoop automatically sends a receipt to the customer. The email receipt includes a line-item breakdown and a link to view the receipt online. The SMS receipt is a short confirmation with the amount paid and a link.
 
-These automated receipts appear in the customer's timeline just like manual messages.
+These automated receipts appear in the customer's timeline alongside everything else.
 
-<Callout type="warning">TODO(verify): confirm whether automated invoice and receipt messages require any per-account configuration to enable, or whether they fire by default once a customer has an email or phone on file.</Callout>
+Automated invoice notifications and receipts need no setup to turn on. A receipt fires automatically the moment an invoice is marked paid, and both invoice notifications and receipts go out to whatever the customer can receive — their email, their SMS-enabled phone, or both. If a customer has neither on file, Zoop simply skips the send.
 
 ## Linking a message to a job, invoice, or quote
 
-Messages can be associated with a specific job, invoice, or quote. When a message is linked, it appears in the timeline for that record as well as the customer's general timeline. Automated messages — like invoice notifications — are linked automatically. Manual messages can be linked at the time you send them.
+Messages can be associated with a specific job, invoice, or quote. When a message is linked, it appears in the timeline for that record as well as the customer's general timeline. Automated messages — like invoice notifications and receipts — are linked to their invoice automatically.
 
-<Callout type="warning">TODO(verify): confirm whether the send UI exposes a manual subject-link picker, or whether linking is only done programmatically/via the API today.</Callout>
+For messages you send through the API, linking is set by passing the subject type and ID together on the request. There is no separate picker — you supply the link as part of the send. See the [API reference](/developers/introduction) for the SMS and email endpoints.
 
 ## Contacting a specific contact
 
-If a customer has more than one contact on file (for example, a homeowner and their property manager), you can choose which contact receives the message. The default is the primary contact.
+If a customer has more than one contact on file (for example, a homeowner and their property manager), a send can target a specific contact by passing its ID. When no contact is specified, Zoop uses the primary contact.
 
 ## Things to know
 
 - **SMS length.** Zoop enforces a 1,600-character limit on SMS messages. Keep messages concise — a standard SMS segment is 160 characters, and longer messages are split by carriers.
-- **Opted-out contacts.** If a contact has opted out of SMS, Zoop will not send to that number. The timeline will reflect this rather than silently skipping.
+- **Opted-out contacts.** If a contact's number isn't SMS-enabled, Zoop rejects the send rather than texting a number that can't receive it.
 - **No double sends.** Zoop deduplicates sends using an internal key, so retrying a failed action will not result in the same message going out twice.
 - **Delivery confirmation.** Twilio reports delivery status back to Zoop. The timeline updates automatically when a message is confirmed delivered or fails.
 

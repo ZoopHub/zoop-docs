@@ -179,7 +179,7 @@ See [recurring billing](/using-zoop/recurring-billing) for how dunning and autom
 ## Tap-to-pay
 
 <Callout type="warning">
-TODO(verify): The Stripe Terminal integration (tap-to-pay with a physical reader) is implemented in the payment processor layer but no in-app UI for setting up or using a terminal reader is visible in the current codebase. Confirm whether this feature is available to users before documenting it.
+TODO(verify): Tap-to-pay is implemented in the Stripe payment processor (`createTerminalLocation`, `createReader`, `processInPersonPayment` in `src/lib/payments/stripe/stripe-connect-processor.ts`, and a `tap_to_pay` capability flag), but nothing in the app calls it — no route, server action, or component invokes the reader methods, no screen reads `getCapabilities()`, and there are no tap-to-pay UI labels. The backend exists but is not wired to any user-facing surface. Confirm with the product team whether tap-to-pay has shipped to users before documenting it.
 </Callout>
 
 ---

@@ -62,13 +62,11 @@ Events are non-job calendar entries: meetings, time blocks, personal time, or an
 
 When creating or editing an event, turn on recurrence to repeat it on a schedule. Set the RRULE pattern (daily, weekly, monthly, or a custom interval), the timezone, and the duration in minutes.
 
-When you edit an event that belongs to a series, Zoop asks which occurrences to change:
+When you edit an event that belongs to a series, Zoop asks where to apply the change under **Apply changes to**:
 
-- **This event** — updates only the single occurrence you selected.
-- **This and future events** — splits the series here; all occurrences from this date forward follow the new settings.
-- **All events** — rewrites the entire series template.
-
-<Callout type="warning">TODO(verify): confirm whether the recurring-event edit-mode UI labels match exactly "This event / This and future events / All events" as shown in the product.</Callout>
+- **Just this occurrence** — only this date changes; the others stay as-is.
+- **This and future occurrences** — splits the series at this date; everything from here forward follows the new settings.
+- **All occurrences** — updates the whole series template.
 
 ## Editing an event
 

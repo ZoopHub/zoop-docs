@@ -159,6 +159,6 @@ If you get `insufficient_scope`, the key was not issued with `read:customers`. R
   </Card>
 </Columns>
 
-<Callout type="warning">
-TODO(verify): Confirm the production base URL is `https://app.zoop.pro` — the MCP source notes the host is environment-dependent and to resolve it from `/.well-known/oauth-protected-resource` rather than hardcoding.
-</Callout>
+## A note on the base URL
+
+These examples use `https://app.zoop.pro`, the production base URL. Zoop reads the host from the `NEXT_PUBLIC_APP_URL` environment variable, so it differs across environments (production, staging, local). If you integrate against anything other than production, resolve the host from the `resource` field of `GET /.well-known/oauth-protected-resource` rather than hardcoding it — that field always reflects the canonical URL for the environment you're hitting.

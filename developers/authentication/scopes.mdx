@@ -94,7 +94,9 @@ For example, to list or create contacts for a customer, your token must hold `re
 
 Notes are different: they have their own scope pair (`read:notes` / `write:notes`) and are independent of `read:customers`.
 
-<Callout type="warning">TODO(verify): As of the last source snapshot, all notes API routes are marked `internal` (session-only) and are not yet accessible via external tokens. Confirm whether `read:notes` / `write:notes` are available to API key or OAuth callers before publishing this claim.</Callout>
+Both scopes are available to external callers. The notes tools require `read:notes` to list or fetch and `write:notes` to create, update, or archive, and an API key or OAuth token that holds them can use them.
+
+One difference applies to writes: creating, updating, or archiving a note requires a user-actor token, because every note change is attributed to the user who made it. A tenant-actor API key can read notes but cannot author or change them — for that you need an OAuth token (or a user-actor API key) carrying `write:notes`.
 
 ## Admin scopes
 

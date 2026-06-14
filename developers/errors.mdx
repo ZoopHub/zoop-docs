@@ -179,18 +179,16 @@ The `insufficient_scope` tool error is a second scope gate that runs inside the 
 
 ### `invalid_input` detail
 
-When the error kind is `invalid_input` and the failure came from Zod schema validation (the most common case), the `content[0].text` contains a structured Zod error object. Cross-reference the tool's parameter list to find what is missing or wrong.
-
-<Callout type="warning">TODO(verify): confirm the exact message text surfaced to callers for Zod validation failures — the runtime serializes `parsed.error.format()` but the route-layer rendering is not covered by these source files.</Callout>
-
-When the input error comes from a domain-level check inside the tool itself (for example, a date range where `end` is before `start`), the message text is more specific:
+The `invalid_input` text on the wire is always the fixed string `Invalid input. Check the schema.` — whether the failure came from Zod schema validation (the most common case) or from a domain-level check inside the tool:
 
 ```json
 {
   "type": "text",
-  "text": "end_date must be on or after start_date"
+  "text": "Invalid input. Check the schema."
 }
 ```
+
+The MCP layer does not surface field-level detail. Internally the runtime does compute a structured Zod error tree, but the MCP adapter collapses it to this single message before it reaches you. So when you hit `invalid_input`, work backward from the tool's own parameter definitions — check every required field, type, and allowed value against the tool schema — rather than expecting the response to name the offending field.
 
 ### `conflict` detail
 

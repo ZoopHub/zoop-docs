@@ -6,11 +6,7 @@ audience: developer
 
 Zoop receives inbound webhooks from three providers: Stripe (payments), Twilio (SMS), and Resend (email). These endpoints are public — no `Authorization` header is required — but every request is rejected unless the provider's signature is valid. You do not call these endpoints yourself; the providers do.
 
-There are currently no outbound webhooks for third-party developers to subscribe to.
-
-<Callout type="warning">
-TODO(verify): Confirm there are no outbound/event webhook subscriptions available to third parties before this page ships. The source code has no such mechanism, but product plans may change.
-</Callout>
+There are no outbound webhooks for third-party developers to subscribe to. Zoop does not deliver event notifications to URLs you register — there is no subscription mechanism, and every webhook route Zoop exposes is inbound only. If you need to react to events in Zoop, poll the API.
 
 ---
 
@@ -304,7 +300,7 @@ You can forward provider webhooks to your local dev server using each provider's
     stripe listen --forward-to localhost:3000/api/webhooks/stripe/connect
     ```
 
-    The Stripe CLI prints a signing secret (`whsec_...`) on startup. Set it as `STRIPE_WEBHOOK_SECRET_CONNECT` (or the platform equivalent) in your `.env.local`.
+    The Stripe CLI prints a signing secret (`whsec_...`) on startup. Set it as `STRIPE_WEBHOOK_SECRET_CONNECT_TEST` in your `.env.local` (the env var name carries both the destination — `CONNECT` or `PLATFORM` — and the mode — `TEST` or `LIVE`). To test the platform destination instead, forward to `/api/webhooks/stripe/platform` and set `STRIPE_WEBHOOK_SECRET_PLATFORM_TEST`.
   </Tab>
   <Tab title="Twilio">
     ```bash
@@ -329,6 +325,15 @@ You can forward provider webhooks to your local dev server using each provider's
   </Tab>
 </Tabs>
 
-<Callout type="warning">
-TODO(verify): Confirm the exact env var names for the Stripe webhook signing secrets (`STRIPE_WEBHOOK_SECRET_CONNECT`, `STRIPE_WEBHOOK_SECRET_PLATFORM`, or similar). The route source reads them via `makeStripeConnectProcessor`, which abstracts the env var name.
-</Callout>
+### Stripe webhook signing secret env vars
+
+Stripe issues a distinct signing secret per endpoint per mode, so Zoop reads a different env var for each of the four combinations. Zoop derives the mode (test or live) from the prefix of `STRIPE_SECRET_KEY` (`sk_test_`/`rk_test_` is test, `sk_live_`/`rk_live_` is live) and then reads the matching secret:
+
+| Destination | Mode | Env var |
+|---|---|---|
+| Connect | test | `STRIPE_WEBHOOK_SECRET_CONNECT_TEST` |
+| Connect | live | `STRIPE_WEBHOOK_SECRET_CONNECT_LIVE` |
+| Platform | test | `STRIPE_WEBHOOK_SECRET_PLATFORM_TEST` |
+| Platform | live | `STRIPE_WEBHOOK_SECRET_PLATFORM_LIVE` |
+
+For the Connect destination only, Zoop falls back to the pre-rename names `STRIPE_WEBHOOK_SECRET_TEST` / `STRIPE_WEBHOOK_SECRET_LIVE`, and then to the legacy single-secret `STRIPE_WEBHOOK_SECRET`, if the new per-mode var is unset. The Platform destination has no fallback — you must set its per-mode var explicitly. If the resolved secret is missing, the route returns `500 { "error": "misconfigured" }` and Stripe retries while you fix config.

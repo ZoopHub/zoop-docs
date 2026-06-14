@@ -158,9 +158,9 @@ To stop a link from working, open **Share with customer** and select **Revoke**.
 
 ## Download the PDF
 
-From the quote editor header, select **Download PDF** to open a printable version of the quote in a new tab.
+From the quote editor header, select **Download PDF** to open a letter-size proposal PDF in a new tab.
 
-<Callout type="warning">TODO(verify): Confirm the exact format and contents of the PDF output — which fields, line items, totals, and branding are included.</Callout>
+The PDF leads with your business name and a "Proposal" label, then the quote title, status, and issue date (the date the quote was created). Each section appears as its own card — with its label, description, and date range when set — followed by a line-items table with description, quantity, unit price, and total. Line items not assigned to a section appear under an **Other** heading. Attachments are listed by filename, not embedded as images. A totals card shows the subtotal and total, and the footer carries your business phone and email (from your company settings) above a "Powered by Zoop" line.
 
 ---
 
@@ -206,13 +206,11 @@ See [Invoices](/using-zoop/invoices) for how to send the invoice and record paym
 
 ## Archive a quote
 
-Archiving hides a quote from the default list without deleting it. To archive, open the quote's row action menu on the Quotes list and select the archive option.
+Archiving hides a quote from the list without deleting it — its history is preserved.
 
-<Callout type="warning">TODO(verify): Confirm the exact label used for the archive action in the row actions menu.</Callout>
+There is no archive control in the Quotes UI today. The Quotes list row actions menu offers **Open quote**, **Open in lawn editor** (for lawn quotes), and **Convert to job** — no archive option. The quote editor has no archive button either. Archiving is currently only available through the API, where it is restricted to the account owner.
 
-Archived quotes do not appear in the **All** tab. They remain in the database and can be found by filtering by the **Archived** status.
-
-<Callout type="warning">TODO(verify): Confirm whether an "Archived" tab or status filter is exposed in the Quotes list UI.</Callout>
+Once a quote is archived, it drops off every tab — **All**, **Draft**, **Sent**, **Accepted**, and **Declined**. There is no **Archived** tab or status filter in the Quotes list, so an archived quote is no longer visible in Zoop.
 
 ---
 

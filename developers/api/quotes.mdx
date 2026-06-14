@@ -172,9 +172,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
   }'
 ```
 
-A successful response returns the new quote:
-
-<Callout type="warning">TODO(verify): The `archived_at` field shown in the example below is the intended future contract (OPS-174). The current DB encodes archival as `status='archived'` rather than a separate column. Confirm whether the live API response includes `archived_at` before publishing this example.</Callout>
+A successful response returns the new quote. The row carries no `archived_at` column — archival is encoded in the `status` enum as `status: "archived"`, so an active quote simply reports its lifecycle status (`draft` here):
 
 ```json
 {
@@ -184,7 +182,7 @@ A successful response returns the new quote:
     "content": [
       {
         "type": "text",
-        "text": "{\"id\":\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\",\"tenant_id\":\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\",\"customer_id\":\"cccccccc-cccc-cccc-cccc-cccccccccccc\",\"title\":\"Bathroom remodel — 123 Elm St\",\"status\":\"draft\",\"sent_at\":null,\"accepted_at\":null,\"accepted_by_name\":null,\"declined_at\":null,\"created_by\":\"uuuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu\",\"created_at\":\"2026-06-13T09:00:00Z\",\"updated_at\":\"2026-06-13T09:00:00Z\",\"archived_at\":null}"
+        "text": "{\"id\":\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\",\"tenant_id\":\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\",\"customer_id\":\"cccccccc-cccc-cccc-cccc-cccccccccccc\",\"title\":\"Bathroom remodel — 123 Elm St\",\"status\":\"draft\",\"accepted_at\":null,\"created_by\":\"uuuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu\",\"created_at\":\"2026-06-13T09:00:00Z\",\"updated_at\":\"2026-06-13T09:00:00Z\"}"
       }
     ]
   }

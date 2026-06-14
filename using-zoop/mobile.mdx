@@ -189,9 +189,7 @@ If transcription fails, you have three options:
 - **Skip transcription** — discard the audio and return to the text field so you can type manually
 - **Discard** — throw away the recording and start over
 
-<Callout type="warning">
-TODO(verify): Confirm the monthly transcription quota limit (the code references a 5-minute monthly cap with a warning at 80%) and whether it is per-seat or per-account.
-</Callout>
+Voice transcription has a monthly limit of 5 minutes per business. The limit is shared across everyone on the account, not per person, and it resets on the 1st of each month. When you've used 4 of your 5 minutes (80%), the composer shows a heads-up that you're approaching the limit. Once you hit the cap, transcription is blocked until the reset — you can still type notes by hand. Typed notes are never limited.
 
 <Callout type="info">TODO(screenshot): NoteComposer with recording in progress.</Callout>
 
@@ -201,9 +199,9 @@ Notes saved from the mobile app appear alongside notes created on the web. See [
 
 ## Offline behaviour
 
-<Callout type="warning">
-TODO(verify): Confirm the offline queue/sync behaviour. The supabase client is configured with persistent session storage (iOS Keychain / Android Keystore) and auto token refresh, but no explicit offline queue was found in the reviewed source files. Confirm whether reads and writes are queued when the device is offline and synced on reconnect, or whether the app simply shows an error when offline.
-</Callout>
+The app watches your connection. When you lose signal, a **You're offline** banner appears at the top of the screen so you know your data isn't live.
+
+Zoop does not queue work offline. The app reads and writes live, so you need a connection to load jobs, save a note, or transcribe a recording — those actions show an error if the server can't be reached, and there's no background sync that retries them when you reconnect. Once you're back online, the banner clears and everything loads normally.
 
 Your session credentials are stored securely on device (iOS Keychain / Android Keystore) and your auth token refreshes automatically in the background, so you stay signed in even when connectivity is intermittent.
 
@@ -211,8 +209,6 @@ Your session credentials are stored securely on device (iOS Keychain / Android K
 
 ## Switching businesses
 
-If your account has access to more than one business, tap **More** in the tab bar to find the business switcher.
+If your account has access to more than one business, you pick which one to work with right after you sign in. The mobile app's native screens (Today, Jobs, Customers, Invoices, Quotes) stay locked to that business — there's no separate switcher on those screens. To switch to a different business in the native screens, sign out and back in, then choose the other business from the picker.
 
-<Callout type="warning">
-TODO(verify): Confirm the More sheet contents and whether a business switcher is accessible from it, or whether switching requires signing out and back in.
-</Callout>
+The **More** tab opens the rest of Zoop inside the app, loading the web view in place. From there you can reach features that don't have a dedicated mobile screen yet, and the web view carries its own company switcher in the sidebar.

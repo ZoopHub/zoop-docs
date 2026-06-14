@@ -14,7 +14,9 @@ Zoop has a small set of AI-powered automations that run in the background so you
 
 When you are on a job and cannot answer your phone, the AI receptionist can reply automatically to customers who text or call your Zoop business number. It introduces itself and answers common questions based on what you tell it.
 
-<Callout type="warning">TODO(verify): confirm whether the AI receptionist collects the customer's name and request during the conversation, and where those details surface in Zoop afterward.</Callout>
+Receptionist conversations are designed to land on the customer's timeline. Open a customer and filter the timeline to **AI sessions** to see them alongside the customer's other SMS, email, and call activity.
+
+<Callout type="warning">TODO(verify): the receptionist runtime (what it captures during a call, and the exact timeline entry it writes) is not yet wired up in the codebase — only the settings and the AI sessions timeline filter exist. Confirm with the product team what details an AI session records once the receptionist goes live.</Callout>
 
 ### What the receptionist can say
 
@@ -65,9 +67,9 @@ The AI receptionist only activates on your Zoop business number. If customers re
 
 When this is on, Zoop prompts you to schedule a follow-up maintenance visit after equipment installations — for example, after you install an A/C unit or a water heater. The reminder surfaces inside Zoop; it does not automatically contact the customer.
 
-To turn it on, go to [Settings](/using-zoop/settings) → **AI & automation** and toggle **Enable maintenance reminders** on.
+To turn it on, go to [Settings](/using-zoop/settings) → **AI & automation** and toggle **Enable Maintenance Reminders** on.
 
-<Callout type="warning">TODO(verify): confirm the exact trigger conditions for maintenance reminders — which job types or line items cause a reminder to appear, and where in the UI it surfaces.</Callout>
+<Callout type="warning">TODO(verify): only the settings toggle exists in the codebase today — there is no trigger logic that watches job types or line items and raises a reminder. Confirm with the product team which installs fire a reminder, and where it surfaces, once that runtime ships.</Callout>
 
 ---
 
@@ -101,17 +103,17 @@ If you use an external AI assistant — such as Claude Desktop — connected to 
 
 This works through Zoop's **customer-job-draft** prompt. You provide a customer and your spoken or typed notes; the assistant proposes a job title and description in plain language, then calls `jobs.create` once you confirm.
 
-This is a developer / power-user feature. See [MCP](/developers/mcp) for setup instructions.
-
-<Callout type="warning">TODO(verify): confirm whether an in-product AI chat interface for job drafting exists, or whether this is currently only available via external MCP clients such as Claude Desktop.</Callout>
+There is no AI chat inside Zoop itself for this. Job drafting from notes is available only through an external MCP client such as Claude Desktop — it is a developer and power-user feature. See [MCP](/developers/mcp) for setup instructions.
 
 ---
 
 ## Voice notes
 
-The note composer has a microphone icon in the toolbar. This feature is not yet active.
+In the **Zoop mobile app**, you can record a voice note and Zoop transcribes it to text for you. Tap the microphone in the note composer, talk through what happened on the job, and Zoop turns it into a note you can edit and save. The original audio is kept as an attachment on the note.
 
-<Callout type="warning">TODO(verify): confirm when voice-to-note transcription ships and update this section at that time. The microphone button is visible in the UI but is currently disabled.</Callout>
+Voice transcription has a monthly limit per business. When you reach it, transcription pauses until the limit resets on the 1st of the month.
+
+In the web app, the note composer shows a microphone button too, but it is disabled — its tooltip reads "Voice notes coming soon." Use the mobile app to capture voice notes for now.
 
 ---
 
