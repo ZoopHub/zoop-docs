@@ -174,7 +174,7 @@ Returns `{ archived: true, id }` on success. Returns `not_found` if the note doe
 The request below fetches the first page of pinned notes attached to a specific job.
 
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -232,7 +232,7 @@ let cursor: string | undefined
 let allNotes: unknown[] = []
 
 do {
-  const response = await fetch('https://app.zoop.pro/api/mcp', {
+  const response = await fetch('https://app.zoop.example/api/mcp', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

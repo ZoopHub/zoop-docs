@@ -48,14 +48,14 @@ If you are building an MCP integration, the OAuth flow is the same. The token yo
 Do not hardcode the authorization server URL. Resolve it from the protected-resource metadata document first:
 
 ```bash
-GET https://app.zoop.pro/.well-known/oauth-protected-resource
+GET https://app.zoop.example/.well-known/oauth-protected-resource
 ```
 
 Response:
 
 ```json
 {
-  "resource": "https://app.zoop.pro",
+  "resource": "https://app.zoop.example",
   "authorization_servers": ["https://<project>.supabase.co/auth/v1"],
   "bearer_methods_supported": ["header"],
   "resource_documentation": "https://docs.zoop.work/api"
@@ -63,7 +63,7 @@ Response:
 ```
 
 <Callout type="warning">
-The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.pro`. You will need the exact `resource` string when you build the authorization URL and the token request.
+The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.example`. You will need the exact `resource` string when you build the authorization URL and the token request.
 </Callout>
 
 Then fetch the Supabase authorization server metadata to get the `authorization_endpoint` and `token_endpoint`:
@@ -109,7 +109,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
       &code_challenge_method=S256
       &state=<state>
       &scope=openid
-      &resource=https://app.zoop.pro
+      &resource=https://app.zoop.example
     ```
 
     Key parameters:
@@ -149,7 +149,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     Supabase validates the parameters and redirects to the Zoop consent landing page:
 
     ```text
-    https://app.zoop.pro/oauth/consent?authorization_id=<opaque_id>
+    https://app.zoop.example/oauth/consent?authorization_id=<opaque_id>
     ```
 
     If the user has multiple tenants, they pick which one to bind the grant to. If they are not signed in, they are redirected to `/login` first and returned here after.
@@ -196,7 +196,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.pro"
+          --data-urlencode "resource=https://app.zoop.example"
         ```
       </Tab>
       <Tab title="Public client (native app / SPA)">
@@ -210,7 +210,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.pro"
+          --data-urlencode "resource=https://app.zoop.example"
         ```
       </Tab>
     </Tabs>
@@ -235,7 +235,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     Send the access token as a `Bearer` token in the `Authorization` header.
 
     ```bash
-    curl -X POST https://app.zoop.pro/api/mcp \
+    curl -X POST https://app.zoop.example/api/mcp \
       -H "Authorization: Bearer <access_token>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json, text/event-stream" \
@@ -245,7 +245,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     The `Accept: application/json, text/event-stream` header is required — the MCP endpoint uses the streamable HTTP transport.
 
     ```ts
-    const res = await fetch('https://app.zoop.pro/api/mcp', {
+    const res = await fetch('https://app.zoop.example/api/mcp', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -317,7 +317,7 @@ When the access token expires, use the refresh token to get a new one without re
       -H "Content-Type: application/x-www-form-urlencoded" \
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.pro"
+      --data-urlencode "resource=https://app.zoop.example"
     ```
   </Tab>
   <Tab title="Public client">
@@ -327,7 +327,7 @@ When the access token expires, use the refresh token to get a new one without re
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "client_id=<your_client_id>" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.pro"
+      --data-urlencode "resource=https://app.zoop.example"
     ```
   </Tab>
 </Tabs>

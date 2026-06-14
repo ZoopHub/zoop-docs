@@ -39,7 +39,7 @@ The actor type on a key is set by the database row (`actor_kind` column), not so
 
 The key is active immediately after creation.
 
-<Image src="/images/developers/authentication/api-keys/settings-external-access-key-list.png" alt="Settings → API & MCP page showing an existing user key with its scopes and the New API key button" />
+<Callout type="info">TODO(screenshot): Settings → API & MCP page showing an existing user key with its scopes and the New API key button</Callout>
 
 ## Send a request
 
@@ -47,7 +47,7 @@ Pass the key as a `Bearer` token in the `Authorization` header on every request.
 
 <CodeGroup>
 ```bash cURL
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -55,7 +55,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
 ```
 
 ```ts TypeScript
-const response = await fetch('https://app.zoop.pro/api/mcp', {
+const response = await fetch('https://app.zoop.example/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

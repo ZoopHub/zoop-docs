@@ -82,7 +82,7 @@ The full scope list is in [Authentication — scopes](/developers/authentication
 The example below calls `tools/list` to confirm your token works and see the available tools. Replace `zoop_uk_<secret>` with your actual API key.
 
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -94,7 +94,7 @@ A successful response returns a JSON-RPC envelope containing an array of tool de
 To call a specific tool, change `method` to `tools/call` and add a `params` body:
 
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \

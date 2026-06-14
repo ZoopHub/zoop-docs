@@ -243,7 +243,7 @@ This example creates a job for a customer and assigns it to a team member, start
 <Tabs>
   <Tab title="cURL">
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -278,7 +278,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
   </Tab>
   <Tab title="TypeScript">
 ```ts
-const response = await fetch('https://app.zoop.pro/api/mcp', {
+const response = await fetch('https://app.zoop.example/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
