@@ -1,0 +1,138 @@
+---
+title: Notes
+description: Capture context on any job, customer, invoice, or quote — by text or photo. Pin what matters. Review every edit.
+audience: end-user
+---
+
+Notes let you capture anything that doesn't fit a structured field: what the customer said on the phone, the part number you wrote on the wall, a photo of the breaker panel before you touched it. Every note is timestamped, attributed to the author who wrote it, and permanently attached to the record it belongs to.
+
+<Callout type="info">TODO(screenshot): the Notes feed showing pinned section at top, day-group headings (Today, Yesterday, This week, Earlier), search bar, and filter chips.</Callout>
+
+## Where notes live
+
+Notes can be attached to customers, jobs, invoices, and quotes. You can also save a standalone note — one not linked to any record — from the Notes page.
+
+From any entity detail page, find the **Notes** panel and select **Add note**. The composer opens pre-filled with that entity as the attachment target, so you don't have to search for it.
+
+The top-level **Notes** page shows every note across your account in a single feed, grouped by day.
+
+## Add a note
+
+<Steps>
+  <Step title="Open the composer">
+    From a job, customer, invoice, or quote detail page, select **Add note**.
+
+    From the top-level Notes page, select **New note** in the top-right corner.
+  </Step>
+  <Step title="Write the note">
+    Type directly into the text area. The composer supports basic Markdown — use the toolbar to add **bold**, _italic_, bullet lists, or links without typing the syntax yourself.
+
+    Press **Cmd+Enter** (Mac) or **Ctrl+Enter** (Windows) to save without reaching for the button.
+  </Step>
+  <Step title="Attach to a record (optional)">
+    If you opened the composer from a detail page, the entity is already attached — you'll see a chip at the top of the composer showing the customer name, job title, invoice number, or quote title.
+
+    To attach from the standalone Notes page, select the paperclip icon in the toolbar and search for a customer, job, invoice, or quote. Select it from the dropdown to add the chip.
+
+    To remove an attachment, select the chip and it clears.
+  </Step>
+  <Step title="Pin the note (optional)">
+    Select the bookmark icon to pin the note. Pinned notes appear in a dedicated section above the day-grouped feed so they stay visible.
+  </Step>
+  <Step title="Add photos (optional)">
+    Select the **+** tile below the text area to attach photos. On mobile, your device's camera opens by default.
+
+    You can attach up to 6 photos per note. Zoop compresses images before upload to keep things fast on a spotty connection.
+  </Step>
+  <Step title="Save">
+    Select **Save note**. The note appears in the feed immediately.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): the note composer open in modal mode, showing the toolbar, a subject chip, the pin bookmark button, and the photo strip with one thumbnail.</Callout>
+
+## Photo attachments
+
+Each note holds up to 6 photos. The composer shows a strip of thumbnails below the text area; select any thumbnail to open the full-screen viewer.
+
+On the notes feed, cards with photos show up to 3 thumbnails inline. If there are more, a tile shows the count — tap it to open the viewer from that position.
+
+<Callout type="warning">
+Your account has a shared photo storage limit. Zoop will warn you when you're approaching it. If uploads fail with a storage error, delete unused photos from older notes to free space.
+</Callout>
+
+## Search and filter
+
+The search bar at the top of the Notes page searches across all note text in real time. When results are truncated, refine your search to narrow them down.
+
+Filter chips below the search bar let you narrow by record type or pin status:
+
+| Chip | What it shows |
+|------|---------------|
+| All | Every note (default) |
+| Customer | Notes attached to customers |
+| Job | Notes attached to jobs |
+| Invoice | Notes attached to invoices |
+| Quote | Notes attached to quotes |
+| Standalone | Notes not attached to any record |
+| Pinned | Only pinned notes |
+
+You can combine multiple chips — for example, select **Job** and **Invoice** together to see notes on either type.
+
+## Pin and unpin
+
+Only the note's author can pin or unpin it from the feed. Pinned notes float above the day-grouped feed.
+
+To pin or unpin from the feed, hover a card and select the bookmark icon. The same icon appears inside the composer when you're creating or editing a note.
+
+<Callout type="warning">TODO(verify): confirm whether account owners can pin or unpin notes they did not author (the server authorization allows owners to mutate notes, but the hover actions in the feed are only shown to the note's author).</Callout>
+
+## Edit a note
+
+Only the note's author can edit or delete a note from the feed. Hover a note card and select the pencil icon to open it in the composer with the existing text, attachment, pin state, and photos pre-loaded. Edit and save as normal.
+
+Every save creates a new version. The note body, author, and timestamp of each version are preserved.
+
+## Version history
+
+<Callout type="info">TODO(screenshot): the version history panel open on the right side, showing a list of versions with v1, v2, etc., author name, relative time, and a Restore button beside each entry.</Callout>
+
+<Steps>
+  <Step title="Open version history">
+    Open a note in the composer and look for the version history option.
+
+    <Callout type="warning">TODO(verify): confirm the exact UI entry point for opening version history from the composer or note card (the panel component exists in code but the trigger location in the composer UI needs verification).</Callout>
+  </Step>
+  <Step title="Browse versions">
+    The panel lists every version newest-first. Select a version row to expand a line-by-line diff showing what changed — added lines in green, removed lines in red.
+  </Step>
+  <Step title="Restore a version">
+    Select **Restore** beside any version. Confirm the prompt. The note body is replaced with that version's content and a new version entry is created so the restore itself is part of the history.
+
+    If someone else edits the note between when you opened the history and when you restore, Zoop blocks the restore and asks you to reload first.
+  </Step>
+</Steps>
+
+## Delete a note
+
+Hover a note card and select the delete (trash) icon. Confirm the prompt. Deletion is permanent — there is no recovery path after confirming.
+
+<Callout type="warning">TODO(verify): confirm whether note deletion also removes attached photos from storage, or whether orphaned attachments are cleaned up separately.</Callout>
+
+## Notes on entity detail pages
+
+When you're inside a job, customer, invoice, or quote, the Notes panel shows only the notes attached to that record. The search bar and filter chips are not shown in this scope — the list is already scoped to that entity.
+
+Select **Add note** from the panel header to create a note pre-attached to that record.
+
+## Draft recovery
+
+If your browser closes or crashes while you're writing a note, Zoop saves a draft automatically. The next time you open the composer, a banner asks whether to restore your draft or discard it.
+
+## Related pages
+
+- [Jobs](/using-zoop/jobs) — add notes to track what happened on site
+- [Customers](/using-zoop/customers) — capture customer preferences and history
+- [Invoices](/using-zoop/invoices) — note payment discussions or disputes
+- [Quotes](/using-zoop/quotes) — record scope clarifications before the job starts
+- [Notes API](/developers/api/notes) — read and write notes programmatically

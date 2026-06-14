@@ -1,0 +1,218 @@
+---
+title: The mobile app
+description: Run the truck-side of your business from your phone, even offline.
+audience: end-user
+---
+
+The Zoop mobile app puts your daily work in your pocket: today's jobs, your full job list, customers, invoices, quotes, and a quick-capture button that follows you between screens. You sign in with the same credentials you use on the web.
+
+<Callout type="info">TODO(screenshot): App store listing / home screen icon for iOS and Android.</Callout>
+
+## Sign in
+
+Open the app and sign in with your email and password, or tap **Continue with Google** or **Continue with Apple**. If you manage more than one business in Zoop, you'll see a business picker after signing in — tap the one you want to work with.
+
+<Callout type="info">TODO(screenshot): LoginScreen and TenantPicker on a phone.</Callout>
+
+## Bottom navigation
+
+Five tabs sit at the bottom of the screen. Which tabs you see depends on your role.
+
+| Tab | Who sees it |
+|---|---|
+| Today | Everyone |
+| Jobs | Everyone |
+| Customers | Owners and office managers |
+| Invoices | Everyone |
+| More | Everyone |
+
+Tech users who don't have the Customers tab see **Quotes** in its place.
+
+The **+** button (floating above the tab bar) opens the note composer from any screen.
+
+---
+
+## Today
+
+The Today screen shows every job scheduled for the current calendar day, sorted by start time. Each row shows the job title, customer name, scheduled time, and a colour-coded status badge.
+
+Job statuses in the app:
+
+- **Scheduled** — confirmed and on the calendar
+- **Unscheduled** — created but not yet given a time
+- **Done** — work completed
+- **Cancelled** — job was called off
+
+Tap any job to open its detail. If there are no jobs today, the screen says so — nothing is hidden.
+
+<Callout type="info">TODO(screenshot): TodayScreen with a short list of jobs.</Callout>
+
+---
+
+## Jobs
+
+The Jobs screen lists all jobs across all dates. From here you can find a specific job, filter by status, or sort the list to match how you work.
+
+**To find a job:**
+
+<Steps>
+  <Step title="Search">
+    Type a customer name or job title into the search field at the top of the screen. The list narrows as you type.
+  </Step>
+  <Step title="Filter by status">
+    Tap a status chip — All, Scheduled, Unscheduled, Done, or Cancelled — to show only jobs in that state. Tap the active chip again (or tap All) to clear it.
+  </Step>
+  <Step title="Sort">
+    Use the Sort picker to order by time, status, or customer name.
+  </Step>
+  <Step title="Open">
+    Tap any job row to open the full detail.
+  </Step>
+</Steps>
+
+The header shows how many jobs match your current filter versus your total count (for example, "3 of 14 jobs"). Tap **Refresh** to pull the latest data from the server without leaving the screen.
+
+<Callout type="info">TODO(screenshot): JobsScreen with status filter chips visible.</Callout>
+
+---
+
+## Customers
+
+The Customers screen lists every customer in your account. It is visible to owners and office managers only — field techs see Quotes in this tab position instead.
+
+**To find a customer:**
+
+<Steps>
+  <Step title="Search">
+    Type a name or phone number into the search field.
+  </Step>
+  <Step title="Sort">
+    Switch the sort between alphabetical (by name) or by job count, so your busiest accounts float to the top.
+  </Step>
+  <Step title="Open">
+    Tap a customer row to open their full record.
+  </Step>
+</Steps>
+
+Each row shows the customer's name, phone number, email, total job count, and an **Active** badge if they currently have at least one scheduled job.
+
+<Callout type="info">TODO(screenshot): CustomersScreen showing the Active badge on a customer.</Callout>
+
+---
+
+## Invoices
+
+The Invoices screen gives you a live view of your money. When you have an outstanding balance or collected payments this month, summary cards appear at the top showing those amounts.
+
+**To find an invoice:**
+
+<Steps>
+  <Step title="Search">
+    Type an invoice number or customer name into the search field.
+  </Step>
+  <Step title="Filter by status">
+    Tap a status chip — All, Sent, Paid, Overdue, Draft, or Cancelled.
+  </Step>
+  <Step title="Sort">
+    Order by date, amount, customer name, or status.
+  </Step>
+  <Step title="Open">
+    Tap any row to open the invoice detail.
+  </Step>
+</Steps>
+
+Each row shows the invoice number, customer name, issue date, total amount, and status badge.
+
+<Callout type="info">TODO(screenshot): InvoicesScreen with the outstanding / paid-this-month summary cards.</Callout>
+
+See [Invoices](/using-zoop/invoices) for the full web-side invoicing workflow.
+
+---
+
+## Quotes
+
+The Quotes screen lists every quote in your account. If any quotes are in **Accepted** status, a banner at the top tells you how many are ready to convert to invoices.
+
+**To find a quote:**
+
+<Steps>
+  <Step title="Search">
+    Type a quote title or customer name.
+  </Step>
+  <Step title="Filter by status">
+    Tap a status chip — All, Sent, Accepted, Draft, Declined, or Expired.
+  </Step>
+  <Step title="Sort">
+    Order by date, amount, customer name, or status.
+  </Step>
+  <Step title="Open">
+    Tap any row to open the quote detail.
+  </Step>
+</Steps>
+
+Each row shows the quote title, customer name, creation date, total (sum of line items), and status badge.
+
+<Callout type="info">TODO(screenshot): QuotesScreen with the accepted-quotes banner.</Callout>
+
+See [Quotes](/using-zoop/quotes) for the full quoting workflow.
+
+---
+
+## Quick capture (the + button)
+
+The **+** button is always visible above the tab bar. Tap it to open the note composer — a fast way to log anything while your hands are dirty or you're mid-job.
+
+### Type a note
+
+Type directly into the text area and tap **Save**. The note is saved against your account and synced to the web.
+
+### Record a voice note
+
+<Steps>
+  <Step title="Tap Record note">
+    The app asks for microphone permission the first time. Grant it to continue.
+  </Step>
+  <Step title="Speak">
+    A timer shows how long you've been recording.
+  </Step>
+  <Step title="Tap Stop">
+    Tap the Stop button (it shows the elapsed seconds while recording). The audio is uploaded and transcribed automatically. The transcribed text appears in the text area.
+  </Step>
+  <Step title="Edit and save">
+    Review the transcript, make any corrections, then tap **Save**.
+  </Step>
+</Steps>
+
+If transcription fails, you have three options:
+
+- **Try again** — retry the transcription with the same audio
+- **Skip transcription** — discard the audio and return to the text field so you can type manually
+- **Discard** — throw away the recording and start over
+
+<Callout type="warning">
+TODO(verify): Confirm the monthly transcription quota limit (the code references a 5-minute monthly cap with a warning at 80%) and whether it is per-seat or per-account.
+</Callout>
+
+<Callout type="info">TODO(screenshot): NoteComposer with recording in progress.</Callout>
+
+Notes saved from the mobile app appear alongside notes created on the web. See [Notes](/using-zoop/notes) for how to view, pin, and manage notes.
+
+---
+
+## Offline behaviour
+
+<Callout type="warning">
+TODO(verify): Confirm the offline queue/sync behaviour. The supabase client is configured with persistent session storage (iOS Keychain / Android Keystore) and auto token refresh, but no explicit offline queue was found in the reviewed source files. Confirm whether reads and writes are queued when the device is offline and synced on reconnect, or whether the app simply shows an error when offline.
+</Callout>
+
+Your session credentials are stored securely on device (iOS Keychain / Android Keystore) and your auth token refreshes automatically in the background, so you stay signed in even when connectivity is intermittent.
+
+---
+
+## Switching businesses
+
+If your account has access to more than one business, tap **More** in the tab bar to find the business switcher.
+
+<Callout type="warning">
+TODO(verify): Confirm the More sheet contents and whether a business switcher is accessible from it, or whether switching requires signing out and back in.
+</Callout>

@@ -1,0 +1,176 @@
+---
+title: Glossary
+description: Plain definitions of the words Zoop uses — customers, jobs, invoices, crews, plans, and more.
+audience: end-user
+---
+
+Plain definitions of the terms you will see throughout Zoop. If a word behaves differently somewhere in the product, that page will say so.
+
+## Terms
+
+### Zoop
+
+The field service management software your business runs on. Zoop connects your customers, jobs, quotes, invoices, and payments in one place. It is available in a browser and on mobile.
+
+---
+
+### Tenant
+
+Your business account in Zoop. Everything — customers, jobs, invoices, settings — is isolated to your tenant. If you run two separate businesses, each gets its own tenant. The word "tenant" is a technical term you will mostly not see in the product itself; Zoop just calls it your account or your business.
+
+---
+
+### Team member
+
+Anyone on your Zoop account. Every team member has one of three roles:
+
+| Role | What they can do |
+|---|---|
+| **Owner** | Full access. Manages settings, billing, API keys, and team members. |
+| **Office** | Creates and manages jobs, quotes, invoices, customers, and crews. Cannot manage billing or API keys. |
+| **Tech** | Views and completes their own assigned jobs. Access is limited to their own work. |
+
+See [Team](/using-zoop/team) for how to invite and manage team members.
+
+---
+
+### Customer
+
+A person or company you do work for. A customer can be an **individual** (first name, last name) or a **company** (company name). Each customer gets a unique customer number, and can have multiple contacts, locations, and billing profiles attached.
+
+See [Customers](/using-zoop/customers).
+
+---
+
+### Job
+
+A single unit of work for a customer. A job has a title, an optional description, a status (`unscheduled`, `scheduled`, `done`, or `cancelled`), and an optional scheduled start and end time. Jobs can be linked to a quote and an invoice.
+
+See [Jobs](/using-zoop/jobs).
+
+---
+
+### Recurring job (job series)
+
+A job that repeats on a schedule — weekly lawn care, monthly HVAC maintenance, quarterly inspections. The schedule lives in a **job series**, which holds the recurrence rule, timezone, and the template details (line items, assigned crew) that Zoop copies onto each new job occurrence automatically. Editing the series affects future jobs; past jobs are unaffected.
+
+See [Recurring jobs](/using-zoop/recurring-jobs).
+
+---
+
+### Quote
+
+A priced proposal you send to a customer before work begins. A quote has a status: `draft` (still building it), `quoted` (sent to the customer), `converted` (accepted and turned into a job or invoice), or `archived`. Customers can accept a quote through a shared link without needing a Zoop account.
+
+See [Quotes](/using-zoop/quotes).
+
+---
+
+### Invoice
+
+A request for payment sent to a customer after (or during) work. An invoice is independent of any job or quote — it can reference both, either, or neither. Statuses: `draft`, `sent`, `processing` (payment received and being confirmed), `paid`, `overdue`, `void`. Invoices are sent by email or SMS and can be paid online through a payment link.
+
+See [Invoices](/using-zoop/invoices).
+
+---
+
+### Plan
+
+A recurring billing agreement with a customer. A plan runs on a schedule (weekly, monthly, annually, or any custom cadence) and generates invoices automatically. Plans can optionally charge the customer's saved payment method without them needing to act each cycle.
+
+See [Recurring billing](/using-zoop/recurring-billing).
+
+---
+
+### Pricebook / catalog item
+
+Your library of services, products, labor rates, fees, bundles, and discounts. Each entry is a **catalog item** with a name, unit price, and kind. When you build a quote or job, you pull items from the pricebook instead of typing line items from scratch.
+
+Catalog items are grouped into **catalog categories** to keep the list organized.
+
+See [Pricebook](/using-zoop/pricebook).
+
+---
+
+### Crew
+
+A named group of team members that you assign to jobs as a unit — "Tuesday crew", "HVAC team A". A crew is a scheduling convenience: one assignment covers all the members in it. A team member can belong to more than one crew at the same time.
+
+See [Team](/using-zoop/team).
+
+---
+
+### Storefront
+
+Your public-facing business page, hosted by Zoop at your account URL. It shows your business name, contact info, service hours, service area, and the services you offer. If you turn on the booking widget, customers can request appointments directly from the storefront.
+
+See [Storefront](/using-zoop/storefront).
+
+---
+
+### Customer portal
+
+A private, token-protected page where a specific customer can view their invoices, pay outstanding balances, and manage their saved payment methods. You share a unique link with each customer — they do not need a Zoop account to use it.
+
+See [Customer portal](/using-zoop/customer-portal).
+
+---
+
+### Dispatch
+
+The owner and office view for assigning jobs to team members across a day. The dispatch board shows who is working, what they are doing, and where. Techs have their own route view; dispatch is the management surface above it.
+
+See [Dispatch](/using-zoop/dispatch).
+
+---
+
+### Route
+
+A tech's ordered list of stops for a given day — jobs and calendar events in the sequence they plan to visit them. Routes can be reordered manually. The system can flag stops that are at risk of running late.
+
+See [Dispatch](/using-zoop/dispatch).
+
+---
+
+### Note
+
+A text record attached to a customer, job, quote, or other subject. Notes can be pinned, versioned (every edit is saved as a revision), and created by a team member or by Zoop's AI agent. Notes are internal — customers do not see them.
+
+See [Notes](/using-zoop/notes).
+
+---
+
+### Tax rate
+
+A named percentage (for example, 8.25%) that you apply to invoice line items. You define tax rates once in settings and then select them when building invoices or plans. Multiple tax rates can be active at the same time.
+
+See [Settings](/using-zoop/settings).
+
+---
+
+### MCP
+
+Model Context Protocol — an open standard that lets AI clients (Claude Desktop, LangGraph, and others) connect to Zoop and read or write your data through a set of defined tools. Zoop's MCP server is the same tool layer the in-product AI agent uses, exposed for external integrators. Access requires an API key or OAuth token with the appropriate scopes.
+
+See [MCP](/developers/mcp).
+
+---
+
+### Scope
+
+A permission that controls what an API key or OAuth token is allowed to do. Scopes follow a `read:<entity>` / `write:<entity>` pattern — for example, `read:jobs` lets a token list and view jobs, while `write:jobs` lets it create and update them. A token can only do what its scopes allow.
+
+See [Scopes](/developers/authentication/scopes).
+
+---
+
+### API key
+
+A long-lived credential that lets an external script or tool authenticate with Zoop without a browser login. Zoop issues two kinds:
+
+- **User key** (`zoop_uk_…`) — acts as the team member who created it. Required for any action that records who made a change.
+- **Tenant key** (`zoop_tk_…`) — acts as the account itself, with no individual user attached. Suited for read-heavy or reporting integrations.
+
+Keys are created in **Settings → API & MCP** and require the owner role. The plaintext key is shown once at creation and cannot be retrieved again.
+
+See [API keys](/developers/authentication/api-keys).

@@ -1,0 +1,372 @@
+---
+title: Jobs
+description: Create, schedule, and update jobs using the Zoop MCP tool catalog.
+audience: developer
+---
+
+A job is the core unit of work in Zoop — a visit, task, or project you perform for a customer. Jobs have a simple status machine: `unscheduled` → `scheduled` → `done` (or `cancelled` at any point). The five tools below let you list, fetch, create, update, and cancel jobs.
+
+## Required scopes
+
+| Operation | Scope |
+|---|---|
+| Read jobs | `read:jobs` |
+| Create, update, or cancel jobs | `write:jobs` |
+
+`write:jobs` does not imply `read:jobs`. Grant both if your integration needs to read and write jobs. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+
+## User actor requirement
+
+`jobs.create`, `jobs.update`, and `jobs.cancel` require a **user actor** — an OAuth access token or user-bound API key. Tenant-key tokens (those with a `zoop_tk_` prefix) have no `userId` and cannot call these tools. They will receive an `invalid_input` error. See [API keys](/developers/authentication/api-keys).
+
+---
+
+## Tools
+
+### `jobs.list`
+
+Returns a page of jobs for the tenant. Results are ordered by `scheduled_start` ascending (nulls last), then by `created_at` descending. Page size is 20.
+
+**Scope:** `read:jobs`
+
+<ParamField query="status" type="string">
+  Filter by status. One of `unscheduled`, `scheduled`, `done`, or `cancelled`.
+</ParamField>
+
+<ParamField query="customerId" type="string (UUID)">
+  Return only jobs for this customer.
+</ParamField>
+
+<ParamField query="seriesId" type="string (UUID)">
+  Return only jobs that belong to this recurring series.
+</ParamField>
+
+<ParamField query="from" type="string (ISO 8601 datetime)">
+  Return jobs whose `scheduled_start` is at or after this timestamp.
+</ParamField>
+
+<ParamField query="to" type="string (ISO 8601 datetime)">
+  Return jobs whose `scheduled_start` is at or before this timestamp.
+</ParamField>
+
+<ParamField query="q" type="string">
+  Case-insensitive substring match against the job title.
+</ParamField>
+
+<ParamField query="page" type="integer" default="1">
+  1-based page number.
+</ParamField>
+
+**Response fields:**
+
+<ResponseField name="data" type="array">
+  Array of job summary objects. Each row includes `id`, `title`, `status`, `scheduled_start`, `scheduled_end`, `customer_id`, `series_id`, `flat_price`, a nested `customer` object (`id`, `display_name`), and a nested `assignments` array (`user_id`).
+</ResponseField>
+
+<ResponseField name="count" type="integer">
+  Total number of jobs matching the filters (across all pages).
+</ResponseField>
+
+<ResponseField name="page" type="integer">
+  The current page number.
+</ResponseField>
+
+<ResponseField name="limit" type="integer">
+  The page size (always 20).
+</ResponseField>
+
+---
+
+### `jobs.get`
+
+Fetches one job's full record by ID, including line items, assignments, and a media preview (up to 50 items).
+
+**Scope:** `read:jobs`
+
+<ParamField body="id" type="string (UUID)" required>
+  The job ID.
+</ParamField>
+
+Returns a `not_found` error if the job does not exist in the tenant.
+
+**Response fields:**
+
+<ResponseField name="id" type="string">UUID.</ResponseField>
+<ResponseField name="tenant_id" type="string">The tenant this job belongs to.</ResponseField>
+<ResponseField name="customer_id" type="string | null">The linked customer, or null.</ResponseField>
+<ResponseField name="series_id" type="string | null">The recurring series this job belongs to, or null for one-off jobs.</ResponseField>
+<ResponseField name="quote_id" type="string | null">The source quote, if the job was created from one.</ResponseField>
+<ResponseField name="title" type="string">Job title.</ResponseField>
+<ResponseField name="description" type="string | null">Optional long-form description.</ResponseField>
+<ResponseField name="flat_price" type="number | null">A fixed override price. When set, this replaces the sum of line items for billing purposes.</ResponseField>
+<ResponseField name="status" type="string">One of `unscheduled`, `scheduled`, `done`, `cancelled`.</ResponseField>
+<ResponseField name="scheduled_start" type="string | null">ISO 8601 datetime. Null for unscheduled jobs.</ResponseField>
+<ResponseField name="scheduled_end" type="string | null">ISO 8601 datetime. Optional end time.</ResponseField>
+<ResponseField name="completed_at" type="string | null">ISO 8601 datetime. Stamped automatically when `status` is set to `done`.</ResponseField>
+<ResponseField name="created_by" type="string | null">User ID of the creator.</ResponseField>
+<ResponseField name="created_at" type="string">ISO 8601 datetime.</ResponseField>
+<ResponseField name="updated_at" type="string">ISO 8601 datetime.</ResponseField>
+<ResponseField name="job_line_items" type="array">
+  Line items. Each has `id`, `catalog_item_id` (UUID or null), `description`, `unit_price`, `quantity`, `total`, and `sort_order`.
+</ResponseField>
+<ResponseField name="job_assignments" type="array">
+  Users assigned to the job. Each has `user_id`, `assigned_by`, and `assigned_at`.
+</ResponseField>
+<ResponseField name="job_media" type="array">
+  Up to 50 media previews. Each has `id`, `job_id`, `storage_path`, `kind` (`photo` or `video`), `filename`, `size_bytes`, `caption`, `uploaded_by`, and `uploaded_at`.
+</ResponseField>
+<ResponseField name="customer" type="object | null">
+  Thin customer summary: `id` and `display_name`.
+</ResponseField>
+
+---
+
+### `jobs.create`
+
+Creates a new job. Requires a user actor.
+
+**Scope:** `write:jobs`
+
+<ParamField body="title" type="string" required>
+  Job title. 1–200 characters.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)">
+  Link the job to a customer. Omit or pass null to leave it unlinked.
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional notes or work description. Max 5,000 characters.
+</ParamField>
+
+<ParamField body="flat_price" type="number">
+  Optional fixed price override. Must be non-negative.
+</ParamField>
+
+<ParamField body="scheduled_start" type="string (ISO 8601 datetime)">
+  When the job is scheduled to start. Providing this sets `status` to `scheduled` automatically. Omitting it leaves the job `unscheduled`.
+</ParamField>
+
+<ParamField body="scheduled_end" type="string (ISO 8601 datetime)">
+  Optional end time. Has no effect on status.
+</ParamField>
+
+<ParamField body="line_items" type="array">
+  Line items to attach. Each object must include:
+  - `description` (string, 1–500 characters)
+  - `unit_price` (number, non-negative)
+  - `quantity` (number, positive)
+  - `catalog_item_id` (UUID, optional — link to a pricebook item)
+  - `sort_order` (integer, optional — defaults to array index)
+</ParamField>
+
+<ParamField body="assigned_user_ids" type="array of UUIDs">
+  Team members to assign to this job. Each ID must be a member of the tenant, or the whole request fails with `invalid_input`.
+</ParamField>
+
+Returns the newly created job row (same shape as `jobs.get`, without the join arrays).
+
+---
+
+### `jobs.update`
+
+Partially updates a job. Only the fields you supply are changed. Requires a user actor.
+
+**Scope:** `write:jobs`
+
+<ParamField body="id" type="string (UUID)" required>
+  The job to update.
+</ParamField>
+
+<ParamField body="title" type="string">
+  New title. 1–200 characters.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID) | null">
+  Change or unlink the customer.
+</ParamField>
+
+<ParamField body="description" type="string | null">
+  Updated description. Max 5,000 characters.
+</ParamField>
+
+<ParamField body="flat_price" type="number | null">
+  Updated flat price. Pass null to clear it.
+</ParamField>
+
+<ParamField body="status" type="string">
+  Explicit status transition. One of `unscheduled`, `scheduled`, `done`, or `cancelled`. Setting `done` stamps `completed_at` with the current time; setting anything else clears `completed_at`.
+</ParamField>
+
+<ParamField body="scheduled_start" type="string (ISO 8601 datetime) | null">
+  Update or clear the start time. If you change `scheduled_start` without also setting `status`, Zoop derives the status for you: an `unscheduled` job with a date set becomes `scheduled`; a `scheduled` job with its date cleared becomes `unscheduled`. Already-`done` or `cancelled` jobs are not affected by this auto-derive.
+</ParamField>
+
+<ParamField body="scheduled_end" type="string (ISO 8601 datetime) | null">
+  Update or clear the end time.
+</ParamField>
+
+<ParamField body="line_items" type="array">
+  When supplied, **replaces** the entire line-item list atomically. Same shape as `jobs.create`. Omit the field to leave existing line items untouched.
+</ParamField>
+
+<ParamField body="assigned_user_ids" type="array of UUIDs">
+  When supplied, **replaces** the entire assignment list atomically. Omit to leave existing assignments untouched.
+</ParamField>
+
+Returns the updated job row.
+
+---
+
+### `jobs.cancel`
+
+Cancels a job by setting its status to `cancelled`. Cancelled jobs are preserved in full — their history, line items, and assignments stay intact. Requires a user actor.
+
+**Scope:** `write:jobs`
+
+<ParamField body="id" type="string (UUID)" required>
+  The job to cancel.
+</ParamField>
+
+<Callout type="warning">
+Cancellation is one-way via this tool. To restore a cancelled job, call `jobs.update` with `status="unscheduled"` or `status="scheduled"`.
+</Callout>
+
+Returns the updated job row with `status: "cancelled"`.
+
+---
+
+## Example: create a scheduled job
+
+This example creates a job for a customer and assigns it to a team member, starting Monday morning.
+
+<Tabs>
+  <Tab title="cURL">
+```bash
+curl -X POST https://app.zoop.pro/api/mcp \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "jobs.create",
+      "arguments": {
+        "title": "Replace kitchen faucet",
+        "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "description": "Customer reported dripping cold side. Bring 1/2-inch compression fittings.",
+        "scheduled_start": "2026-06-16T09:00:00Z",
+        "scheduled_end": "2026-06-16T11:00:00Z",
+        "assigned_user_ids": ["f9e8d7c6-b5a4-3210-fedc-ba9876543210"],
+        "line_items": [
+          {
+            "description": "Labor — faucet replacement",
+            "unit_price": 95.00,
+            "quantity": 2
+          },
+          {
+            "description": "Kitchen faucet (customer-supplied)",
+            "unit_price": 0,
+            "quantity": 1
+          }
+        ]
+      }
+    }
+  }'
+```
+  </Tab>
+  <Tab title="TypeScript">
+```ts
+const response = await fetch('https://app.zoop.pro/api/mcp', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: {
+      name: 'jobs.create',
+      arguments: {
+        title: 'Replace kitchen faucet',
+        customer_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        description: 'Customer reported dripping cold side. Bring 1/2-inch compression fittings.',
+        scheduled_start: '2026-06-16T09:00:00Z',
+        scheduled_end: '2026-06-16T11:00:00Z',
+        assigned_user_ids: ['f9e8d7c6-b5a4-3210-fedc-ba9876543210'],
+        line_items: [
+          {
+            description: 'Labor — faucet replacement',
+            unit_price: 95.00,
+            quantity: 2,
+          },
+          {
+            description: 'Kitchen faucet (customer-supplied)',
+            unit_price: 0,
+            quantity: 1,
+          },
+        ],
+      },
+    },
+  }),
+})
+
+const result = await response.json()
+// result.result contains the new job row
+```
+  </Tab>
+</Tabs>
+
+**What happens:**
+
+<Steps>
+  <Step title="Status is derived automatically">
+    Because `scheduled_start` is set, Zoop sets `status` to `scheduled`. You do not need to pass `status` explicitly.
+  </Step>
+  <Step title="Assignments are validated">
+    Each `user_id` in `assigned_user_ids` is checked against the tenant's membership list. A single invalid ID fails the entire request with `invalid_input`.
+  </Step>
+  <Step title="Job row is returned">
+    The response contains the persisted job row, including the server-assigned `id` and `created_at`.
+  </Step>
+</Steps>
+
+---
+
+## Status machine
+
+Jobs move through four statuses:
+
+| Status | Meaning |
+|---|---|
+| `unscheduled` | Created without a start time, or start time was cleared. |
+| `scheduled` | Has a `scheduled_start`. Set automatically when you provide a start time. |
+| `done` | Work complete. `completed_at` is stamped at the moment you set this status. |
+| `cancelled` | Cancelled via `jobs.cancel` or by passing `status="cancelled"` to `jobs.update`. |
+
+The `done` and `cancelled` statuses do not prevent further updates — you can re-open a done job by patching `status` back to `scheduled`.
+
+---
+
+## Error reference
+
+| Error kind | Common cause |
+|---|---|
+| `invalid_input` | Missing `title`, non-UUID in `assigned_user_ids`, assigned user not a tenant member, or tenant-actor token used on a write tool. |
+| `not_found` | The job ID does not exist in this tenant. |
+| `insufficient_scope` | Token is missing `read:jobs` or `write:jobs`. |
+
+See [Errors](/developers/errors) for the full error shape and HTTP status codes.
+
+---
+
+## Related pages
+
+- [Job series](/developers/api/job-series) — create and manage recurring job templates.
+- [Invoices](/developers/api/invoices) — turn a completed job into an invoice.
+- [Quotes](/developers/api/quotes) — jobs can be created from approved quotes.
+- [Catalog items](/developers/api/catalog-items) — link line items to your pricebook.
+- [Scopes](/developers/authentication/scopes) — full scope catalog and token requirements.

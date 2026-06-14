@@ -1,0 +1,98 @@
+---
+title: Recurring jobs
+description: Set up repeating work once — Zoop creates each visit on schedule.
+audience: end-user
+---
+
+A **job series** is a template that Zoop uses to generate individual jobs on a schedule. You set the title, pricing, assigned techs, and recurrence rule once. Zoop then creates each visit automatically and keeps them on your [calendar](/using-zoop/calendar).
+
+<Callout type="info">TODO(screenshot): Series detail page showing the recurrence summary, upcoming list, and past list.</Callout>
+
+## Create a recurring job
+
+<Steps>
+  <Step title="Open the new job form">
+    Go to [Jobs](/using-zoop/jobs) and tap **New job**.
+  </Step>
+  <Step title="Fill in the basics">
+    Add a title, customer, and any assigned techs. Optionally add line items or a flat price — these become the default for every generated visit.
+  </Step>
+  <Step title="Switch to recurring">
+    Below the assignment section, tap **Recurring** in the schedule toggle. The one-time date fields are replaced by the recurrence editor.
+  </Step>
+  <Step title="Set the schedule">
+    Pick a frequency (daily, weekly, monthly, or yearly) and an interval. For weekly rules, select which days of the week. For monthly rules, choose between same date, a specific weekday position (e.g. second Tuesday), or the last weekday of the month.
+
+    Then set:
+    - **Start date** — the date the first visit falls on.
+    - **Timezone** — used to anchor the schedule to local time so visits don't drift with daylight saving.
+    - **End** — choose **Never**, **On date**, or **After N occurrences**.
+  </Step>
+  <Step title="Save">
+    Tap **Create job**. Zoop saves the series and immediately creates the first 8 weeks of visits. You land on the series detail page.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): Recurrence editor with frequency, start date, timezone, and end controls visible.</Callout>
+
+## How Zoop generates visits
+
+When you create or update a series, Zoop materializes an 8-week rolling window of individual jobs. Each generated job inherits the series title, pricing, line items, and assignments. A daily cron catches up any missed generation, so your upcoming list stays current even if a background step ran slowly.
+
+Generated jobs start in **scheduled** status. You can open any individual visit and edit it independently without affecting the rest of the series.
+
+## View a series
+
+From the [Jobs](/using-zoop/jobs) list, tap a job that has the recurring icon. On the detail page, the schedule section shows the recurrence rule and a "View series" link. From the series detail page you can see:
+
+- The recurrence summary (e.g. "Repeats every week on Monday, Thursday").
+- The customer linked to the series.
+- Pricing — either a flat price or itemized line items.
+- **Upcoming** — visits that haven't happened yet.
+- **Past** — visits that are done or were cancelled. These are permanent records and are never removed.
+
+<Callout type="info">TODO(screenshot): Series detail page upcoming and past instance lists.</Callout>
+
+## Edit a series
+
+If you need to change the title, schedule, pricing, or assignments for all future visits, open any upcoming visit and tap **Edit**. You'll be asked how far the change should reach:
+
+- **Just this occurrence** — changes only this single visit. The rest of the series is unaffected.
+- **This and future occurrences** — changes this visit and all visits from that point forward. Completed or cancelled visits before this date are left alone.
+- **All occurrences** — changes the series template. Zoop deletes future unscheduled and scheduled visits, then regenerates them from the updated template. Done or cancelled visits are preserved as historical records.
+
+<Callout type="warning">
+Editing with "all occurrences" replaces every upcoming visit. If you've manually adjusted the time or details of individual visits that haven't happened yet, those changes will be overwritten.
+</Callout>
+
+To edit the series template directly, go to the series detail page and tap **Edit template**. This is equivalent to choosing "all occurrences" from an upcoming visit. The button only appears when at least one upcoming visit exists.
+
+<Callout type="info">TODO(screenshot): Edit job page showing the three scope options (just this one, this and future, all occurrences).</Callout>
+
+### What changes and what doesn't
+
+| What you change | Just this occurrence | This and future | All occurrences |
+|---|---|---|---|
+| Title, notes, pricing | This visit only | This visit onward | All upcoming visits |
+| Recurrence schedule | No effect | New schedule from here | New schedule from start |
+| Assigned techs | This visit only | This visit onward | All upcoming visits |
+| Done or cancelled visits | Untouched | Untouched | Untouched |
+
+## End a series
+
+To stop new visits from being created, go to the series detail page and tap **Delete series**. Zoop caps the series end date to today, cancels every upcoming unscheduled or scheduled visit, and keeps all past completed jobs as historical records.
+
+<Callout type="warning">
+Ending a series cancels all upcoming visits immediately. This cannot be undone from the UI. If you only want to pause work temporarily, consider editing individual upcoming visits to a cancelled status instead.
+</Callout>
+
+## Recurring jobs from a quote
+
+You can also create a recurring job series from an accepted quote. On the quote detail page, when converting to a job, choose **Recurring** and configure the schedule. Zoop links the series back to the originating quote for reference. See [Quotes](/using-zoop/quotes) for details on the conversion flow.
+
+## Related
+
+- [Jobs](/using-zoop/jobs) — manage individual visits within a series or standalone jobs.
+- [Calendar](/using-zoop/calendar) — see all upcoming visits laid out by date.
+- [Invoices](/using-zoop/invoices) — each generated visit can have its own invoice.
+- [API reference: job series](/developers/api/job-series) — create and manage series programmatically.

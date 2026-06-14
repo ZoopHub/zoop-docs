@@ -1,0 +1,515 @@
+---
+title: Catalog items
+description: Manage pricebook items — services, products, labor, fees, bundles, and discounts — via the Zoop MCP tool layer.
+audience: developer
+---
+
+Catalog items are your pricebook: the reusable line-item definitions you pull into quotes, jobs, and invoices. Each item has a `kind` that controls which fields apply. The six kinds are:
+
+| Kind | What it is |
+|---|---|
+| `service` | A billable service (e.g. drain cleaning, HVAC tune-up). |
+| `product` | A physical product sold to the customer (e.g. filter, part). |
+| `labor` | A labor rate charged by the hour or by the task. |
+| `fee` | A flat surcharge (e.g. travel fee, disposal fee). |
+| `bundle` | A package that contains other catalog items. |
+| `discount` | A percentage or flat-amount discount applied to a line. |
+
+All tools in this group require the `read:catalog_items` or `write:catalog_items` scope. The coarser `read:catalog` and `write:catalog` umbrella scopes expand to include these — see [Scopes](/developers/authentication/scopes).
+
+<Callout type="info">
+If you are new to the MCP layer, read [MCP overview](/developers/mcp) first to learn how to connect and authenticate.
+</Callout>
+
+---
+
+## Scopes
+
+| Scope | Grants access to |
+|---|---|
+| `read:catalog_items` | `catalog_items.list`, `catalog_items.get` |
+| `write:catalog_items` | `catalog_items.create`, `catalog_items.update`, `catalog_items.archive` |
+
+`write:catalog_items` does **not** imply `read:catalog_items`. Grant both if your integration needs to read and write.
+
+The umbrella scopes `read:catalog` and `write:catalog` expand to the item and category child scopes at verification time — you can use either the umbrella or the specific child scope.
+
+---
+
+## Owner-only fields
+
+Some fields are visible only to callers whose token represents a tenant **owner**. Non-owner roles (`office`, `tech`) and tenant-key tokens (API keys not bound to a user) receive the same response shape but with those fields omitted:
+
+| Field | Applies to kinds | What it tracks |
+|---|---|---|
+| `cost` | `service`, `product`, `labor`, `fee` | Your cost for the item (not the customer price). |
+| `markup_pct` | `service`, `product`, `labor`, `fee`, `bundle` | Markup percentage over cost. |
+| `supplier_url` | `service`, `product`, `labor`, `fee`, `bundle` | URL to the supplier or part listing. |
+| `supplier_sku` | `service`, `product`, `labor`, `fee`, `bundle` | Supplier's part number or SKU. |
+| `last_known_cost` | `service`, `product`, `labor`, `fee` | Most recent cost from an external price sync. |
+| `last_synced_at` | `service`, `product`, `labor`, `fee` | Timestamp of the last cost sync. |
+
+`discount` items have no owner-only fields — the response shape is the same for every role.
+
+These fields appear in the response only when the token resolves to a user with the `owner` role. A tenant-key token always receives the non-owner (public) shape regardless of what scopes it carries.
+
+---
+
+## `catalog_items.list`
+
+List catalog items for the tenant. Results are newest first. Returns id-bearing rows; call `catalog_items.get` for bundle components and the full record.
+
+<ParamField body="kind" type="string" optional>
+  Filter by item kind. One of `service`, `product`, `labor`, `fee`, `bundle`, or `discount`. Omit to return all kinds.
+</ParamField>
+
+<ParamField body="category_id" type="string (UUID)" optional>
+  Filter to items in this category. Pass the category `id`.
+</ParamField>
+
+<ParamField body="active" type="boolean" optional>
+  When `true`, return only non-archived items. When `false`, return only archived items. Omit to return all.
+</ParamField>
+
+<ParamField body="limit" type="integer" optional>
+  Maximum number of items to return. Integer between 1 and 200.
+</ParamField>
+
+### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.list",
+    "arguments": {
+      "kind": "service",
+      "active": true,
+      "limit": 50
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"id\":\"e1f2a3b4-0000-0000-0000-000000000001\",\"kind\":\"service\",\"name\":\"Drain cleaning\",\"description\":\"Snake the main drain line\",\"sku\":\"SVC-001\",\"unit\":\"job\",\"unit_price\":185.00,\"category_id\":null,\"image_url\":null,\"metadata\":{},\"created_at\":\"2026-01-10T09:00:00.000Z\",\"updated_at\":\"2026-01-10T09:00:00.000Z\",\"archived_at\":null}]"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## `catalog_items.get`
+
+Fetch one catalog item by `id`. Bundle items include a `components` array listing the items in the bundle. Archived items are not returned — the call returns a `not_found` error instead.
+
+<ParamField body="id" type="string (UUID)" required>
+  The catalog item's `id`.
+</ParamField>
+
+### Example — fetching a bundle
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.get",
+    "arguments": {
+      "id": "b9c8d7e6-0000-0000-0000-000000000002"
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"id\":\"b9c8d7e6-0000-0000-0000-000000000002\",\"kind\":\"bundle\",\"name\":\"HVAC tune-up package\",\"description\":null,\"sku\":\"BDL-HVAC-01\",\"unit\":null,\"unit_price\":null,\"flat_package\":false,\"category_id\":null,\"image_url\":null,\"metadata\":{},\"components\":[{\"id\":\"cc000001-0000-0000-0000-000000000001\",\"bundle_id\":\"b9c8d7e6-0000-0000-0000-000000000002\",\"catalog_item_id\":\"e1f2a3b4-0000-0000-0000-000000000001\",\"default_qty\":1,\"sort_order\":0,\"created_at\":\"2026-01-15T10:00:00.000Z\"}],\"created_at\":\"2026-01-15T10:00:00.000Z\",\"updated_at\":\"2026-01-15T10:00:00.000Z\",\"archived_at\":null}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## `catalog_items.create`
+
+Create a new catalog item. The `kind` field is required and determines which other fields are allowed or required.
+
+<Callout type="info">
+`catalog_items.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or an OAuth token instead.
+</Callout>
+
+<ParamField body="kind" type="string" required>
+  The item variant. One of `service`, `product`, `labor`, `fee`, `bundle`, or `discount`. You cannot change `kind` after creation.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Display name for the item. Max 255 characters.
+</ParamField>
+
+<ParamField body="description" type="string" optional>
+  Longer description shown on quotes and invoices. Max 2,000 characters.
+</ParamField>
+
+<ParamField body="sku" type="string" optional>
+  Your internal SKU or item code. Max 128 characters.
+</ParamField>
+
+<ParamField body="unit" type="string" optional>
+  Unit label shown on line items (e.g. `hr`, `job`, `each`). Not applicable to `discount` items. Max 64 characters.
+</ParamField>
+
+<ParamField body="unit_price" type="number" optional>
+  The price you charge the customer per unit. Non-negative. Not applicable to `discount` items.
+</ParamField>
+
+<ParamField body="category_id" type="string (UUID)" optional>
+  Assign the item to a category. The category must belong to your tenant. See [Catalog categories](/developers/api/catalog-categories).
+</ParamField>
+
+<ParamField body="cost" type="number" optional>
+  Your cost for the item (owner-only field). Non-negative. Not applicable to `bundle` or `discount` items.
+</ParamField>
+
+<ParamField body="markup_pct" type="number" optional>
+  Markup percentage over cost (owner-only field). Non-negative. Not applicable to `discount` items.
+</ParamField>
+
+<ParamField body="supplier_url" type="string" optional>
+  URL to the supplier or part listing (owner-only field). Must be a valid URL. Not applicable to `discount` items.
+</ParamField>
+
+<ParamField body="supplier_sku" type="string" optional>
+  Supplier's part number (owner-only field). Max 128 characters. Not applicable to `discount` items.
+</ParamField>
+
+<ParamField body="discount_type" type="string" required-if="kind = discount">
+  Required when `kind` is `discount`. One of `percentage` or `flat`.
+</ParamField>
+
+<ParamField body="discount_value" type="number" optional>
+  The discount amount. For `percentage`, this is a percentage (e.g. `10` for 10%). For `flat`, this is a currency amount. Non-negative. Only applicable to `discount` items.
+</ParamField>
+
+<ParamField body="flat_package" type="boolean" optional>
+  When `true`, the bundle is priced as a flat package rather than summing component prices. Only applicable to `bundle` items.
+</ParamField>
+
+<ParamField body="components" type="array" required-if="kind = bundle">
+  The items in the bundle. Required when `kind` is `bundle`; must contain at least one component.
+
+  <Expandable title="component fields">
+    <ParamField body="catalog_item_id" type="string (UUID)" required>
+      The `id` of the catalog item to include in the bundle.
+    </ParamField>
+    <ParamField body="default_qty" type="number" required>
+      Default quantity for this component. Must be positive.
+    </ParamField>
+    <ParamField body="sort_order" type="integer" optional>
+      Display order for this component within the bundle. Defaults to `0`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="object" optional>
+  Arbitrary key-value data you want to store alongside the item. Keys and values must be JSON-serializable.
+</ParamField>
+
+### Example — create a service item
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.create",
+    "arguments": {
+      "kind": "service",
+      "name": "Drain cleaning",
+      "description": "Snake the main drain line",
+      "sku": "SVC-001",
+      "unit": "job",
+      "unit_price": 185.00
+    }
+  }
+}
+```
+
+### Example — create a discount item
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.create",
+    "arguments": {
+      "kind": "discount",
+      "name": "Senior discount",
+      "discount_type": "percentage",
+      "discount_value": 10
+    }
+  }
+}
+```
+
+### Example — create a bundle
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.create",
+    "arguments": {
+      "kind": "bundle",
+      "name": "HVAC tune-up package",
+      "sku": "BDL-HVAC-01",
+      "components": [
+        {
+          "catalog_item_id": "e1f2a3b4-0000-0000-0000-000000000001",
+          "default_qty": 1,
+          "sort_order": 0
+        },
+        {
+          "catalog_item_id": "a2b3c4d5-0000-0000-0000-000000000002",
+          "default_qty": 2,
+          "sort_order": 1
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+## `catalog_items.update`
+
+Update a catalog item's mutable fields. This is a partial patch — only the fields you send are changed.
+
+For bundle items, passing `components` **atomically replaces** the entire component list. If you want to add one component to an existing bundle, you must send the full new list including all components you want to keep. Omitting `components` leaves the existing list unchanged.
+
+<Callout type="info">
+`catalog_items.update` requires a **user actor**. Tenant-key tokens cannot call this tool.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The catalog item to update.
+</ParamField>
+
+<ParamField body="name" type="string" optional>
+  Updated display name. Max 255 characters.
+</ParamField>
+
+<ParamField body="description" type="string" optional>
+  Updated description. Max 2,000 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="sku" type="string" optional>
+  Updated SKU. Max 128 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="unit" type="string" optional>
+  Updated unit label. Max 64 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="unit_price" type="number" optional>
+  Updated customer price. Non-negative. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="category_id" type="string (UUID)" optional>
+  Assign or reassign the item to a category. The category must belong to your tenant. Pass `null` to clear the category.
+</ParamField>
+
+<ParamField body="cost" type="number" optional>
+  Updated cost (owner-only). Non-negative. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="markup_pct" type="number" optional>
+  Updated markup percentage (owner-only). Non-negative. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="supplier_url" type="string" optional>
+  Updated supplier URL (owner-only). Must be a valid URL. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="supplier_sku" type="string" optional>
+  Updated supplier SKU (owner-only). Max 128 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="discount_type" type="string" optional>
+  Updated discount type for `discount` items. One of `percentage` or `flat`. Required when updating `discount_value`.
+</ParamField>
+
+<ParamField body="discount_value" type="number" optional>
+  Updated discount amount for `discount` items. Non-negative. Pass `null` to clear. When providing `discount_value`, you must also provide `discount_type`.
+</ParamField>
+
+<ParamField body="flat_package" type="boolean" optional>
+  Toggle flat-package pricing on a `bundle` item. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="components" type="array" optional>
+  Replacement component list for a `bundle` item. When provided, this list **replaces the entire existing list**. Must follow the same shape as in `catalog_items.create`. Omit to leave the current components unchanged.
+</ParamField>
+
+<ParamField body="metadata" type="object" optional>
+  Replacement metadata object. Replaces the entire `metadata` map when provided.
+</ParamField>
+
+### Example — update a price
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.update",
+    "arguments": {
+      "id": "e1f2a3b4-0000-0000-0000-000000000001",
+      "unit_price": 195.00
+    }
+  }
+}
+```
+
+### Example — replace bundle components
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.update",
+    "arguments": {
+      "id": "b9c8d7e6-0000-0000-0000-000000000002",
+      "components": [
+        {
+          "catalog_item_id": "e1f2a3b4-0000-0000-0000-000000000001",
+          "default_qty": 1,
+          "sort_order": 0
+        },
+        {
+          "catalog_item_id": "a2b3c4d5-0000-0000-0000-000000000002",
+          "default_qty": 1,
+          "sort_order": 1
+        },
+        {
+          "catalog_item_id": "f3e4d5c6-0000-0000-0000-000000000003",
+          "default_qty": 3,
+          "sort_order": 2
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+## `catalog_items.archive`
+
+Soft-archive a catalog item. Archived items are hidden from default list results and from `catalog_items.get`, but the record and all referencing history (quotes, invoices, jobs) is preserved.
+
+Use this instead of deleting. There is no hard-delete for catalog items.
+
+<Callout type="warning">
+You cannot archive a catalog item that is still referenced as an active component in a bundle. Remove it from all bundles first, then archive it.
+</Callout>
+
+<Callout type="info">
+`catalog_items.archive` requires a **user actor**. Tenant-key tokens cannot call this tool.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The catalog item to archive.
+</ParamField>
+
+### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_items.archive",
+    "arguments": {
+      "id": "e1f2a3b4-0000-0000-0000-000000000001"
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"archived\":true,\"id\":\"e1f2a3b4-0000-0000-0000-000000000001\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Error reference
+
+| Kind | What it means | Common cause |
+|---|---|---|
+| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing `kind`, missing `discount_type` on a discount item, missing `components` on a bundle, calling a write tool with a tenant-key token |
+| `not_found` | The referenced item does not exist in this tenant or is already archived | Stale or wrong `id` |
+| `conflict` | The request collides with existing state | Archiving an item that is still a component in an active bundle |
+| `insufficient_scope` | The token does not hold the required scope | Missing `read:catalog_items` or `write:catalog_items` |
+
+For the full error shape and HTTP status codes, see [Errors](/developers/errors).
+
+---
+
+## Related pages
+
+<Columns>
+  <Card title="Catalog categories" href="/developers/api/catalog-categories">
+    Organize items into a category tree.
+  </Card>
+  <Card title="Scopes" href="/developers/authentication/scopes">
+    Full scope catalog, umbrella aliases, and how expansion works.
+  </Card>
+  <Card title="MCP overview" href="/developers/mcp">
+    How to connect, authenticate, and call tools.
+  </Card>
+  <Card title="Quotes" href="/developers/api/quotes">
+    Create quotes that reference catalog items.
+  </Card>
+</Columns>

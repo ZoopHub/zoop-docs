@@ -1,0 +1,224 @@
+---
+title: Quotes
+description: Build estimates, send them for approval, and turn them into jobs or invoices.
+audience: end-user
+---
+
+Quotes let you price out work, share a link with the customer for their approval, and convert directly to a job or invoice once they accept.
+
+## Quote statuses
+
+| Status | What it means |
+|--------|---------------|
+| Draft | Not yet sent. You can still edit everything. |
+| Sent | Shared with the customer. Awaiting their response. |
+| Accepted | Customer approved it. Ready to convert. |
+| Declined | Customer declined. The quote is preserved for your records. |
+
+Archiving a quote removes it from the default list without deleting it permanently.
+
+<Callout type="info">TODO(screenshot): Quotes list page showing the status tabs (All, Draft, Sent, Accepted, Declined) and the table with title, status badge, and row actions.</Callout>
+
+---
+
+## Create a quote
+
+<Steps>
+  <Step title="Open Quotes and select New quote">
+    From the sidebar, go to **Quotes** and select **New quote** in the top-right corner.
+  </Step>
+  <Step title="Enter a title">
+    Give the quote a descriptive title — for example, "742 Evergreen — spring cleanup". You can leave the title as "Untitled quote" and rename it later.
+  </Step>
+  <Step title="Attach a customer (optional)">
+    Use the customer search to link the quote to an existing customer. You can also skip this and assign the customer later from the quote editor.
+  </Step>
+  <Step title="Select Create quote">
+    Zoop creates the quote in **draft** status and opens the editor.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): New quote form with the title field and customer picker.</Callout>
+
+---
+
+## Add line items
+
+Inside the quote editor, the line items table is where you price the work.
+
+- Select **Add line** to insert a row.
+- Type a description, then set the quantity and unit price.
+- To pull in items from your pricebook, start typing in the description field and select a matching catalog item — the price fills in automatically.
+- Repeat for each service or material.
+
+<Callout type="info">TODO(screenshot): Line items table with a catalog item selected and the unit price filled in.</Callout>
+
+See [Pricebook](/using-zoop/pricebook) for how to set up catalog items and categories.
+
+---
+
+## Organize with sections (optional)
+
+Sections let you group line items under named phases or areas — for example "Front yard" and "Back yard", or "Phase 1" and "Phase 2".
+
+<Steps>
+  <Step title="Add a section">
+    In the **Sections** area of the editor, select **Add section**. Zoop creates a card labelled "Section 1".
+  </Step>
+  <Step title="Rename the section">
+    Select the section label to edit it inline.
+  </Step>
+  <Step title="Set dates (optional)">
+    Select **+ Add dates** to attach a start and end date to the section. These appear as a badge on the section card and are useful for multi-phase proposals.
+  </Step>
+  <Step title="Add line items inside the section">
+    Each section card has its own line items table. Line items added there are pinned to that section.
+  </Step>
+  <Step title="Reorder sections">
+    Use the up and down arrows in the section header to change the order. Deleting a section moves its line items back to the quote level — they are not lost.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): Quote editor with two sections expanded, each with their own line items and date badge.</Callout>
+
+---
+
+## Attach files
+
+You can attach images, PDFs, blueprints, and videos to a quote — either at the quote level or inside a specific section.
+
+- Select **Add attachment** in the **Attachments** panel.
+- Images open in a lightbox when selected. PDFs, blueprints, and videos open in a new tab.
+- To remove a file, hover the thumbnail and select the trash icon.
+
+---
+
+## Use the lawn estimator
+
+For landscaping and lawn care work, you can draw a polygon on a satellite map to capture the yard's square footage and attach it to the quote as a measurement.
+
+<Steps>
+  <Step title="Open the lawn estimator">
+    In the **Tool inputs** panel inside the quote editor, select **Add measurement**, then choose **Lawn measurement**.
+
+    Alternatively, from the Quotes list page select **New lawn measurement** to start the estimator without an existing quote.
+  </Step>
+  <Step title="Find the property">
+    The map opens in satellite view. Navigate to the property address.
+  </Step>
+  <Step title="Draw the lawn area">
+    Click to place each corner of the polygon around the area you want to measure. Click the first point again — or double-click — to close the shape.
+
+    While placing points, press **Backspace** (when your cursor is inside the map) to undo the last point.
+  </Step>
+  <Step title="Review the area readout">
+    Once the polygon is closed, Zoop calculates the area in square feet and displays it. Select **Edit** to adjust the shape by dragging its vertices, or **Clear** to start over.
+  </Step>
+  <Step title="Save the measurement">
+    Save the measurement to attach it to the quote. It appears as a chip in the **Tool inputs** panel labelled with the area and address — for example "2,340 sq ft — 742 Evergreen Terrace".
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): Satellite map view with a closed green polygon over a yard and the area readout visible.</Callout>
+
+<Callout type="info">TODO(screenshot): Tool inputs panel showing a lawn measurement chip with square footage and address.</Callout>
+
+---
+
+## Share with a customer
+
+Once the quote is ready, send the customer a link to review and accept it. No account is required on their end.
+
+<Steps>
+  <Step title="Select Share with customer">
+    In the quote editor header, select **Share with customer**.
+  </Step>
+  <Step title="Set an expiry (optional)">
+    Choose a date and time for the link to expire. Leave blank for a link that never expires.
+  </Step>
+  <Step title="Issue new link">
+    Select **Issue new link**. Zoop generates a secure share URL and shows it once — copy it immediately.
+  </Step>
+  <Step title="Send the link">
+    Paste the link into a text or email to your customer. They can review the quote and accept or decline without logging in.
+  </Step>
+</Steps>
+
+<Callout type="warning">
+The share URL is shown only once after you issue it. If you close the dialog without copying it, you will need to issue a new link — which invalidates the previous one.
+</Callout>
+
+<Callout type="info">TODO(screenshot): Share with customer dialog showing the generated URL and the copy button.</Callout>
+
+### Revoke a share link
+
+To stop a link from working, open **Share with customer** and select **Revoke**. The customer's link becomes invalid immediately.
+
+---
+
+## Download the PDF
+
+From the quote editor header, select **Download PDF** to open a printable version of the quote in a new tab.
+
+<Callout type="warning">TODO(verify): Confirm the exact format and contents of the PDF output — which fields, line items, totals, and branding are included.</Callout>
+
+---
+
+## Convert to a job
+
+Once a quote is accepted, you can convert it to a job.
+
+<Steps>
+  <Step title="Open the accepted quote">
+    The sidebar shows **What would you like to do next?** when the quote status is **Accepted**.
+  </Step>
+  <Step title="Select Create job">
+    Select **Create job**. A confirmation dialog opens — the quote stays on file as-is.
+  </Step>
+  <Step title="Confirm">
+    Select **Create job** in the dialog. Zoop creates the job using the quote's title and opens it.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): "What would you like to do next?" sidebar panel on an accepted quote, with the Create job and Create invoice buttons.</Callout>
+
+You can also convert a quote from the Quotes list — open the row actions menu (the three-dot icon) and select **Convert to job**. The row-actions dialog lets you optionally override the job title, assign team members, and choose a schedule (one-time or recurring).
+
+See [Jobs](/using-zoop/jobs) for what to do after a job is created.
+
+---
+
+## Convert to an invoice
+
+To bill the customer directly without scheduling a job first:
+
+1. Open the accepted quote.
+2. In the sidebar, select **Create invoice**.
+3. Zoop creates an invoice pre-filled with the quote's line items and opens it.
+
+<Callout type="warning">
+Both **Create job** and **Create invoice** require at least one line item on the quote. Add line items first if the buttons are disabled.
+</Callout>
+
+See [Invoices](/using-zoop/invoices) for how to send the invoice and record payment.
+
+---
+
+## Archive a quote
+
+Archiving hides a quote from the default list without deleting it. To archive, open the quote's row action menu on the Quotes list and select the archive option.
+
+<Callout type="warning">TODO(verify): Confirm the exact label used for the archive action in the row actions menu.</Callout>
+
+Archived quotes do not appear in the **All** tab. They remain in the database and can be found by filtering by the **Archived** status.
+
+<Callout type="warning">TODO(verify): Confirm whether an "Archived" tab or status filter is exposed in the Quotes list UI.</Callout>
+
+---
+
+## Related pages
+
+- [Pricebook](/using-zoop/pricebook) — set up catalog items to speed up line-item entry
+- [Jobs](/using-zoop/jobs) — manage and schedule work after conversion
+- [Invoices](/using-zoop/invoices) — send and track payment after conversion
+- [Customers](/using-zoop/customers) — manage customer records linked to quotes

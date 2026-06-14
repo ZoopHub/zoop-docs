@@ -1,0 +1,130 @@
+---
+title: Jobs
+description: Create, schedule, and track work from unscheduled through done.
+audience: end-user
+---
+
+A job is the unit of work in Zoop. Every service call — whether it's a one-time visit or part of a recurring series — lives here. You can create a job from scratch or convert an accepted quote, assign techs or a crew, add line items, attach photos and notes, and mark it done when the work is finished.
+
+<Callout type="info">TODO(screenshot): jobs list page showing the All / Unscheduled / Scheduled / Done tabs and a mix of job statuses.</Callout>
+
+## Job statuses
+
+Every job has one of four statuses:
+
+| Status | What it means |
+|---|---|
+| Unscheduled | Created but no start time set yet. |
+| Scheduled | A start time has been set. |
+| Done | Work is complete. Tapping "Mark done" moves the job here. |
+| Cancelled | Job was called off. |
+
+The jobs list has tabs for All, Unscheduled, Scheduled, and Done. You can also search by job title.
+
+## Create a job
+
+<Steps>
+  <Step title="Open the jobs list">
+    Go to **Jobs** in the sidebar and tap **New job**.
+  </Step>
+  <Step title="Fill in the basics">
+    - **Title** — required. Keep it specific: "Replace water heater" or "Spring lawn treatment" is more useful than "Job 14".
+    - **Customer** — search and select the customer. You can leave this blank and add it later.
+    - **Assigned techs** — search by name and select one or more team members.
+  </Step>
+  <Step title="Set the schedule">
+    Choose whether this is a one-time job or a recurring job.
+
+    <Tabs>
+      <Tab title="One-time">
+        Set a **Start** and, optionally, an **End** time. If you leave both blank, the job is created as unscheduled — you can add the time later from the job detail page or from the [calendar](/using-zoop/calendar).
+      </Tab>
+      <Tab title="Recurring">
+        Configure the recurrence pattern (daily, weekly, monthly, or yearly), the start date, the timezone, and when the series ends. Zoop creates the series template and materializes the upcoming occurrences. See [recurring jobs](/using-zoop/recurring-jobs) for full details.
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Add line items">
+    Add what you're charging for. Each line item has a description, quantity, and unit price. As you type, Zoop searches your [pricebook](/using-zoop/pricebook) and suggests matching items — select one to pre-fill the description and price.
+
+    If you have a single agreed price for the whole job, enter it in the **Flat price** field. When a flat price is set, the line-item subtotal is for reference only.
+
+    On any manual line item (one you typed rather than picked from the pricebook), you'll see a "Save to pricebook" link. Tap it to add that item to your catalog so you can reuse it in future jobs.
+  </Step>
+  <Step title="Add notes">
+    The **Notes** field is for job-level context: access instructions, gate codes, what the customer told you, what to watch out for. This is separate from the structured notes panel on the job detail page.
+  </Step>
+  <Step title="Save">
+    Tap **Create job**. Zoop opens the job detail page.
+  </Step>
+</Steps>
+
+## Create a job from a quote
+
+When a quote is accepted, you can convert it to a job directly from the quote detail page. The job inherits the line items and customer from the quote. A "Source quote" link appears in the job's connections panel so you can navigate back.
+
+See [quotes](/using-zoop/quotes) for how to send and accept quotes.
+
+## Job detail page
+
+The job detail page is where you manage everything about a single job.
+
+<Callout type="info">TODO(screenshot): job detail page showing the header strip (title, status badge, Edit and Mark done buttons), the three overview cards (Customer, Schedule, Assigned techs), the line-items table, and the photos and notes sections.</Callout>
+
+### Overview cards
+
+Three cards appear near the top of the page:
+
+- **Customer** — name, phone, and email. Tap the name to open the customer record.
+- **Schedule** — the start time, end time, and duration for a one-time job. For a recurring instance, this shows the recurrence pattern and a link to the full series.
+- **Assigned techs** — the team members currently assigned to this job.
+
+### Line items
+
+The line-items table shows each item with its quantity, unit price, and row total, plus a subtotal at the bottom. If a flat price is set, it appears instead and the table is shown for reference only.
+
+### Photos and videos
+
+Tap **Upload** in the "Photos and videos" section to attach a photo or video from your device. Uploaded media appears in a grid. Tap any thumbnail to open it full-screen; use the left and right arrows (or arrow keys) to navigate between files.
+
+### Notes
+
+The notes panel below the main card holds structured notes for this job — things added by you or a teammate with a timestamp and author. Tap **Add note** in the page header to write one.
+
+The job description field (set when creating or editing the job) is separate from these structured notes and appears above the line-items section when it has content.
+
+### Connections
+
+If the job came from a quote, a "Connections" sidebar shows the source quote and its status. Any invoices linked to this job also appear here.
+
+## Edit a job
+
+Tap **Edit** on the job detail page. You can change the title, customer, assigned techs, schedule, line items, and notes.
+
+For a recurring job, Zoop asks which occurrences to update:
+
+| Option | What changes |
+|---|---|
+| Just this occurrence | Only this date — others are unchanged. |
+| This and future occurrences | Splits the series from this date forward. |
+| All occurrences | Updates the series template for every occurrence. Past completed jobs are preserved. |
+
+<Callout type="info">TODO(screenshot): the "Apply changes to" modal showing the three radio options.</Callout>
+
+## Assign a crew
+
+When editing a one-time job, the "Assigned techs" picker also shows your saved crews. Selecting a crew adds all of its current members to the job. If the crew has no members, Zoop tells you and skips the assignment.
+
+See [team](/using-zoop/team) for how to create and manage crews.
+
+## Mark a job done
+
+Tap **Mark done** on the job detail page. The status changes to done and the button disappears. You can still edit the job after it is done.
+
+## Dispatch and scheduling
+
+The [dispatch](/using-zoop/dispatch) view shows your jobs on a map and a schedule board so you can route efficiently and assign work to your team. The [calendar](/using-zoop/calendar) gives a time-based view of all scheduled jobs.
+
+## Recurring jobs
+
+Recurring jobs run on a schedule — weekly maintenance, monthly inspections, and so on. They are managed through a series template that generates individual job occurrences. See [recurring jobs](/using-zoop/recurring-jobs) for a full guide.

@@ -1,0 +1,615 @@
+---
+title: Customers
+description: Manage customers, contacts, locations, and tags via the Zoop MCP tool layer.
+audience: developer
+---
+
+Customers are the central entity in Zoop. A customer record contains core identity fields plus sub-resources: **contacts** (people you can reach) and **locations** (addresses you can dispatch to). **Tags** are a tenant-level label library you can attach to customers.
+
+All tools in this group require the `read:customers` or `write:customers` scope. Contacts, locations, and tags are sub-resources — they do not have separate scopes. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+
+<Callout type="info">
+If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
+</Callout>
+
+---
+
+## Scopes
+
+| Scope | Grants access to |
+|---|---|
+| `read:customers` | `customers.search`, `customers.get`, `contacts.list`, `contacts.get`, `locations.list`, `locations.get`, `tags.list`, `tags.get` |
+| `write:customers` | `customers.create`, `customers.update`, `customers.archive`, `contacts.create`, `contacts.update`, `contacts.archive`, `locations.create`, `locations.update`, `locations.archive`, `tags.create`, `tags.update`, `tags.delete` |
+
+`write:customers` does **not** imply `read:customers`. Grant both if your integration needs to read and write.
+
+---
+
+## Customers
+
+### `customers.search`
+
+Search customers by name, phone, tag, or status. Returns a page of id-bearing rows plus a pagination cursor. Use this tool to resolve a name or phone number the user mentioned into a customer `id` before calling other tools.
+
+<ParamField body="q" type="string" optional>
+  Free-text search string. Matches against name and phone fields.
+</ParamField>
+
+<ParamField body="status" type="string" optional>
+  Filter by status. One of `active`, `inactive`, or `archived`.
+</ParamField>
+
+<ParamField body="type" type="string" optional>
+  Filter by customer type. One of `individual` or `company`.
+</ParamField>
+
+<ParamField body="tag" type="string (UUID)" optional>
+  Filter to customers that have this tag assigned. Pass the tag `id`, not the tag name.
+</ParamField>
+
+<ParamField body="cursor" type="string" optional>
+  Opaque pagination cursor from a previous response's `nextCursor` field. Omit for the first page.
+</ParamField>
+
+<ParamField body="limit" type="integer" optional>
+  Number of results per page. Integer between 1 and 100.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "customers.search",
+    "arguments": {
+      "q": "Nguyen",
+      "status": "active",
+      "limit": 20
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"rows\":[{\"id\":\"a1b2c3d4-...\",\"display_name\":\"Hana Nguyen\",\"customer_type\":\"individual\",\"status\":\"active\",\"primary_phone\":\"+15105550123\",\"primary_email\":\"hana@example.com\"}],\"nextCursor\":null,\"hasMore\":false}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `customers.get`
+
+Fetch one customer's full record by `id`, including their contacts and locations.
+
+<ParamField body="id" type="string (UUID)" required>
+  The customer's `id`. Get this from `customers.search`.
+</ParamField>
+
+---
+
+### `customers.create`
+
+Create a new customer. The `customer_type` field is a discriminator that controls which other fields are required.
+
+- For `individual`: `first_name` is required.
+- For `company`: `company_name` is required.
+
+You cannot change `customer_type` after creation.
+
+<ParamField body="customer_type" type="string" required>
+  `individual` or `company`.
+</ParamField>
+
+<ParamField body="first_name" type="string" required-if="customer_type = individual">
+  Given name. Required when `customer_type` is `individual`.
+</ParamField>
+
+<ParamField body="last_name" type="string" optional>
+  Family name. Optional for individuals.
+</ParamField>
+
+<ParamField body="company_name" type="string" required-if="customer_type = company">
+  Business name. Required when `customer_type` is `company`.
+</ParamField>
+
+<ParamField body="phone" type="string" optional>
+  Phone number in any common format. Zoop normalizes it to E.164 and stores both the normalized value and the raw input.
+</ParamField>
+
+<ParamField body="email" type="string" optional>
+  Email address.
+</ParamField>
+
+<ParamField body="notes_internal" type="string" optional>
+  Internal notes visible only to your team. Max 10,000 characters.
+</ParamField>
+
+<ParamField body="primary_contact" type="object" optional>
+  For `company` customers only. Creates an initial contact at the same time as the company record.
+
+  <Expandable title="primary_contact fields">
+    <ParamField body="first_name" type="string" required>
+      Given name of the contact.
+    </ParamField>
+    <ParamField body="last_name" type="string" required>
+      Family name of the contact.
+    </ParamField>
+    <ParamField body="phone" type="string" optional>
+      Contact's phone number.
+    </ParamField>
+    <ParamField body="email" type="string" optional>
+      Contact's email address.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="location" type="object" optional>
+  Creates an initial service location at the same time as the customer record. See [location fields](#locations) below for the full field list.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "customers.create",
+    "arguments": {
+      "customer_type": "individual",
+      "first_name": "Marco",
+      "last_name": "Reyes",
+      "phone": "(510) 555-0199",
+      "email": "marco@example.com",
+      "location": {
+        "address_line1": "482 Oak Street",
+        "city": "Oakland",
+        "state": "CA",
+        "postal_code": "94607"
+      }
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"id\":\"c9d8e7f6-...\",\"customer_type\":\"individual\",\"customer_number\":\"C-0042\",\"display_name\":\"Marco Reyes\",\"status\":\"active\",\"primary_phone\":\"+15105550199\",\"primary_email\":\"marco@example.com\",\"created_at\":\"2026-06-13T18:00:00.000Z\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `customers.update`
+
+Update mutable fields on an existing customer. This is a partial patch — only the fields you send are changed. You cannot change `customer_type`.
+
+<ParamField body="id" type="string (UUID)" required>
+  The customer to update.
+</ParamField>
+
+<ParamField body="first_name" type="string" optional>
+  Updated given name (individuals only).
+</ParamField>
+
+<ParamField body="last_name" type="string" optional>
+  Updated family name (individuals only).
+</ParamField>
+
+<ParamField body="company_name" type="string" optional>
+  Updated business name (companies only).
+</ParamField>
+
+<ParamField body="phone" type="string" optional>
+  Updated phone number.
+</ParamField>
+
+<ParamField body="email" type="string" optional>
+  Updated email address.
+</ParamField>
+
+<ParamField body="notes_internal" type="string" optional>
+  Updated internal notes.
+</ParamField>
+
+<ParamField body="is_vip" type="boolean" optional>
+  Mark or unmark the customer as VIP.
+</ParamField>
+
+<ParamField body="do_not_contact" type="boolean" optional>
+  Flag the customer as do-not-contact.
+</ParamField>
+
+<ParamField body="do_not_contact_reason" type="string" optional>
+  Reason for the do-not-contact flag. Max 500 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="source" type="string" optional>
+  How the customer was acquired (e.g. `referral`, `google`). Max 64 characters.
+</ParamField>
+
+---
+
+### `customers.archive`
+
+Soft-archive a customer. Archived customers are hidden from default list views, but their record and all related history (jobs, invoices, notes) is preserved. Use this instead of deleting.
+
+<ParamField body="id" type="string (UUID)" required>
+  The customer to archive.
+</ParamField>
+
+---
+
+## Contacts
+
+A contact is a person associated with a customer — someone you can call or email. Every customer has at least one contact. The first contact added becomes the primary contact automatically.
+
+Contacts are scoped to a customer: every tool that reads or writes a contact requires the parent `customer_id`.
+
+---
+
+### `contacts.list`
+
+List all contacts for a customer. The primary contact is returned first, then contacts in creation order.
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer.
+</ParamField>
+
+---
+
+### `contacts.get`
+
+Fetch one contact by `id`.
+
+<ParamField body="id" type="string (UUID)" required>
+  The contact's `id`.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`. Required — contacts are scoped to a customer.
+</ParamField>
+
+---
+
+### `contacts.create`
+
+Add a contact to a customer. `first_name` and `last_name` are required. Phone numbers are normalized to E.164.
+
+If you send `is_primary: true` on a new contact and a primary already exists, the database promotes your new contact and demotes the previous primary automatically.
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer.
+</ParamField>
+
+<ParamField body="first_name" type="string" required>
+  Given name.
+</ParamField>
+
+<ParamField body="last_name" type="string" required>
+  Family name.
+</ParamField>
+
+<ParamField body="phone" type="string" optional>
+  Phone number. Normalized to E.164; raw input is also stored.
+</ParamField>
+
+<ParamField body="email" type="string" optional>
+  Email address.
+</ParamField>
+
+<ParamField body="is_primary" type="boolean" optional>
+  Set to `true` to make this the primary contact. Defaults to `false`. The first contact on a customer is promoted automatically regardless of this field.
+</ParamField>
+
+<ParamField body="phone_can_sms" type="boolean" optional>
+  Whether the phone number can receive SMS. Defaults to `true`.
+</ParamField>
+
+<ParamField body="role" type="string" optional>
+  The contact's role. One of `billing`, `service`, `decision_maker`, or `general`.
+</ParamField>
+
+<ParamField body="title" type="string" optional>
+  Job title or role description (free text).
+</ParamField>
+
+---
+
+### `contacts.update`
+
+Update a contact's mutable fields. Partial patch — only the fields you send change. You cannot move a contact from one customer to another.
+
+<ParamField body="id" type="string (UUID)" required>
+  The contact to update.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`.
+</ParamField>
+
+All other fields from `contacts.create` are accepted as optional patches.
+
+---
+
+### `contacts.archive`
+
+Soft-archive a contact. Archived contacts are hidden from default views but their history is preserved.
+
+<ParamField body="id" type="string (UUID)" required>
+  The contact to archive.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`.
+</ParamField>
+
+---
+
+## Locations
+
+A location is a service address tied to a customer — where you send a crew. Every customer can have multiple locations across different types (`service`, `billing`, `mailing`, `other`). The first location of each type becomes the primary for that type.
+
+Like contacts, locations require the parent `customer_id` on every call.
+
+<Callout type="warning">
+Promoting a second location to primary requires two steps: first call `locations.update` on the current primary with `is_primary: false`, then call `locations.update` on your target with `is_primary: true`. Creating a location with `is_primary: true` when a primary already exists for that type returns a `conflict` error.
+</Callout>
+
+---
+
+### `locations.list`
+
+List all service locations for a customer. The primary location comes first, then in creation order.
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer.
+</ParamField>
+
+---
+
+### `locations.get`
+
+Fetch one location by `id`.
+
+<ParamField body="id" type="string (UUID)" required>
+  The location's `id`.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`.
+</ParamField>
+
+---
+
+### `locations.create`
+
+Add a service location to a customer. `address_line1`, `city`, `state`, and `postal_code` are required.
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer.
+</ParamField>
+
+<ParamField body="address_line1" type="string" required>
+  Street address line 1.
+</ParamField>
+
+<ParamField body="address_line2" type="string" optional>
+  Street address line 2 (unit, suite, etc.).
+</ParamField>
+
+<ParamField body="city" type="string" required>
+  City name.
+</ParamField>
+
+<ParamField body="state" type="string" required>
+  State or province code.
+</ParamField>
+
+<ParamField body="postal_code" type="string" required>
+  ZIP or postal code.
+</ParamField>
+
+<ParamField body="country" type="string" optional>
+  ISO country code. Defaults to `US`.
+</ParamField>
+
+<ParamField body="location_type" type="string" optional>
+  One of `service`, `billing`, `mailing`, or `other`. Defaults to `service`.
+</ParamField>
+
+<ParamField body="label" type="string" optional>
+  A human-readable nickname for the location (e.g. `Warehouse`, `Rental unit #3`).
+</ParamField>
+
+<ParamField body="is_primary" type="boolean" optional>
+  Set to `true` only when no primary exists yet for this `location_type`. Defaults to `false`. See the warning above about promoting an existing location.
+</ParamField>
+
+<ParamField body="access_notes" type="string" optional>
+  Gate codes, alarm codes, or other access instructions for the crew.
+</ParamField>
+
+<ParamField body="parking_notes" type="string" optional>
+  Parking or vehicle instructions for the crew.
+</ParamField>
+
+<ParamField body="service_notes" type="string" optional>
+  Any other notes about the location relevant to service.
+</ParamField>
+
+<ParamField body="latitude" type="number" optional>
+  Latitude in decimal degrees (−90 to 90). Must be provided together with `longitude` if either is sent.
+</ParamField>
+
+<ParamField body="longitude" type="number" optional>
+  Longitude in decimal degrees (−180 to 180). Must be provided together with `latitude` if either is sent.
+</ParamField>
+
+<ParamField body="place_id" type="string" optional>
+  The Google Places `place_id` from address autocomplete, if available.
+</ParamField>
+
+---
+
+### `locations.update`
+
+Update a location's mutable fields. Partial patch — only the fields you send change. You cannot move a location from one customer to another.
+
+<ParamField body="id" type="string (UUID)" required>
+  The location to update.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`.
+</ParamField>
+
+All other fields from `locations.create` are accepted as optional patches.
+
+---
+
+### `locations.archive`
+
+Soft-archive a location. Archived locations are hidden from default views but their history is preserved.
+
+<ParamField body="id" type="string (UUID)" required>
+  The location to archive.
+</ParamField>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The parent customer's `id`.
+</ParamField>
+
+---
+
+## Tags
+
+Tags are a tenant-level label library. A tag is a name-and-color pair that you attach to customers to organize them (e.g. `VIP`, `Seasonal`, `HOA`). Because tags are tenant-level, none of the tag tools require a `customer_id`.
+
+<Callout type="warning">
+`tags.delete` is a **hard delete**. The tag and every customer assignment are permanently removed and cannot be recovered. There is no soft-archive for tags. Use deliberately.
+</Callout>
+
+Attaching and detaching tags from customers is not yet available as an MCP tool. See [MCP overview — limitations](/developers/mcp) for what is out of scope in v1.
+
+---
+
+### `tags.list`
+
+List all customer tags for the tenant, ordered by name. Tags are shared across the whole tenant — not per customer.
+
+No input parameters.
+
+---
+
+### `tags.get`
+
+Fetch one tag by `id`.
+
+<ParamField body="id" type="string (UUID)" required>
+  The tag's `id`.
+</ParamField>
+
+---
+
+### `tags.create`
+
+Create a customer tag. The name must be unique within the tenant.
+
+<Callout type="info">
+`tags.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or OAuth token instead.
+</Callout>
+
+<ParamField body="name" type="string" required>
+  Display name for the tag. Max 64 characters. Must be unique within the tenant.
+</ParamField>
+
+<ParamField body="color" type="string" optional>
+  Hex color in `#RRGGBB` format (e.g. `#3B82F6`). The server supplies a default when omitted.
+</ParamField>
+
+---
+
+### `tags.update`
+
+Rename or recolor a tag. Partial patch — omit fields you do not want to change. Renaming to a name already used by another tag in the tenant returns a `conflict` error.
+
+<ParamField body="id" type="string (UUID)" required>
+  The tag to update.
+</ParamField>
+
+<ParamField body="name" type="string" optional>
+  New name. Max 64 characters.
+</ParamField>
+
+<ParamField body="color" type="string" optional>
+  New hex color in `#RRGGBB` format.
+</ParamField>
+
+---
+
+### `tags.delete`
+
+Permanently delete a tag. This removes the tag row and all customer assignments via cascade. It cannot be undone.
+
+<ParamField body="id" type="string (UUID)" required>
+  The tag to delete.
+</ParamField>
+
+---
+
+## Error reference
+
+These are the error kinds you will encounter when calling customer tools. All errors are returned as JSON-RPC error results (`isError: true`).
+
+| Kind | What it means | Common cause |
+|---|---|---|
+| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing required field, wrong type, `tags.create` called with a tenant-key token |
+| `not_found` | The referenced customer, contact, location, or tag does not exist in this tenant | Stale or wrong `id`, record already archived |
+| `conflict` | The request collides with existing state | Duplicate tag name, creating a second primary location of the same type |
+| `insufficient_scope` | The token does not hold the required scope | Missing `read:customers` or `write:customers` |
+| `internal` | Unexpected server or database error | A generic message is surfaced; details are never sent to the client |
+
+For the full error shape and HTTP status codes, see [Errors](/developers/errors).
+
+---
+
+## Related pages
+
+<Columns>
+  <Card title="MCP overview" href="/developers/mcp">
+    How to connect, authenticate, and call tools.
+  </Card>
+  <Card title="Scopes" href="/developers/authentication/scopes">
+    Full scope catalog and how umbrella scopes expand.
+  </Card>
+  <Card title="Notes" href="/developers/api/notes">
+    Attach notes to customers, jobs, and other records.
+  </Card>
+  <Card title="Jobs" href="/developers/api/jobs">
+    Create and manage jobs for a customer.
+  </Card>
+</Columns>

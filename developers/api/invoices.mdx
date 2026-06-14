@@ -1,0 +1,374 @@
+---
+title: Invoices
+description: Create and manage invoices and their line items.
+audience: developer
+---
+
+An invoice is a billable document sent to a customer. In Zoop, invoices always start as drafts and move through a lifecycle: `draft` → `sent` → `paid` (or `overdue`). Voiding is the permanent soft-delete — it is one-way and preserves billing history.
+
+Line items fold under the invoice scope — there is no separate `read:invoice_line_items` scope. See [scopes](/developers/authentication/scopes).
+
+## Scopes
+
+| Scope | Grants |
+|---|---|
+| `read:invoices` | `invoices.list`, `invoices.get` |
+| `write:invoices` | `invoices.create`, `invoices.update`, `invoices.void` |
+
+`write:invoices` does not include `read:invoices`. Grant both if your integration needs to read and write.
+
+## User actor requirement
+
+`invoices.create` and `invoices.update` require a **user actor** — a token issued to or bound to a real team member. This is because invoices record a `created_by` user ID for attribution.
+
+Tenant-key tokens (`zoop_tk_` prefix) have no user identity and cannot create or update invoices; they will receive an `invalid_input` error. Use a user-bound API key (`zoop_uk_`) issued to a service account team member instead. See [API keys](/developers/authentication/api-keys).
+
+`invoices.void` does not require a user actor and can be called by either token type.
+
+## Invoice lifecycle
+
+Invoices follow a status machine. The table below shows what each status means and which transitions are valid.
+
+| Status | Meaning |
+|---|---|
+| `draft` | Editable. All fields and line items can be changed. Not yet visible to the customer. |
+| `sent` | Sent to the customer. Non-status fields are locked. |
+| `paid` | Payment recorded. |
+| `overdue` | Past the due date without payment. |
+| `void` | Soft-deleted. Hidden from the default list but billing history is preserved. One-way — cannot be un-voided. |
+
+Status-only transitions (for example, moving `sent` → `paid`) can be applied to any non-voided invoice via `invoices.update`. Editing any other field — notes, dates, line items, customer — is only allowed while the invoice is in `draft` status. Attempting to edit a non-draft invoice returns a `conflict` error.
+
+<Callout type="warning">
+`uncollectible`, `dunning`, `partially_refunded`, and `refunded` are Stripe-managed statuses set by payment sync triggers. You cannot write these values via the API.
+</Callout>
+
+## Tools
+
+### `invoices.list`
+
+Lists invoices for the tenant, most recent first. Voided invoices are excluded unless you filter explicitly to `status: "void"`. Returns page-based results with 20 rows per page.
+
+**Scope:** `read:invoices`
+
+<ParamField name="status" type="string">
+  Filter to a single lifecycle status. Accepted values: `draft`, `sent`, `paid`, `overdue`, `void`. When omitted, voided invoices are excluded.
+</ParamField>
+
+<ParamField name="page" type="integer">
+  1-based page number. Defaults to `1`.
+</ParamField>
+
+**Returns:** `{ data, count, page, limit }`
+
+Each item in `data` is a full invoice row. `count` is the total number of matching rows across all pages. `limit` is `20`.
+
+---
+
+### `invoices.get`
+
+Fetches a single invoice by ID, including all scalar fields and computed totals.
+
+**Scope:** `read:invoices`
+
+<ParamField name="id" type="string (UUID)" required>
+  The invoice's ID.
+</ParamField>
+
+Returns the full invoice record. Returns `not_found` if the invoice does not exist in this tenant.
+
+<Callout type="info">
+`invoices.get` does not return line items as a nested array. The response contains invoice header fields and computed totals only. To read line items, use the invoice's `id` with the HTTP REST endpoint.
+</Callout>
+
+---
+
+### `invoices.create`
+
+Creates a draft invoice for a customer. The invoice is always created with `status: "draft"`. Totals, tax amounts, and subtotals are computed server-side from your line items — do not calculate them yourself.
+
+**Scope:** `write:invoices` — requires a user actor.
+
+<Callout type="warning">
+Creating an invoice from a quote or job ID is not supported via this tool. Supply `customer_id` and `line_items` directly. Use the HTTP REST route if you need to derive an invoice from an existing quote or job.
+</Callout>
+
+<ParamField name="customer_id" type="string (UUID)" required>
+  The customer this invoice belongs to. Must belong to your tenant.
+</ParamField>
+
+<ParamField name="line_items" type="array of objects">
+  The line items on the invoice. When supplied, totals are computed from these rows. When omitted, the invoice is created with a `total` of `0`. Each item has:
+
+  <Expandable title="Line item fields">
+    <ParamField name="description" type="string" required>
+      Line item label, 1–200 characters.
+    </ParamField>
+    <ParamField name="quantity" type="number" required>
+      Must be positive.
+    </ParamField>
+    <ParamField name="unit_price" type="number" required>
+      Price per unit, non-negative, max two decimal places. Example: `125.00`.
+    </ParamField>
+    <ParamField name="is_taxable" type="boolean" required>
+      Whether this line item is subject to tax.
+    </ParamField>
+    <ParamField name="tax_rate_id" type="string (UUID) or null" required>
+      The tax rate to apply to this line item, or `null` to use the invoice-level default. Must belong to your tenant.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField name="default_tax_rate_id" type="string (UUID) or null">
+  A fallback tax rate applied to taxable line items that have `tax_rate_id: null`. Must belong to your tenant.
+</ParamField>
+
+<ParamField name="issued_at" type="string (ISO 8601 datetime) or null">
+  The date shown as the invoice issue date. Example: `2026-06-13T00:00:00Z`.
+</ParamField>
+
+<ParamField name="due_at" type="string (ISO 8601 datetime) or null">
+  The payment due date.
+</ParamField>
+
+<ParamField name="notes" type="string or null">
+  Internal or customer-facing notes, max 2,000 characters.
+</ParamField>
+
+Returns the created invoice record. The `status` will be `"draft"`. The `total`, `subtotal`, and `tax_amount` fields reflect the server-computed values.
+
+---
+
+### `invoices.update`
+
+Partially updates an invoice. Only the fields you send are changed.
+
+**Scope:** `write:invoices` — requires a user actor.
+
+Status transitions (`draft` → `sent`, `sent` → `paid`, etc.) can be applied to any non-voided invoice. All other fields — `notes`, `issued_at`, `due_at`, `customer_id`, `default_tax_rate_id`, and `line_items` — can only be changed while the invoice is in `draft` status. Sending these on a non-draft invoice returns a `conflict` error.
+
+When you supply `line_items`, the existing line items are replaced wholesale and totals are recomputed. Sending `line_items: []` removes all line items.
+
+<ParamField name="id" type="string (UUID)" required>
+  The invoice's ID.
+</ParamField>
+
+<ParamField name="status" type="string">
+  Move the invoice to a new lifecycle status. Accepted values: `draft`, `sent`, `paid`, `overdue`, `void`. Transitioning to `void` is equivalent to calling `invoices.void`.
+</ParamField>
+
+<ParamField name="customer_id" type="string (UUID)">
+  Reassign the invoice to a different customer. Draft only. Must belong to your tenant.
+</ParamField>
+
+<ParamField name="line_items" type="array of objects">
+  Replace all line items wholesale. Totals are recomputed after replacement. Draft only. Uses the same shape as `invoices.create`. Sending an empty array removes all line items.
+</ParamField>
+
+<ParamField name="default_tax_rate_id" type="string (UUID) or null">
+  Change the invoice-level fallback tax rate. Draft only. Must belong to your tenant. When omitted from an update that includes `line_items`, the existing default rate is preserved.
+</ParamField>
+
+<ParamField name="issued_at" type="string (ISO 8601 datetime) or null">
+  Change the issue date. Draft only.
+</ParamField>
+
+<ParamField name="due_at" type="string (ISO 8601 datetime) or null">
+  Change the due date. Draft only.
+</ParamField>
+
+<ParamField name="notes" type="string or null">
+  Change the notes, max 2,000 characters. Draft only.
+</ParamField>
+
+Returns the updated invoice record on success. Returns `not_found` if the invoice does not exist. Returns `conflict` if you attempt to edit a non-status field on a non-draft invoice.
+
+---
+
+### `invoices.void`
+
+Voids an invoice. Voiding is the soft-delete for invoices — it sets `status` to `"void"` and hides the invoice from the default list, while preserving the billing history record. This is one-way: a voided invoice cannot be un-voided.
+
+**Scope:** `write:invoices`
+
+<ParamField name="id" type="string (UUID)" required>
+  The invoice's ID.
+</ParamField>
+
+Returns `{ voided: true, id }` on success. Returns `not_found` if the invoice does not exist in this tenant.
+
+---
+
+## Example: create and send an invoice
+
+The steps below walk through the full create-and-send flow for a single visit invoice.
+
+<Steps>
+  <Step title="Create the draft">
+    Call `invoices.create` with your customer ID and line items. The server computes the totals.
+
+    ```bash
+    curl -X POST https://app.zoop.pro/api/mcp \
+      -H "Authorization: Bearer zoop_uk_<your-secret>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json, text/event-stream" \
+      -d '{
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {
+          "name": "invoices.create",
+          "arguments": {
+            "customer_id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+            "issued_at": "2026-06-13T00:00:00Z",
+            "due_at": "2026-07-13T00:00:00Z",
+            "notes": "Thank you for the work order.",
+            "line_items": [
+              {
+                "description": "HVAC tune-up — 2-ton split system",
+                "quantity": 1,
+                "unit_price": 185.00,
+                "is_taxable": true,
+                "tax_rate_id": "tttttttt-tttt-tttt-tttt-tttttttttttt"
+              },
+              {
+                "description": "Refrigerant top-off (1 lb R-410A)",
+                "quantity": 1,
+                "unit_price": 45.00,
+                "is_taxable": true,
+                "tax_rate_id": null
+              }
+            ],
+            "default_tax_rate_id": "tttttttt-tttt-tttt-tttt-tttttttttttt"
+          }
+        }
+      }'
+    ```
+
+    The response includes the new invoice's `id` and the server-computed `subtotal`, `tax_amount`, and `total`. Hold on to the `id` — you need it for the next step.
+  </Step>
+
+  <Step title="Transition to sent">
+    Call `invoices.update` with just a `status` change. This is a status-only transition, so it works even on non-draft invoices, but here the invoice is already a draft.
+
+    ```bash
+    curl -X POST https://app.zoop.pro/api/mcp \
+      -H "Authorization: Bearer zoop_uk_<your-secret>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json, text/event-stream" \
+      -d '{
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/call",
+        "params": {
+          "name": "invoices.update",
+          "arguments": {
+            "id": "iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii",
+            "status": "sent"
+          }
+        }
+      }'
+    ```
+  </Step>
+</Steps>
+
+A successful create response looks like:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"id\":\"iiiiiiii-iiii-iiii-iiii-iiiiiiiiiiii\",\"tenant_id\":\"tttttttt-tttt-tttt-tttt-tttttttttttt\",\"customer_id\":\"cccccccc-cccc-cccc-cccc-cccccccccccc\",\"invoice_number\":\"INV-0001\",\"status\":\"draft\",\"subtotal\":230.00,\"tax_amount\":19.00,\"total\":249.00,\"issued_at\":\"2026-06-13T00:00:00Z\",\"due_at\":\"2026-07-13T00:00:00Z\",\"notes\":\"Thank you for the work order.\",\"created_at\":\"2026-06-13T10:00:00Z\"}"
+      }
+    ]
+  }
+}
+```
+
+## Example: list open invoices
+
+```bash
+curl -X POST https://app.zoop.pro/api/mcp \
+  -H "Authorization: Bearer zoop_uk_<your-secret>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "invoices.list",
+      "arguments": {
+        "status": "sent",
+        "page": 1
+      }
+    }
+  }'
+```
+
+## Pagination
+
+`invoices.list` uses page-based pagination with 20 rows per page. Use the `count` field in the response to determine the total number of matching invoices, then increment `page` to fetch subsequent pages.
+
+```ts
+let page = 1
+const limit = 20
+let allInvoices: unknown[] = []
+
+while (true) {
+  const response = await fetch('https://app.zoop.pro/api/mcp', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json, text/event-stream',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: page,
+      method: 'tools/call',
+      params: {
+        name: 'invoices.list',
+        arguments: { status: 'sent', page },
+      },
+    }),
+  })
+
+  const envelope = await response.json()
+  const text = envelope.result?.content?.[0]?.text
+  const result = JSON.parse(text)
+
+  allInvoices = allInvoices.concat(result.data)
+
+  const totalPages = Math.ceil(result.count / limit)
+  if (page >= totalPages) break
+  page++
+}
+```
+
+## Error reference
+
+| Error kind | When it occurs |
+|---|---|
+| `not_found` | The invoice ID does not exist in this tenant. |
+| `conflict` | You tried to edit a non-status field on a non-draft invoice, or the invoice number was already taken at creation time. |
+| `invalid_input` | A required field is missing, a UUID is malformed, `unit_price` has more than two decimal places, a referenced `customer_id` or `tax_rate_id` does not belong to your tenant, or the caller is a tenant-key token calling a user-actor-only tool. |
+| `insufficient_scope` | The token does not hold `read:invoices` or `write:invoices` as required. |
+| `internal` | An unexpected server error — details are not returned to the client. |
+
+See [errors](/developers/errors) for the full error reference and HTTP status codes.
+
+## Related
+
+- [Invoices in Zoop](/using-zoop/invoices) — end-user guide for working with invoices in the product
+- [Tax rates](/developers/api/tax-rates) — manage the tax rates you can reference on line items
+- [Quotes](/developers/api/quotes) — the pre-invoice estimating step
+- [Jobs](/developers/api/jobs) — jobs that invoices can be linked to
+- [Scopes](/developers/authentication/scopes) — full scope catalog
+- [Authentication](/developers/authentication/api-keys) — how to authenticate requests
+- [MCP server](/developers/mcp) — transport, conventions, and the full tool catalog
+- [Errors](/developers/errors) — error kinds and HTTP status codes

@@ -1,0 +1,60 @@
+---
+title: Your dashboard
+description: See the day at a glance: open jobs, pending invoices, expiring cards, and payment recovery.
+audience: end-user
+---
+
+The dashboard is the first thing you see when you open Zoop. It pulls live numbers from across your account so you can spot problems — a customer whose card is about to expire, an invoice nobody has paid in weeks — without digging through every screen.
+
+<Callout type="info">TODO(screenshot): full dashboard page showing all stat cards, the route intelligence card, expiring cards card, and the payment recovery card.</Callout>
+
+## What's on the dashboard
+
+### Business overview
+
+Four summary numbers sit at the top:
+
+| Card | What it shows |
+|---|---|
+| Open jobs | Jobs that are not yet complete. |
+| Upcoming schedule | Jobs scheduled for this week. |
+| Pending invoices | Total dollar value of invoices awaiting payment. |
+| Active customers | Customers currently on your books. |
+
+### Expiring cards
+
+This card shows how many customers have a saved card that is expiring within the next 30 days and has not been automatically refreshed by the card network.
+
+Most cards are refreshed silently — Zoop never shows those. The ones that appear here genuinely need your attention before a recurring charge fails.
+
+- If only one customer is affected, the card links straight to that customer's page.
+- If more than one customer is affected, the link takes you to a filtered view of your [customers](/using-zoop/customers) list.
+- When everything is current, the card reads "All up to date."
+
+### Route intelligence
+
+This card is a shortcut to your route intelligence view, which shows capacity, travel time, and clustering for your team's week. Select the card to open it.
+
+<Callout type="info">TODO(screenshot): route intelligence card in both the empty and populated states.</Callout>
+
+### Payment recovery
+
+The payment recovery card (labeled "Payment recovery") tracks invoices that are overdue or in a failed-payment cycle. It breaks them into three buckets:
+
+| Bucket | What it means |
+|---|---|
+| Stripe retrying | Stripe is automatically retrying a failed payment on its schedule. |
+| Zoop nudging | The invoice is in sent status and Zoop is sending follow-up reminders. |
+| Uncollectible — review needed | Invoices marked uncollectible in the last 30 days. These need a decision: write them off, or re-open and try again. |
+
+Each non-empty row links to the [invoices](/using-zoop/invoices) list filtered to that bucket, so you can act on the right ones without hunting.
+
+When there is nothing in any bucket, the card reads "All caught up."
+
+<Callout type="info">TODO(screenshot): payment recovery card showing all three buckets with non-zero counts, and the empty "all caught up" state side by side.</Callout>
+
+## Getting started section
+
+If your account is new, the bottom of the dashboard shows two quick actions: **Add a customer** and **Create a job**. These are the two steps that unlock everything else in Zoop.
+
+See [getting started](/using-zoop/getting-started) for a full walkthrough.

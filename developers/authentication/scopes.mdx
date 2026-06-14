@@ -1,0 +1,168 @@
+---
+title: Scopes & permissions
+description: Read/write scopes per domain, umbrella aliases, admin scopes, and how to pick what your integration needs.
+audience: developer
+---
+
+Scopes tell Zoop what your integration is allowed to do. When you create an API key or register an OAuth client, you request a set of scopes, and every API call you make is checked against those scopes.
+
+## How scopes work
+
+A scope is a string in the format `verb:resource`. There are two verbs:
+
+- `read:*` — fetch or list data
+- `write:*` — create, update, or delete data
+
+Write access does not imply read access. If your integration needs to update a customer and also fetch that customer back, request both `write:customers` and `read:customers`.
+
+Admin scopes follow a different pattern (`admin:*`) and are covered [below](#admin-scopes).
+
+## Scope list
+
+The table below lists every public scope. The "consent screen label" is the exact text a Zoop user sees when approving an OAuth connection.
+
+| Scope | Consent screen label |
+|---|---|
+| `read:customers` | View customers, contacts, and locations |
+| `write:customers` | Create and edit customers, contacts, and locations |
+| `read:catalog` | View service catalog and pricing |
+| `write:catalog` | Manage service catalog and pricing |
+| `read:catalog_items` | View catalog items |
+| `write:catalog_items` | Create and edit catalog items |
+| `read:catalog_categories` | View catalog categories |
+| `write:catalog_categories` | Create and edit catalog categories |
+| `read:quotes` | View quotes |
+| `write:quotes` | Create and edit quotes |
+| `read:estimates` | View estimates |
+| `write:estimates` | Create and edit estimates |
+| `read:communications` | View messages and communication history |
+| `write:communications` | Send messages on your behalf |
+| `read:companies` | View your business profile |
+| `write:companies` | Edit your business settings |
+| `read:settings` | View settings and configuration |
+| `write:settings` | Edit settings and configuration |
+| `read:invoices` | View invoices and payment history |
+| `write:invoices` | Create and edit invoices |
+| `read:jobs` | View jobs and job history |
+| `write:jobs` | Create and edit jobs |
+| `read:job_series` | View recurring job series |
+| `write:job_series` | Create and edit recurring job series |
+| `read:plans` | View service plans |
+| `write:plans` | Create and edit service plans |
+| `read:tax_rates` | View tax rates |
+| `write:tax_rates` | Create and edit tax rates |
+| `read:notes` | View notes |
+| `write:notes` | Create and edit notes |
+| `read:agent_sessions` | View AI agent session history |
+| `write:agent_sessions` | Run AI agent sessions on your behalf |
+
+## Umbrella scopes
+
+Two scopes expand into multiple child scopes automatically. You can request either the umbrella or the specific children — the result is the same.
+
+### Catalog umbrella
+
+`read:catalog` expands to `read:catalog_items` + `read:catalog_categories`.  
+`write:catalog` expands to `write:catalog_items` + `write:catalog_categories`.
+
+Request `read:catalog` if your integration needs to browse the full service catalog. Request `read:catalog_items` or `read:catalog_categories` alone if you only need one sub-resource.
+
+```text
+# Requesting the umbrella — gives access to both sub-resources
+scope=read:catalog
+
+# Requesting only one sub-resource
+scope=read:catalog_items
+```
+
+### Estimates — legacy alias for quotes
+
+Zoop renamed "estimates" to "quotes" in May 2026. The `read:estimates` and `write:estimates` scopes still work and expand to `read:quotes` and `write:quotes` respectively. They exist so tokens minted before the rename continue to work without reauthorization.
+
+**New integrations should request `read:quotes` / `write:quotes` directly.** The estimates aliases are kept for backward compatibility but are not the preferred form.
+
+| Legacy scope | Expands to |
+|---|---|
+| `read:estimates` | `read:quotes` |
+| `write:estimates` | `write:quotes` |
+
+## Sub-resources under customers
+
+Contacts, locations, and tags are sub-resources of a customer. They do not have their own scopes — they are governed by `read:customers` and `write:customers`.
+
+For example, to list or create contacts for a customer, your token must hold `read:customers` or `write:customers`. The same applies to service locations and customer tags.
+
+Notes are different: they have their own scope pair (`read:notes` / `write:notes`) and are independent of `read:customers`.
+
+<Callout type="warning">TODO(verify): As of the last source snapshot, all notes API routes are marked `internal` (session-only) and are not yet accessible via external tokens. Confirm whether `read:notes` / `write:notes` are available to API key or OAuth callers before publishing this claim.</Callout>
+
+## Admin scopes
+
+Admin scopes grant elevated access. They can only be requested by integrations authorized by the tenant owner — office and technician roles cannot mint tokens that include admin scopes.
+
+<Callout type="warning">
+Request admin scopes only when strictly necessary. Most integrations do not need them.
+</Callout>
+
+| Scope | What it grants |
+|---|---|
+| `admin:tenant` | Manage team members and tenant settings |
+| `admin:billing` | Access billing and subscription info |
+| `admin:credentials` | Manage API keys and OAuth clients |
+
+`admin:credentials` is required to create or revoke API keys via the API. The external access endpoints (`/api/external-access`) enforce this scope.
+
+## User-actor vs tenant-actor
+
+Zoop has two kinds of authenticated actors:
+
+- **User-actor** — a human user (owner, office staff, or technician) who authorized your OAuth client. Scopes are further constrained by the user's role. For example, a technician-role user cannot authorize `admin:tenant` even if your client requests it.
+- **Tenant-actor** — an API key that acts on behalf of the business as a whole, not on behalf of any individual user. API keys are scoped at the time of creation and are not bound to a user's role.
+
+When using OAuth (user-actor), the scopes your token receives are the intersection of what you requested and what the authorizing user's role allows. When using an API key (tenant-actor), the scopes are exactly what was set on the key.
+
+See [OAuth](/developers/authentication/oauth) and [API keys](/developers/authentication/api-keys) for setup details.
+
+## Requesting scopes
+
+Pass scopes as a space-delimited string in the `scope` parameter.
+
+<Tabs>
+  <Tab title="OAuth authorization request">
+    ```text
+    GET /oauth/authorize
+      ?client_id=YOUR_CLIENT_ID
+      &redirect_uri=https://yourapp.example.com/callback
+      &response_type=code
+      &scope=read:customers write:customers read:jobs
+      &state=RANDOM_STATE_VALUE
+    ```
+  </Tab>
+  <Tab title="API key (scopes set at creation)">
+    ```bash
+    curl -X POST https://api.zoopapp.com/{tenantId}/api/external-access \
+      -H "Authorization: Bearer ADMIN_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "My integration",
+        "scopes": ["read:customers", "read:jobs", "write:invoices"]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Choosing the right scopes
+
+Request only the scopes your integration actually uses. This limits the blast radius if a token is leaked and makes the OAuth consent screen easier for users to trust.
+
+A typical read-only reporting integration needs:
+
+```text
+read:customers read:jobs read:invoices read:quotes
+```
+
+A full-service scheduling integration might need:
+
+```text
+read:customers write:customers read:jobs write:jobs read:catalog read:quotes write:quotes
+```

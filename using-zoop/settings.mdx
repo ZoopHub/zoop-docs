@@ -1,0 +1,177 @@
+---
+title: Settings
+description: Configure your business: hours, service area, tax rates, payments, and more.
+audience: end-user
+---
+
+Settings is where you configure everything about how your business runs in Zoop — your name and logo, where you work, how you schedule, how you get paid, and more.
+
+Go to **Settings** from the main navigation. A sidebar lists each section; select one to open it.
+
+<Callout type="info">TODO(screenshot): settings page with sidebar nav showing all tabs — Business info, Service area & hours, Scheduling, Payment methods, Notifications, AI & automation, API & MCP, plus the Card payments and Tax rates sub-pages.</Callout>
+
+## Business info
+
+Set your company name, logo, contact details, address, trade types, tagline, and brand color.
+
+**Company name** — saved independently of the rest of the form. Type a name and select **Save name**.
+
+**Storefront URL** — your public booking page address (`app.zoop.mom/your-slug`). Use lowercase letters, numbers, and hyphens (3–64 characters). Select **Save URL** after typing a slug. You must set a URL before you can publish your storefront.
+
+**Enable public storefront** — toggle this on to make your storefront live. When off, your storefront returns a 404 and is omitted from search engines. Your management pages, invoices, and customer portal links are unaffected.
+
+**Logo** — shown on your storefront, invoices, and customer messages.
+
+**Trade types** — check all that apply (Plumbing, HVAC, Electrical, Landscaping, Cleaning, Roofing, General, Garage door, Pest control, Other).
+
+**Brand color** — used on your customer-facing storefront. Enter a hex value or use the color picker.
+
+**Contact information** — business phone, email, and website.
+
+**Business address** — start typing and pick from the autocomplete suggestions, or fill in the fields manually.
+
+Select **Save changes** to apply.
+
+## Service area & hours
+
+Tell Zoop where you work and when you're open.
+
+**Service radius** — how far you travel from your base location, in miles (1–200).
+
+**Service ZIP codes** — if you add specific ZIP codes they override the radius for storefront display. Type a ZIP code and press Enter (or select **Add**). Remove any by selecting the × on the tag.
+
+**Business hours** — toggle each day on or off, then set open and close times. Times are drawn from 6:00 AM to 10:00 PM in 30-minute steps.
+
+**Time zone** — all your open/close times are in this zone. Customers see "open now" based on your local clock, not theirs.
+
+**After-hours message** — shown to customers who request service outside business hours (max 500 characters).
+
+**Emergency dispatch** — when enabled, customers can request after-hours emergency service. You can set a dispatch fee that shows alongside the emergency option.
+
+Select **Save changes** to apply.
+
+## Scheduling
+
+Control how jobs are created and how customers self-book.
+
+**Default job duration** — the time block Zoop uses when you create a new job (15 min – 4 hr).
+
+**Buffer between jobs** — travel and prep time automatically added between scheduled jobs (none, 15 min, 30 min, 45 min, or 60 min).
+
+**Advance booking window** — how many days out customers on your storefront can self-book (1–365 days).
+
+**Late reschedule cutoff** — customers cannot self-reschedule within this window before their appointment (no cutoff up to 48 hours).
+
+**Online booking** — enable the booking widget to show a booking button on your storefront. Zoop holds the selected slot until you confirm. You can also set the slot length shown to customers (30 min – 2 hr) and how long a pending slot is reserved before it expires (4–72 hours).
+
+**Technician calendar permissions** — choose which event types your technicians can add to the calendar: Meeting, Block time, Personal, Other.
+
+Select **Save changes** to apply.
+
+## Payment methods
+
+Choose which payment methods you accept and set up late-payment reminders.
+
+**Accepted payment methods** — check any that apply:
+
+- Stripe (credit/debit card) — requires card payment setup, covered below
+- Cash
+- Check
+- Zelle
+- Venmo
+- Cash App
+- Other
+
+When you enable Zelle, Venmo, Cash App, or Other, extra fields appear for your handle, cashtag, or a custom payment link (e.g. Square or PayPal).
+
+**Late payment reminders** — automatically send reminders to customers with unpaid invoices. Toggle on 3 days, 7 days, and/or 14 days after due date.
+
+Select **Save changes** to apply.
+
+## Card payments
+
+Connect Stripe to accept card payments and bank transfers. Funds land in your bank account on Stripe's standard payout schedule.
+
+<Steps>
+  <Step title="Open card payments">
+    In the settings sidebar, select **Card payments**.
+  </Step>
+  <Step title="Start onboarding">
+    Select **Set up payments**. You'll be taken to Stripe's onboarding flow, which takes about 5 minutes.
+  </Step>
+  <Step title="Finish on Stripe">
+    Complete Stripe's identity and business verification steps. When done, you're returned to Zoop automatically.
+  </Step>
+  <Step title="Check status">
+    Zoop shows a checklist of any remaining requirements. If Stripe still needs something, select **Finish on Stripe** to resume. Select **Refresh status** to pull the latest from Stripe at any time.
+  </Step>
+</Steps>
+
+Once active, the card payments panel shows a green **Active** badge with your charges and payout status. You can open your Stripe dashboard directly from here or disconnect Stripe if needed.
+
+**Offline payment instructions** — add a note (up to 4,000 characters) for customers who pay by check, Zelle, or another offline method. This text appears on invoices alongside online-payment options.
+
+<Callout type="warning">
+Disconnecting Stripe stops new card payments immediately. Past invoices, payouts, and customer records are preserved.
+</Callout>
+
+## Tax rates
+
+Set up the sales-tax rates you charge customers. One rate can be marked as the default for new invoices.
+
+<Steps>
+  <Step title="Open tax rates">
+    In the settings sidebar, select **Tax rates**.
+  </Step>
+  <Step title="Add a rate">
+    Select **Add tax rate**. Enter a name (e.g. "TX Sales Tax") and a percentage (e.g. 8.25 for 8.25%). Check **Default for new invoices** if this rate should apply automatically.
+  </Step>
+  <Step title="Save">
+    Select **Save**. The rate appears in the active rates table.
+  </Step>
+</Steps>
+
+You can edit any rate by selecting **Edit** in its row, or archive it by selecting **Archive**. Archived rates are hidden from the main table but can be restored by expanding the **Archived** section and selecting **Restore**.
+
+To change the default rate, select the radio button in the **Default for new invoices** column of the rate you want to use.
+
+<Callout type="info">
+Editing a rate does not change past invoices. Zoop snapshots the rate name and percentage at the time an invoice is issued.
+</Callout>
+
+## Notifications
+
+**SMS notifications** — send job confirmations, reminders, and invoice alerts via text message.
+
+**Email notifications** — send copies of invoices and receipts by email.
+
+**Auto-text customers when a job is likely to run late** — when a hard-window visit's ETA slips past the promised window, Zoop automatically sends the customer a heads-up. Off by default; when off, you or your techs send it manually from Route manager.
+
+**Review prompts** — automatically ask customers for a review after job completion. When enabled, choose when to send the prompt (1 hour to 48 hours after completion) and add links to your Google, Yelp, and/or Facebook review pages. Review prompts are suppressed automatically for disputed or flagged jobs.
+
+Select **Save changes** to apply.
+
+## AI & automation
+
+**AI virtual receptionist** — automatically responds to missed calls and texts when you're on a job. When enabled, write an intro message (max 500 characters) that customers receive when the receptionist takes over.
+
+You can also provide a knowledge base the AI uses when answering customer questions:
+
+- **Dispatch fee** — if set, the AI will quote this when asked
+- **Services offered** — what you can confirm you provide
+- **Services not offered** — what you do not provide
+- **Service area description** — a plain-language coverage description (e.g. "Greater Orlando area within 25 miles of zip 32801")
+
+**Maintenance reminders** — automatically prompts to schedule follow-up maintenance after equipment installations (such as A/C units or water heaters).
+
+Select **Save changes** to apply.
+
+## API & MCP
+
+Generate API keys to connect Zoop to Claude Code, Zapier, or your own scripts. Only owners can manage API keys.
+
+Select **Manage API keys** to create or revoke keys. See [API keys](/developers/authentication/api-keys) for full setup instructions.
+
+<Callout type="info">
+If you're an office manager or technician and need API access, ask your account owner to provision a key.
+</Callout>

@@ -1,0 +1,128 @@
+---
+title: Calendar
+description: See your schedule by day, week, or month and manage events around your jobs.
+audience: end-user
+---
+
+The calendar shows all your scheduled jobs and events in one place. Switch between day, week, month, or list views using the buttons at the top of the page. All your state lives in the URL, so you can bookmark a specific week or share a view with a coworker.
+
+<Callout type="info">TODO(screenshot): calendar page in week view with a mix of jobs and events visible.</Callout>
+
+## Views
+
+Use the **Day / Week / Month / List** switcher in the toolbar to change how you see your schedule.
+
+- **Day** — a vertical hour-by-hour grid from 5 am to 10 pm. Owner and office roles see per-tech lanes side by side. Technicians see a single "Your day" lane scoped to their own assignments.
+- **Week** — seven day columns (Monday through Sunday) with the same 5 am–10 pm time axis. All-day events appear in a row above the timed grid. This is the default view when you open the calendar.
+- **Month** — a full calendar grid. Each cell shows up to three event chips; tap a cell to drill into the day view for that date.
+- **List** — a flat chronological list of everything in the current window, grouped by day with section headers ("Today", "Tomorrow", and then short date labels). Useful on a small screen or when you want to scan a range quickly.
+
+### Navigating dates
+
+Use the **◀** and **▶** arrows to step backward or forward one day, week, or month (whichever view you're in). Select **Today** to jump back to the current date. You can also pick any date directly from the date picker next to the arrows.
+
+## Jobs on the calendar
+
+Scheduled jobs appear automatically — you do not add them manually here. A job chip on the calendar opens the job detail page. To change a job's scheduled time, go to [jobs](/using-zoop/jobs) or use [dispatch](/using-zoop/dispatch).
+
+## Creating an event
+
+Events are non-job calendar entries: meetings, time blocks, personal time, or anything else you want to track.
+
+<Steps>
+  <Step title="Open the new event form">
+    Select **New** in the top-right corner of the calendar. On mobile, tap the floating **+** button to open the quick-add sheet.
+  </Step>
+  <Step title="Choose a kind">
+    Set the event kind: **Meeting**, **Block**, **Personal**, or **Other**. The kind controls the color chip on the grid (meeting = blue, block = zinc, personal = emerald, other = amber).
+  </Step>
+  <Step title="Fill in the details">
+    Enter a title (required), start time, and end time. Optionally add notes, a location, and whether the event is all-day.
+  </Step>
+  <Step title="Assign team members">
+    Pick at least one assignee. The event will appear in their view of the calendar.
+  </Step>
+  <Step title="Save">
+    Select **Save**. The calendar refreshes and the event appears in the grid.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): event creation modal with kind selector, title, time fields, and assignee picker visible.</Callout>
+
+### Event kinds
+
+| Kind | When to use |
+|---|---|
+| Meeting | Customer calls, supplier meetings, team check-ins |
+| Block | Time you're unavailable for new work (waiting on a part, admin time) |
+| Personal | Days off, appointments outside work |
+| Other | Anything that doesn't fit the above |
+
+## Recurring events
+
+When creating or editing an event, turn on recurrence to repeat it on a schedule. Set the RRULE pattern (daily, weekly, monthly, or a custom interval), the timezone, and the duration in minutes.
+
+When you edit an event that belongs to a series, Zoop asks which occurrences to change:
+
+- **This event** — updates only the single occurrence you selected.
+- **This and future events** — splits the series here; all occurrences from this date forward follow the new settings.
+- **All events** — rewrites the entire series template.
+
+<Callout type="warning">TODO(verify): confirm whether the recurring-event edit-mode UI labels match exactly "This event / This and future events / All events" as shown in the product.</Callout>
+
+## Editing an event
+
+Tap an event chip in any view to open the edit form with the same fields available at creation. Jobs open the job detail page instead and cannot be edited from the calendar form.
+
+## Filtering the calendar
+
+Select **Filters** in the toolbar to narrow down what you see:
+
+- **Assignees** (owner and office roles only) — show only the team members you select.
+- **Crews** (owner and office roles only) — show only the crews you select.
+- **Kinds** — show only the event types you select (meeting, block, personal, other). Filtering by kind hides jobs, since jobs are not part of the event-kind taxonomy.
+
+You can also use the **search** field to find events by title. Results update as you type.
+
+A badge on the Filters button shows how many filters are active. Technicians see only the kind filter — their view is already scoped to their own assignments on the server.
+
+## Booking holds
+
+Owner and office roles see a **Holds** button in the top-right corner with a count badge. Holds are time-slot requests that came in through your storefront — customers who picked a time but haven't been confirmed yet. Select **Holds** to open the holds inbox and accept or decline each request.
+
+<Callout type="info">TODO(screenshot): Holds inbox panel open with one or two pending hold requests.</Callout>
+
+## Business hours
+
+Your business hours control which time slots the storefront shows to customers. The default is Monday through Friday, 8:00 am to 5:00 pm. Saturday and Sunday are off by default.
+
+To change your hours, go to [settings](/using-zoop/settings). Hours are stored per day of the week with an open and close time in your account timezone. Customers will only see slots that fall inside your open hours.
+
+## Calendar feed (ICS export)
+
+You can subscribe to your Zoop schedule in Apple Calendar, Google Calendar, Outlook, or any app that supports ICS feeds.
+
+<Steps>
+  <Step title="Go to account settings">
+    Navigate to [settings](/using-zoop/settings) and find the **Calendar feed** section.
+  </Step>
+  <Step title="Generate the feed URL">
+    Select **Generate feed URL**. Zoop creates a private, token-secured URL for your calendar.
+  </Step>
+  <Step title="Copy the URL">
+    Copy the URL shown. You will not see it again after leaving the page — if you lose it, generate a new one with **Rotate token**.
+  </Step>
+  <Step title="Add it to your calendar app">
+    Paste the URL as a calendar subscription in your app of choice. Your schedule will sync automatically.
+  </Step>
+</Steps>
+
+<Callout type="warning">Rotating the token invalidates the old URL. Any app already subscribed with the old URL will stop receiving updates until you re-subscribe with the new URL.</Callout>
+
+If you want to remove access entirely, select **Revoke** in the calendar feed section. This deletes the token and deactivates the feed.
+
+## Related
+
+- [Dispatch](/using-zoop/dispatch) — move and assign jobs across your team
+- [Jobs](/using-zoop/jobs) — view and edit scheduled job details
+- [Recurring jobs](/using-zoop/recurring-jobs) — set up jobs that repeat on a schedule

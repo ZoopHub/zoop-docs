@@ -1,0 +1,233 @@
+---
+title: Errors
+description: Auth errors, scope errors, and MCP tool error kinds returned by the Zoop API.
+audience: developer
+---
+
+Every request to `POST /api/mcp` can fail at two distinct layers: the **auth layer** (before any tool runs) and the **tool layer** (inside the tool itself). Understanding which layer produced an error tells you how to fix it.
+
+---
+
+## Auth-layer errors
+
+Auth errors are returned as HTTP responses with a JSON-RPC error envelope. They happen before the MCP server processes your request, so the `id` in the response body is always `null`.
+
+### Error envelope shape
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "error": {
+    "code": -32001,
+    "message": "Unauthorized"
+  }
+}
+```
+
+When additional context is available (for example, which scopes are required), it appears in an `error.data` field:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "error": {
+    "code": -32002,
+    "message": "Insufficient scope",
+    "data": {
+      "required": ["write:jobs"]
+    }
+  }
+}
+```
+
+### Auth error reference
+
+| HTTP status | `error.code` | `error` value in auth layer | When it happens |
+|---|---|---|---|
+| `401` | `-32001` | `missing_token` | No `Authorization` header, or the value does not start with `Bearer `. |
+| `401` | `-32001` | `invalid_token` | The token is not a recognized Zoop API key and not a valid JWT, or the JWT failed signature/issuer/audience verification. See `reason` below. |
+| `401` | `-32001` | `revoked` | Reserved — in practice a revoked API key returns `invalid_token` with reason `key_revoked` (see the reasons table below). |
+| `401` | `-32001` | `expired` | The credential has passed its expiry time. |
+| `403` | `-32002` | `insufficient_scope` | The token is valid but does not carry all scopes the endpoint requires. The `error.data.required` array lists the missing scopes. |
+| `403` | `-32002` | `wrong_tenant` | The token belongs to a different tenant than the one being addressed. |
+| `429` | `-32003` | `rate_limited` | Too many requests. A `Retry-After` header is present with the number of seconds to wait. |
+
+<Callout type="info">
+The `401` responses all share JSON-RPC code `-32001`. Distinguish between `missing_token`, `invalid_token`, `revoked`, and `expired` by reading the auth layer's internal classification — the HTTP body does not repeat the sub-kind on the wire. Use the table above to map each fix.
+</Callout>
+
+### `invalid_token` reasons
+
+When the error is `invalid_token`, the auth layer records an internal `reason`. The `reason` is not currently included in the HTTP response body, but it appears in server logs and audit events. Common values:
+
+| Reason | What it means |
+|---|---|
+| `unrecognized_prefix` | The bearer value is not a Zoop API key and does not look like a JWT. |
+| `key_not_found` | The API key prefix is recognized but no matching record exists in the database. |
+| `key_revoked` | The key record exists but has a `revoked_at` timestamp. |
+| `missing_user_id` | The API key row references a user actor but has no `user_id`. This indicates a corrupted key record. |
+| `invalid_tenant_id` | The JWT `tenant_id` claim is not a valid UUID. |
+| `malformed_jwt_header` | The JWT header could not be decoded. |
+| `unsupported_alg` | The JWT uses a symmetric algorithm (HS256, etc.) — Zoop only accepts asymmetric OAuth tokens (ES256, RS256). |
+| `missing_sub` | The JWT payload has no `sub` claim. |
+| `missing_tenant_id` | The JWT payload has no `tenant_id` claim. |
+| `no_valid_tenant_membership` | The user referenced in an API key has no active membership in its tenant. |
+
+### 401: missing or invalid token
+
+Check that your `Authorization` header is present and correctly formatted:
+
+```bash
+Authorization: Bearer zoop_uk_<rest of key>
+```
+
+The full key — including the `zoop_uk_` or `zoop_tk_` prefix — must be present. If you are using an OAuth access token, make sure the JWT was issued by the correct Supabase project and has not been tampered with.
+
+### 401: revoked or expired
+
+A revoked key cannot be un-revoked. Create a new API key in **Settings → API & MCP**. For an expired OAuth access token, use your refresh token to obtain a new access token.
+
+See [API keys](/developers/authentication/api-keys) and [OAuth](/developers/authentication/oauth) for details.
+
+### 403: insufficient scope
+
+Your token is valid but does not carry the scope the tool requires. The `error.data.required` array tells you exactly which scopes are needed:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": null,
+  "error": {
+    "code": -32002,
+    "message": "Insufficient scope",
+    "data": {
+      "required": ["write:jobs", "read:customers"]
+    }
+  }
+}
+```
+
+You cannot add scopes to an existing API key. Revoke the key and create a new one with the required scopes. For OAuth tokens, re-authorize with the additional scopes. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+
+### 403: wrong tenant
+
+The credential belongs to a different tenant than the one the request is targeting. Confirm you are using the correct key for this account.
+
+### 429: rate limited
+
+Slow down your request rate and retry after the number of seconds in the `Retry-After` response header:
+
+```bash
+# The Retry-After header value is in seconds
+Retry-After: 30
+```
+
+See [Rate limits](/developers/rate-limits) for per-credential and per-tenant limits.
+
+### WWW-Authenticate header
+
+On `401` responses, Zoop includes a `WWW-Authenticate` header pointing to its OAuth protected resource metadata document:
+
+```http
+WWW-Authenticate: Bearer realm="zoop", resource_metadata="https://app.zoop.pro/.well-known/oauth-protected-resource"
+```
+
+OAuth 2.0 clients can follow that URL to discover the authorization server, supported scopes, and token endpoint.
+
+---
+
+## Tool-layer errors
+
+Once auth passes, the MCP server runs your tool. If the tool fails, the response is an HTTP `200` with a JSON-RPC result whose `isError` flag is `true` and whose `content[0].text` contains a human-readable message.
+
+### Tool error envelope shape
+
+Tool errors are returned inside the normal MCP `tools/call` result, not as a JSON-RPC `error` object:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Resource not found."
+      }
+    ],
+    "isError": true
+  }
+}
+```
+
+When `isError` is `true`, treat the call as a failure even though the HTTP status is `200`.
+
+### Tool error kinds
+
+| Kind | When it happens | Typical fix |
+|---|---|---|
+| `invalid_input` | The arguments you passed do not match the tool's input schema (wrong type, missing required field, value out of range). | Check the tool's parameter definitions and correct your input. |
+| `not_found` | The record you referenced (by ID or slug) does not exist in this tenant's data. | Confirm the ID is correct and belongs to the current tenant. |
+| `conflict` | The operation would create a duplicate of something that must be unique (for example, a customer with an email address already in use). | The message text describes what already exists. |
+| `insufficient_scope` | The token passed auth but the specific tool being called requires a scope the token does not hold. | The message names the required scopes. Re-issue the token with those scopes. |
+| `internal` | An unexpected database or application error occurred. | Retry once. If the error persists, contact support with your request ID. |
+
+<Callout type="info">
+The `insufficient_scope` tool error is a second scope gate that runs inside the tool execution layer, separate from the auth-layer `insufficient_scope` check. Both use the same scope expansion logic, so if you passed the auth-layer check, this error is rare — it can appear when a tool requires a very specific child scope that an umbrella token does not cover.
+</Callout>
+
+### `invalid_input` detail
+
+When the error kind is `invalid_input` and the failure came from Zod schema validation (the most common case), the `content[0].text` contains a structured Zod error object. Cross-reference the tool's parameter list to find what is missing or wrong.
+
+<Callout type="warning">TODO(verify): confirm the exact message text surfaced to callers for Zod validation failures — the runtime serializes `parsed.error.format()` but the route-layer rendering is not covered by these source files.</Callout>
+
+When the input error comes from a domain-level check inside the tool itself (for example, a date range where `end` is before `start`), the message text is more specific:
+
+```json
+{
+  "type": "text",
+  "text": "end_date must be on or after start_date"
+}
+```
+
+### `conflict` detail
+
+The `conflict` message text is always a plain English sentence describing the conflict. Read it directly:
+
+```json
+{
+  "type": "text",
+  "text": "Already exists"
+}
+```
+
+---
+
+## Quick-reference: error layers
+
+| Layer | When | HTTP status | Response shape |
+|---|---|---|---|
+| Auth | Before any tool runs | `401`, `403`, `429` | JSON-RPC `error` object at top level, `id: null` |
+| Tool | Inside tool execution | `200` | JSON-RPC `result` with `isError: true` |
+| Transport | Unhandled server fault | `200` | JSON-RPC `error` object, code `-32603`, `id: null` |
+
+---
+
+## Related pages
+
+<Columns>
+  <Card title="Authentication" href="/developers/authentication/api-keys">
+    API key types, creation, rotation, and revocation.
+  </Card>
+  <Card title="Scopes" href="/developers/authentication/scopes">
+    Full scope catalog and umbrella aliases.
+  </Card>
+  <Card title="Rate limits" href="/developers/rate-limits">
+    Per-credential and per-tenant request limits.
+  </Card>
+  <Card title="MCP server" href="/developers/mcp">
+    All tools, conventions, and how to call them.
+  </Card>
+</Columns>

@@ -1,0 +1,192 @@
+---
+title: Getting paid
+description: Take card payments, send payment links, and record cash or checks.
+audience: end-user
+---
+
+Zoop handles two kinds of payments: **online card payments** through Stripe, and **manual payments** (cash, check, Zelle, Venmo, wire, or anything else) that you record yourself. You can use either or both. Zoop is your record of truth — every payment, regardless of how it was collected, lives on the invoice.
+
+<Callout type="info">
+TODO(screenshot): The Settings → Payments page showing the "Set up payments" state and the active Stripe card side by side.
+</Callout>
+
+## Connect Stripe to accept card payments
+
+Card payments require a Stripe account. Stripe handles the actual money movement; Zoop stores the record.
+
+<Callout type="warning">
+Only the account owner can connect or disconnect Stripe. Other team roles do not see Settings → Payments.
+</Callout>
+
+<Steps>
+  <Step title="Open Settings → Payments">
+    Go to **Settings** in the sidebar, then select **Payments**.
+  </Step>
+  <Step title="Start the setup">
+    Select **Set up payments**. Zoop opens Stripe's onboarding flow in the same window. The process takes about 5 minutes.
+  </Step>
+  <Step title="Complete the Stripe checklist">
+    Stripe asks for four things: your identity, your business details, your bank account (where payouts land), and acceptance of Stripe's terms. A checklist on the settings page shows what is still needed.
+
+    If Stripe is reviewing your information, the checklist shows "In review" — nothing more is needed from you at that point.
+  </Step>
+  <Step title="Return to Zoop">
+    After you finish on Stripe, you are redirected back to Zoop. The settings page shows **Active** with charges and payouts both enabled when setup is complete.
+
+    If the status looks stale, select **Refresh status** to pull the latest state from Stripe.
+  </Step>
+</Steps>
+
+<Callout type="info">
+TODO(screenshot): The active Stripe card showing the "Active" badge with charges and payouts enabled.
+</Callout>
+
+### When your account needs attention
+
+If Stripe pauses your account, the settings page shows an **Action needed** banner. Select **Finish on Stripe** to resolve the outstanding items. The page updates automatically once Stripe processes the change.
+
+### Open your Stripe dashboard
+
+From Settings → Payments, select **Open Stripe dashboard** to view payouts, disputes, and transaction history directly in Stripe.
+
+### Disconnect Stripe
+
+Select **Disconnect** on the settings page to remove the Stripe connection. New card payments stop immediately. Past invoices, payments, and customer records are preserved in Zoop.
+
+---
+
+## Send a payment link
+
+Once Stripe is connected and an invoice has been sent, you can share a payment link with your customer.
+
+<Steps>
+  <Step title="Open the invoice">
+    Go to **Invoices** and open a sent or overdue invoice.
+  </Step>
+  <Step title="Share with customer">
+    Select **Share with customer** in the action footer. A dialog shows the payment link and a QR code.
+  </Step>
+  <Step title="Copy or scan">
+    Copy the link and paste it into a text or email, or let the customer scan the QR code directly. The link stays active until the invoice is paid.
+  </Step>
+</Steps>
+
+<Callout type="info">
+TODO(screenshot): The "Share invoice" dialog showing the payment link field, copy button, and QR code.
+</Callout>
+
+---
+
+## Record a manual payment
+
+Use this when you collect cash, a check, a Zelle transfer, or any other payment outside Stripe. You do not need Stripe connected to record manual payments.
+
+<Steps>
+  <Step title="Open the invoice">
+    Open the sent or overdue invoice you want to mark.
+  </Step>
+  <Step title="Select Record payment">
+    Select **Record payment** in the action footer.
+  </Step>
+  <Step title="Fill in the details">
+    Enter the amount, the payment method, an optional reference (such as a check number), the date the payment was received, and any notes. The amount defaults to the outstanding balance.
+
+    Supported methods: cash, check, Zelle, Venmo, wire, other.
+  </Step>
+  <Step title="Save">
+    Select **Record payment**. The payment appears in the Payments section of the invoice and reduces the amount due.
+  </Step>
+</Steps>
+
+You can record more than one manual payment against the same invoice — for example, a partial cash payment followed by a check for the remainder.
+
+<Callout type="info">
+TODO(screenshot): The "Record payment" dialog with the method dropdown and reference field visible.
+</Callout>
+
+---
+
+## Add offline payment instructions
+
+If your customers sometimes pay by check or bank transfer, you can add instructions that appear on every invoice alongside the online payment option.
+
+<Steps>
+  <Step title="Open Settings → Payments">
+    Go to **Settings → Payments**. The offline payment instructions section is visible regardless of whether Stripe is connected.
+  </Step>
+  <Step title="Enter your instructions">
+    Type what your customers should do — for example, a mailing address for checks or a Zelle phone number. The field holds up to 4,000 characters.
+  </Step>
+  <Step title="Save">
+    Select **Save**. The instructions appear on the customer-facing invoice view when the customer does not pay online.
+  </Step>
+</Steps>
+
+---
+
+## Issue a refund
+
+Refunds apply to Stripe card payments. You can refund the full amount or a partial amount up to the refundable balance.
+
+<Steps>
+  <Step title="Open the paid invoice">
+    Open an invoice with status **paid** or **partially refunded**.
+  </Step>
+  <Step title="Select Issue refund">
+    Select **Issue refund** in the action footer.
+  </Step>
+  <Step title="Set the amount and reason">
+    Enter the refund amount (up to the refundable balance), pick a reason (customer requested, duplicate charge, or fraudulent), and add an optional note.
+  </Step>
+  <Step title="Notify the customer (optional)">
+    The **Notify customer** toggle is on by default. This emails a refund confirmation and an updated receipt link. Turn it off if you handle the communication another way.
+  </Step>
+  <Step title="Confirm">
+    Select **Issue refund**. The refund goes back through the original card. The customer's bank typically posts it within a few business days.
+  </Step>
+</Steps>
+
+<Callout type="warning">
+Refunds only apply to Stripe card payments. If you need to reverse a manually recorded payment (cash, check, etc.), void the payment record and adjust the invoice manually.
+</Callout>
+
+<Callout type="info">
+TODO(screenshot): The "Issue a refund" dialog with the amount, reason, and notify toggle.
+</Callout>
+
+---
+
+## Card on file and automatic retries
+
+When a customer saves a card through the customer portal or storefront, Zoop stores it for future use. If an invoice enters dunning (a failed recurring charge), you can retry the charge manually from the invoice detail page using the customer's saved card.
+
+<Steps>
+  <Step title="Open the dunning invoice">
+    Open an invoice with status **dunning**. This status appears when an automatic charge has failed and the retry engine is active.
+  </Step>
+  <Step title="Select Retry charge now">
+    Select **Retry charge now** in the action footer. This option appears only when the customer has a saved card and Stripe is active.
+  </Step>
+  <Step title="Pick the card and confirm">
+    Choose which saved card to charge. Select **Retry charge** to attempt the charge immediately.
+  </Step>
+</Steps>
+
+See [recurring billing](/using-zoop/recurring-billing) for how dunning and automatic retry schedules work.
+
+---
+
+## Tap-to-pay
+
+<Callout type="warning">
+TODO(verify): The Stripe Terminal integration (tap-to-pay with a physical reader) is implemented in the payment processor layer but no in-app UI for setting up or using a terminal reader is visible in the current codebase. Confirm whether this feature is available to users before documenting it.
+</Callout>
+
+---
+
+## Related pages
+
+- [Invoices](/using-zoop/invoices) — create and send invoices
+- [Recurring billing](/using-zoop/recurring-billing) — set up automatic charges on a schedule
+- [Customer portal](/using-zoop/customer-portal) — where customers save cards and view invoices
+- [Settings](/using-zoop/settings) — account-level configuration including Stripe

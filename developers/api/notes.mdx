@@ -1,0 +1,271 @@
+---
+title: Notes
+description: Create and manage notes attached to other records.
+audience: developer
+---
+
+Notes are free-text records that can stand alone or be attached to another record — a customer, contact, location, job, invoice, quote, or estimate. They support pinning, full-text search, date filtering, and soft-archiving.
+
+Notes have their own scope pair (`read:notes` / `write:notes`) separate from the records they attach to. See [scopes](/developers/authentication/scopes) for context.
+
+## Scopes
+
+| Scope | Grants |
+|---|---|
+| `read:notes` | `notes.list`, `notes.get` |
+| `write:notes` | `notes.create`, `notes.update`, `notes.archive` |
+
+`write:notes` does not include `read:notes`. Grant both if your integration needs to read and write.
+
+## User actor requirement
+
+`notes.create`, `notes.update`, and `notes.archive` require a **user actor** — a token issued to or bound to a real team member. Tenant-key tokens (`zoop_tk_` prefix) have no user identity and cannot author or mutate notes; they will receive an `invalid_input` error.
+
+If you need to write notes from an automated pipeline, use a user-bound API key (`zoop_uk_`) issued to a service account team member. See [API keys](/developers/authentication/api-keys).
+
+## Tools
+
+### `notes.list`
+
+Lists notes for the tenant, newest first. Returns cursor-based pages — default 25 rows, max 100.
+
+**Scope:** `read:notes`
+
+<ParamField name="pinned" type="boolean">
+  When `true`, returns only pinned notes.
+</ParamField>
+
+<ParamField name="subject_type" type="string">
+  Filter by the type of record the note is attached to. Accepted values: `customer`, `customer_contact`, `customer_location`, `job`, `invoice`, `quote`, `lawn_estimate`, `standalone`. Pass `standalone` to return only notes with no subject attached.
+</ParamField>
+
+<ParamField name="subject_id" type="string (UUID)">
+  Filter by a specific subject record's ID. Combine with `subject_type` to scope to a single record. Cannot be used when `subject_type` is `standalone`.
+</ParamField>
+
+<ParamField name="q" type="string">
+  Full-text search query, max 256 characters. Cannot be combined with `subject_type: "standalone"`.
+</ParamField>
+
+<ParamField name="since" type="string (ISO 8601 datetime)">
+  Return notes created at or after this timestamp. Example: `2026-01-01T00:00:00Z`.
+</ParamField>
+
+<ParamField name="until" type="string (ISO 8601 datetime)">
+  Return notes created before this timestamp (exclusive).
+</ParamField>
+
+<ParamField name="author" type="string">
+  Filter by author user ID.
+</ParamField>
+
+<ParamField name="cursor" type="string">
+  Opaque cursor returned as `nextCursor` in the previous response. Pass it to fetch the next page.
+</ParamField>
+
+<ParamField name="limit" type="integer">
+  Number of rows to return. Default `25`, max `100`.
+</ParamField>
+
+**Returns:** `{ rows, nextCursor, hasMore }`
+
+Each row includes the note's `id`, `body`, `pinned`, `created_by`, `created_at`, `subject_type`, `subject_id`, and any attached file URLs. Draft notes are excluded from results.
+
+---
+
+### `notes.get`
+
+Fetches a single note by ID.
+
+**Scope:** `read:notes`
+
+<ParamField name="id" type="string (UUID)" required>
+  The note's ID.
+</ParamField>
+
+Returns the full note record. Returns `not_found` if the note does not exist or has been archived.
+
+---
+
+### `notes.create`
+
+Creates a note. Optionally attaches it to another record.
+
+**Scope:** `write:notes` — requires a user actor.
+
+<ParamField name="body" type="string" required>
+  The note text, max 100,000 characters. Must be non-empty unless `draft` is `true`.
+</ParamField>
+
+<ParamField name="subject_type" type="string">
+  The type of record to attach the note to. Accepted values: `customer`, `customer_contact`, `customer_location`, `job`, `invoice`, `quote`, `lawn_estimate`. Omit to create a standalone note.
+</ParamField>
+
+<ParamField name="subject_id" type="string (UUID)">
+  The ID of the record to attach the note to. `subject_type` and `subject_id` must be provided together or both omitted.
+</ParamField>
+
+<ParamField name="pinned" type="boolean">
+  Pin the note. Defaults to `false`.
+</ParamField>
+
+<ParamField name="draft" type="boolean">
+  Mark the note as a draft. Drafts are hidden from default list results and are cleaned up automatically after 24 hours if not committed. Defaults to `false`.
+</ParamField>
+
+Returns the created note record on success. Returns `not_found` if the `subject_id` does not exist.
+
+---
+
+### `notes.update`
+
+Partially updates a note. Only the fields you send are changed.
+
+**Scope:** `write:notes` — requires a user actor.
+
+Only the note's author or a tenant owner can update a note.
+
+<ParamField name="id" type="string (UUID)" required>
+  The note's ID.
+</ParamField>
+
+<ParamField name="body" type="string">
+  Replacement text, min 1 character, max 100,000 characters.
+</ParamField>
+
+<ParamField name="pinned" type="boolean">
+  Set or clear the pin.
+</ParamField>
+
+<ParamField name="subject_type" type="string">
+  Change or clear the attached subject type. Send both `subject_type` and `subject_id` together. Pass both as `null` to detach the note from its current subject.
+</ParamField>
+
+<ParamField name="subject_id" type="string (UUID) or null">
+  Change or clear the attached subject ID. Must be provided with `subject_type`.
+</ParamField>
+
+<ParamField name="draft" type="boolean (literal false)">
+  Commit a draft note by setting `draft: false`. You cannot re-draft a committed note.
+</ParamField>
+
+At least one field is required. Returns `not_found` if the note does not exist or is already archived. Returns `invalid_input` if the caller is not the author and does not hold the owner role.
+
+---
+
+### `notes.archive`
+
+Soft-archives a note. Archived notes are hidden from default list and get responses but their data is preserved.
+
+**Scope:** `write:notes` — requires a user actor.
+
+Only the note's author or a tenant owner can archive a note.
+
+<ParamField name="id" type="string (UUID)" required>
+  The note's ID.
+</ParamField>
+
+Returns `{ archived: true, id }` on success. Returns `not_found` if the note does not exist or is already archived.
+
+---
+
+## Example: list pinned notes on a job
+
+The request below fetches the first page of pinned notes attached to a specific job.
+
+```bash
+curl -X POST https://app.zoop.pro/api/mcp \
+  -H "Authorization: Bearer zoop_uk_<your-secret>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "notes.list",
+      "arguments": {
+        "subject_type": "job",
+        "subject_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "pinned": true,
+        "limit": 25
+      }
+    }
+  }'
+```
+
+A successful response looks like:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"rows\":[{\"id\":\"dddddddd-dddd-dddd-dddd-dddddddddddd\",\"body\":\"Ran a new 20A circuit from the panel. Inspector visit scheduled for Friday.\",\"pinned\":true,\"created_by\":\"uuuuuuuu-uuuu-uuuu-uuuu-uuuuuuuuuuuu\",\"created_at\":\"2026-06-12T14:30:00Z\",\"subject_type\":\"job\",\"subject_id\":\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"attachments\":[]}],\"nextCursor\":null,\"hasMore\":false}"
+      }
+    ]
+  }
+}
+```
+
+## Error reference
+
+| Error kind | Meaning |
+|---|---|
+| `not_found` | The note ID does not exist in this tenant, the note is already archived, or the subject record (`subject_id`) was not found. |
+| `invalid_input` | A required field is missing, the input failed validation, the caller is a tenant actor, or the caller is not the author/owner. |
+| `insufficient_scope` | The token does not hold `read:notes` or `write:notes` as required. |
+| `conflict` | The write rate limit for this user was exceeded. |
+| `internal` | An unexpected server error — details are not returned to the client. |
+
+See [errors](/developers/errors) for the full error reference and HTTP status codes.
+
+## Pagination
+
+`notes.list` uses cursor-based pagination. When `hasMore` is `true`, pass the `nextCursor` value back as the `cursor` parameter on your next call to continue reading.
+
+```ts
+let cursor: string | undefined
+let allNotes: unknown[] = []
+
+do {
+  const response = await fetch('https://app.zoop.pro/api/mcp', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json, text/event-stream',
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'tools/call',
+      params: {
+        name: 'notes.list',
+        arguments: { subject_type: 'job', subject_id: JOB_ID, limit: 100, cursor },
+      },
+    }),
+  })
+
+  // Parse the MCP text content to extract the tool result
+  const envelope = await response.json()
+  const text = envelope.result?.content?.[0]?.text
+  const page = JSON.parse(text)
+
+  allNotes = allNotes.concat(page.rows)
+  cursor = page.nextCursor ?? undefined
+} while (cursor)
+```
+
+When `nextCursor` is `null` and `hasMore` is `true`, the result set was truncated (this can happen with full-text search). Narrow your query with additional filters rather than fetching more pages.
+
+## Related
+
+- [Notes in Zoop](/using-zoop/notes) — end-user guide for working with notes in the product
+- [Scopes](/developers/authentication/scopes) — full scope catalog
+- [Authentication](/developers/authentication/api-keys) — how to authenticate requests
+- [MCP server](/developers/mcp) — transport, conventions, and the full tool catalog
+- [Errors](/developers/errors) — error kinds and HTTP status codes

@@ -1,0 +1,117 @@
+---
+title: Your storefront
+description: Give customers a public page to learn about you and book online.
+audience: end-user
+---
+
+Your storefront is a public web page Zoop hosts for your business. Customers can find your contact info, see what trades you cover, check your hours, and — if you turn it on — request a booking without calling you first.
+
+The page is only visible to the public after you publish it. Until then, only you (the account owner) can preview it.
+
+<Callout type="info">TODO(screenshot): the published storefront page showing the hero section, services grid, booking widget, service area, and contact/hours panel.</Callout>
+
+## What appears on your storefront
+
+Every section is driven by what you fill in under [Settings](/using-zoop/settings). Nothing is invented — the page only shows what you've saved.
+
+| Section | What it shows |
+|---|---|
+| Hero | Your logo, company name, tagline, trade badges, phone, email, and website link |
+| What we do | One card per trade type you've selected, with a short description |
+| Book a visit | The online booking widget (if enabled) |
+| Service area | Either a radius ("Serving 25 miles around Austin, TX") or a list of ZIP codes |
+| Contact | Phone, email, website, and business address |
+| Business hours | Your weekly schedule with an "Open now" or "Closed" badge |
+
+## Set up your storefront
+
+<Steps>
+  <Step title="Fill in your business info">
+    Go to [Settings](/using-zoop/settings) and open the **Business** tab. Add your company name, logo, tagline, phone, email, website, and address. These fields feed directly into the hero and contact sections of your storefront.
+  </Step>
+
+  <Step title="Choose your trade types">
+    Still on the **Business** tab, select every trade that applies to your work — plumbing, HVAC, electrical, landscaping, cleaning, roofing, general contractor, garage door, or pest control. Each trade you pick shows up as a card in the "What we do" section.
+  </Step>
+
+  <Step title="Set your service area">
+    Open the **Service area** tab. Choose one of two modes:
+
+    - **Radius** — enter a number of miles from your city/state. Your storefront will show "Serving X miles around [city, state]."
+    - **ZIP codes** — list the specific ZIP codes you cover. Up to 50 ZIP codes are accepted; the storefront displays the first six with an overflow count for the rest.
+
+    If you set both, ZIP codes take priority.
+  </Step>
+
+  <Step title="Add your business hours">
+    Still on the **Service area** tab. Enter your open and close times for each day of the week, and mark any days you're closed. The storefront displays these hours and automatically shows an "Open now" or "Closed" badge based on your time zone.
+  </Step>
+
+  <Step title="Publish">
+    Back on the **Business** tab, scroll to the publish toggle and turn it on. Until you do this, the page returns a 404 to anyone who visits it — only you see a preview.
+
+    <Callout type="info">TODO(screenshot): the publish toggle on the Business settings tab.</Callout>
+  </Step>
+</Steps>
+
+## Online booking widget
+
+The booking widget lets customers pick a time slot and leave their contact details without calling you. You review the request and confirm — or decline — from your Zoop dashboard.
+
+<Callout type="warning">
+The widget shows available slots for the next 14 days only. Slots outside your business hours are hidden. Slots that overlap with existing jobs or other holds are shown but marked unavailable.
+</Callout>
+
+### How it works for your customer
+
+<Steps>
+  <Step title="Find a time">
+    The customer taps "Find a time" on your storefront. Zoop loads your available slots for the next 14 days.
+  </Step>
+  <Step title="Pick a slot">
+    The customer picks a time from the grid. Slots during your business hours that aren't already taken appear as selectable. Taken slots are visible but not clickable.
+  </Step>
+  <Step title="Enter contact info">
+    The customer fills in their name, email or phone (at least one is required), an optional service address, and any notes. They tap "Request this time."
+  </Step>
+  <Step title="Hold is placed">
+    Zoop places a booking hold on that slot and shows the customer a confirmation: "We'll confirm within [your hold expiry]." The slot is reserved for that window while you review.
+  </Step>
+</Steps>
+
+### Turn on the widget
+
+Go to [Settings](/using-zoop/settings) → **Scheduling** → **Online booking** and flip the "Enable booking widget" switch.
+
+<Callout type="info">TODO(screenshot): the Online booking section of the Scheduling settings tab showing the enable toggle, slot length dropdown, and hold expiry dropdown.</Callout>
+
+### Configure slot length and hold expiry
+
+Two settings control how the widget behaves:
+
+**Slot length** — the time block shown to customers when they pick a time. Options: 30 min, 45 min, 1 hr, 1.5 hr, 2 hr.
+
+**Hold expiry** — how long Zoop reserves the slot before it expires if you don't confirm. Options: 4 hours, 12 hours, 24 hours, 48 hours, 72 hours. The customer sees this number in their confirmation message.
+
+Both settings are on the **Scheduling** tab under **Online booking**.
+
+## Your storefront URL
+
+Your storefront lives at your Zoop URL. By default it uses your account ID, but you can set a custom slug (for example, `/acme-plumbing`) on the **Business** settings tab. The slug field is labeled **Storefront URL**. Once you save a slug, your old UUID-based URL redirects permanently to the new one.
+
+## SEO and structured data
+
+Zoop automatically generates:
+
+- A page title composed from your company name, trade types, and city/state (up to 70 characters).
+- A meta description from your tagline, or — if you haven't set one — auto-composed from your trades, location, and phone number (up to 160 characters).
+- Open Graph and Twitter card tags so your page previews correctly when shared.
+- A Schema.org JSON-LD block that tells Google about your business. Trade-based businesses (plumbing, HVAC, electrical, landscaping, roofing, general contractor, garage door) are typed as `HomeAndConstructionBusiness`; others use `LocalBusiness`. The block includes your phone, email, address, business hours, service area, and accepted payment methods.
+
+None of this requires any action from you — it's built from the same business info and settings you've already filled in.
+
+## Related
+
+- [Settings](/using-zoop/settings) — where all storefront content is configured
+- [Calendar](/using-zoop/calendar) — booking holds appear on your calendar
+- [Customer portal](/using-zoop/customer-portal) — the self-service page customers reach from invoices and receipts

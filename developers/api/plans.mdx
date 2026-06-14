@@ -1,0 +1,372 @@
+---
+title: Plans
+description: Define recurring billing plans — cadence, line items, and customer — via the Zoop MCP tool layer.
+audience: developer
+---
+
+A **plan** is a recurring billing template. It holds a cadence (expressed as an RFC 5545 rrule), one or more line items, and a customer. The recurring engine reads active plans and generates draft invoices on schedule. The plan tools create and maintain those templates — they are definition-only and do not charge anything.
+
+Plans use their own scope pair: `read:plans` and `write:plans`. Unlike catalog or estimates, there is no umbrella alias; you must request these scopes explicitly. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+
+<Callout type="info">
+If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to understand how to connect and authenticate before calling tools.
+</Callout>
+
+---
+
+## Scopes
+
+| Scope | Grants access to |
+|---|---|
+| `read:plans` | `plans.list`, `plans.get` |
+| `write:plans` | `plans.create`, `plans.update`, `plans.cancel` |
+
+`write:plans` does **not** imply `read:plans`. Grant both if your integration needs to read and write.
+
+---
+
+## Key concepts
+
+**Definition-only.** `plans.create`, `plans.update`, and `plans.cancel` are pure database operations. None of them charges a card, creates a Stripe subscription, or triggers the recurring engine immediately. Charging happens separately outside the MCP v1 scope.
+
+**Customer is immutable.** Once a plan is created, its `customer_id` cannot change. Pass `customer_id` in the patch — or attempt to patch `status` — and the call fails with an `invalid_input` error at the input boundary.
+
+**Line items replace wholesale.** When you include `items` in `plans.update`, the entire item list is replaced. To add one line item you must re-send all existing items plus the new one.
+
+**Cancel is terminal.** `plans.cancel` sets the plan's status to `cancelled`. There is no resume. No refund is issued.
+
+**User actor required for writes.** `plans.create`, `plans.update`, and `plans.cancel` require a user actor for `created_by` attribution. Tokens issued from tenant-bound API keys (no user ID) cannot call these tools. Use a user-bound API key or an OAuth token instead.
+
+---
+
+## Plan lifecycle
+
+A plan moves through three statuses:
+
+| Status | Meaning |
+|---|---|
+| `active` | The recurring engine generates invoices on schedule. |
+| `paused` | Invoice generation is suspended. The plan still exists and can be resumed. Pause/resume are action routes, not MCP tools in v1. |
+| `cancelled` | Terminal. The engine stops generating invoices. Cannot be undone. |
+
+<Callout type="warning">
+Pause and resume are **not available as MCP tools** in v1. They live on separate action routes. See [MCP overview — limitations](/developers/mcp) for the full list of what is out of scope.
+</Callout>
+
+---
+
+## Tools
+
+### `plans.list`
+
+List recurring plans for the tenant, most recent first. Returns id-bearing rows and pagination metadata.
+
+<ParamField body="status" type="string" optional>
+  Filter to one lifecycle state. One of `active`, `paused`, or `cancelled`.
+</ParamField>
+
+<ParamField body="page" type="integer" optional>
+  1-based page number. Omit for the first page.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "plans.list",
+    "arguments": {
+      "status": "active",
+      "page": 1
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"data\":[{\"id\":\"p1b2c3d4-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"c9d8e7f6-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-01T00:00:00.000Z\"}],\"count\":1,\"page\":1,\"limit\":20}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `plans.get`
+
+Fetch a single recurring plan by `id`, including its line items in sort order.
+
+<ParamField body="id" type="string (UUID)" required>
+  The plan's `id`. Get this from `plans.list`.
+</ParamField>
+
+Returns a `not_found` error if the plan does not exist in this tenant.
+
+---
+
+### `plans.create`
+
+Create a recurring plan template. The plan starts in `active` status and `next_invoice_at` is computed from the cadence. No charge is made.
+
+<Callout type="info">
+`plans.create` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+</Callout>
+
+<ParamField body="customer_id" type="string (UUID)" required>
+  The customer this plan belongs to. Must exist in this tenant. Cannot be changed after creation.
+</ParamField>
+
+<ParamField body="title" type="string" required>
+  A label for the plan (e.g. `Monthly lawn care`). Max 200 characters.
+</ParamField>
+
+<ParamField body="cadence_rrule" type="string" required>
+  The billing cadence as an RFC 5545 rrule string (e.g. `FREQ=MONTHLY;INTERVAL=1`). Max 500 characters. Zoop uses this string to compute `next_invoice_at` and to generate future invoices.
+</ParamField>
+
+<ParamField body="items" type="array of objects" required>
+  The line items for the plan. Must contain at least one entry. When the engine generates an invoice, these items become the invoice's line items.
+
+  <Expandable title="Item fields">
+    <ParamField body="description" type="string" required>
+      Line item description (e.g. `Mow front and back`). Max 200 characters.
+    </ParamField>
+    <ParamField body="quantity" type="number" required>
+      Quantity. Must be a positive number.
+    </ParamField>
+    <ParamField body="unit_price" type="number" required>
+      Unit price in dollars (e.g. `50` for $50.00). Must be zero or positive.
+    </ParamField>
+    <ParamField body="is_taxable" type="boolean" optional>
+      Whether this line item is taxable. Defaults to `true`.
+    </ParamField>
+    <ParamField body="tax_rate_id" type="string (UUID)" optional>
+      Override the plan's default tax rate for this specific line item. Pass `null` to use the plan-level default.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="lead_offset_days" type="integer" optional>
+  How many days before the due date to generate the draft invoice. Integer between 0 and 365. Defaults to `0`.
+</ParamField>
+
+<ParamField body="default_tax_rate_id" type="string (UUID)" optional>
+  The default tax rate to apply to taxable line items at invoice generation time. Pass `null` to use no default.
+</ParamField>
+
+<ParamField body="payment_method_id" type="string (UUID)" optional>
+  The customer's saved payment method to charge automatically. Pass `null` to leave unset.
+</ParamField>
+
+<ParamField body="auto_charge_enabled" type="boolean" optional>
+  Whether to charge the saved payment method automatically when the invoice is generated. Defaults to `false`. Only takes effect if the customer has an active auto-pay consent on file.
+</ParamField>
+
+<ParamField body="notes" type="string" optional>
+  Internal notes about the plan. Max 2,000 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="start_date" type="string (ISO 8601 datetime)" optional>
+  Explicit anchor date for computing `next_invoice_at`. Defaults to the current time when omitted.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "plans.create",
+    "arguments": {
+      "customer_id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
+      "title": "Monthly lawn care",
+      "cadence_rrule": "FREQ=MONTHLY;INTERVAL=1",
+      "items": [
+        {
+          "description": "Mow front and back",
+          "quantity": 1,
+          "unit_price": 75,
+          "is_taxable": true
+        }
+      ],
+      "lead_offset_days": 3,
+      "auto_charge_enabled": false
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"id\":\"p9a8b7c6-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"cccccccc-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-13T00:00:00.000Z\",\"lead_offset_days\":3,\"auto_charge_enabled\":false,\"items\":[{\"description\":\"Mow front and back\",\"quantity\":1,\"unit_price\":75,\"is_taxable\":true}],\"created_at\":\"2026-06-13T18:00:00.000Z\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### `plans.update`
+
+Update a recurring plan's template fields. This is a partial patch — only the fields you send change. No charge is made.
+
+<Callout type="info">
+`plans.update` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+</Callout>
+
+<Callout type="warning">
+Passing `customer_id` or `status` in the patch body returns an `invalid_input` error — the input schema rejects unknown keys. To cancel a plan, use `plans.cancel`.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The plan to update.
+</ParamField>
+
+<ParamField body="title" type="string" optional>
+  Updated title. Max 200 characters.
+</ParamField>
+
+<ParamField body="cadence_rrule" type="string" optional>
+  Updated rrule. Changing this recomputes `next_invoice_at`. Max 500 characters.
+</ParamField>
+
+<ParamField body="lead_offset_days" type="integer" optional>
+  Updated lead offset. Integer between 0 and 365.
+</ParamField>
+
+<ParamField body="default_tax_rate_id" type="string (UUID)" optional>
+  Updated default tax rate. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="payment_method_id" type="string (UUID)" optional>
+  Updated payment method. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="auto_charge_enabled" type="boolean" optional>
+  Updated auto-charge setting.
+</ParamField>
+
+<ParamField body="notes" type="string" optional>
+  Updated internal notes. Max 2,000 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="items" type="array of objects" optional>
+  Replacement line items. When present, **replaces the full item list wholesale** — re-send all existing items plus any additions. Must contain at least one entry. See `plans.create` for the item field reference.
+</ParamField>
+
+#### Example — rename a plan and update its cadence
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "plans.update",
+    "arguments": {
+      "id": "p9a8b7c6-...",
+      "title": "Bi-monthly lawn care",
+      "cadence_rrule": "FREQ=MONTHLY;INTERVAL=2"
+    }
+  }
+}
+```
+
+---
+
+### `plans.cancel`
+
+Cancel a recurring plan. This is terminal — there is no resume from `cancelled`. The recurring engine stops generating invoices for the plan. No refund is issued.
+
+Cancelling a plan that is already cancelled returns a `conflict` error.
+
+<Callout type="info">
+`plans.cancel` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The plan to cancel.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "plans.cancel",
+    "arguments": {
+      "id": "p9a8b7c6-..."
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"cancelled\":true,\"id\":\"p9a8b7c6-...\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Error reference
+
+| Kind | What it means | Common cause |
+|---|---|---|
+| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing required field, `items` array is empty, passing `customer_id` or `status` in `plans.update`, calling a write tool with a tenant-key token |
+| `not_found` | The plan does not exist in this tenant | Stale or wrong `id` |
+| `conflict` | The request collides with current state | Calling `plans.cancel` on a plan that is already cancelled |
+| `insufficient_scope` | The token does not hold the required scope | Missing `read:plans` or `write:plans` |
+
+For the full error shape and HTTP status codes, see [Errors](/developers/errors).
+
+---
+
+## Related pages
+
+<Columns>
+  <Card title="MCP overview" href="/developers/mcp">
+    How to connect, authenticate, and call tools.
+  </Card>
+  <Card title="Scopes" href="/developers/authentication/scopes">
+    Full scope catalog and how umbrella scopes expand.
+  </Card>
+  <Card title="Customers" href="/developers/api/customers">
+    Look up the customer_id you need before creating a plan.
+  </Card>
+  <Card title="Invoices" href="/developers/api/invoices">
+    The invoices the recurring engine generates from your plans.
+  </Card>
+</Columns>

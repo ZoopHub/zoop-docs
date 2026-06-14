@@ -1,0 +1,393 @@
+---
+title: Catalog categories
+description: Organize the pricebook into categories.
+audience: developer
+---
+
+Catalog categories let you group items in your [pricebook](/using-zoop/pricebook) — for example, separating plumbing labor from HVAC parts. Categories form an optional tree: each category can have a `parent_id` that points to another category. If you do not need hierarchy, leave `parent_id` null and all categories sit at the root.
+
+The list tool returns **flat rows** — you get every category with its `parent_id` and assemble the tree on your side. This keeps the server call simple regardless of how deep your hierarchy is.
+
+All five tools (`list`, `get`, `create`, `update`, `delete`) live under the `catalog_categories` entity and require either `read:catalog_categories` or `write:catalog_categories`. The umbrella scopes `read:catalog` and `write:catalog` expand to cover these too — see [Scopes](/developers/authentication/scopes).
+
+<Callout type="info">
+If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
+</Callout>
+
+---
+
+## Scopes
+
+| Scope | Grants access to |
+|---|---|
+| `read:catalog_categories` | `catalog_categories.list`, `catalog_categories.get` |
+| `write:catalog_categories` | `catalog_categories.create`, `catalog_categories.update`, `catalog_categories.delete` |
+
+`write:catalog_categories` does **not** imply `read:catalog_categories`. Grant both if your integration needs to read and write.
+
+The umbrella scope `read:catalog` satisfies `read:catalog_categories`, and `write:catalog` satisfies `write:catalog_categories`. Prefer the specific child scopes for new integrations.
+
+---
+
+## `catalog_categories.list`
+
+List all catalog categories for the tenant. Returns flat rows ordered by `sort_order` ascending, then `name` ascending. Use the `parent_id` on each row to build a tree client-side.
+
+No input parameters.
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.list",
+    "arguments": {}
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"id\":\"a1b2c3d4-0001-0000-0000-000000000000\",\"tenant_id\":\"t-...\",\"parent_id\":null,\"name\":\"Plumbing\",\"description\":null,\"sort_order\":0,\"metadata\":{},\"created_at\":\"2026-01-10T09:00:00.000Z\",\"updated_at\":\"2026-01-10T09:00:00.000Z\"},{\"id\":\"a1b2c3d4-0002-0000-0000-000000000000\",\"tenant_id\":\"t-...\",\"parent_id\":\"a1b2c3d4-0001-0000-0000-000000000000\",\"name\":\"Drain & sewer\",\"description\":null,\"sort_order\":0,\"metadata\":{},\"created_at\":\"2026-01-10T09:05:00.000Z\",\"updated_at\":\"2026-01-10T09:05:00.000Z\"}]"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## `catalog_categories.get`
+
+Fetch one catalog category by `id`. Returns `not_found` if the ID does not exist in this tenant.
+
+<ParamField body="id" type="string (UUID)" required>
+  The category's `id`.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.get",
+    "arguments": {
+      "id": "a1b2c3d4-0002-0000-0000-000000000000"
+    }
+  }
+}
+```
+
+---
+
+## `catalog_categories.create`
+
+Create a catalog category. The name must be unique within its parent (two categories under the same parent cannot share a name; duplicate names at different levels are fine).
+
+<Callout type="info">
+`catalog_categories.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or an OAuth token instead.
+</Callout>
+
+<ParamField body="name" type="string" required>
+  Display name for the category. Max 255 characters. Must be unique among siblings (categories sharing the same `parent_id`).
+</ParamField>
+
+<ParamField body="parent_id" type="string (UUID)" optional>
+  ID of the parent category. Omit (or pass `null`) to create a root-level category. The parent must belong to the same tenant.
+</ParamField>
+
+<ParamField body="description" type="string" optional>
+  Optional description. Max 2,000 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="sort_order" type="integer" optional>
+  Controls the display order within a level. Lower numbers sort first. Defaults to `0`. Categories with the same `sort_order` are then sorted by `name`.
+</ParamField>
+
+<ParamField body="metadata" type="object" optional>
+  Arbitrary key-value pairs you can attach for your own use. Values can be any JSON-serializable type.
+</ParamField>
+
+#### Example — root category
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.create",
+    "arguments": {
+      "name": "HVAC",
+      "description": "Heating, ventilation, and air conditioning",
+      "sort_order": 1
+    }
+  }
+}
+```
+
+#### Example — child category
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.create",
+    "arguments": {
+      "name": "Filters & media",
+      "parent_id": "a1b2c3d4-0010-0000-0000-000000000000",
+      "sort_order": 0
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"id\":\"a1b2c3d4-0011-0000-0000-000000000000\",\"tenant_id\":\"t-...\",\"parent_id\":\"a1b2c3d4-0010-0000-0000-000000000000\",\"name\":\"Filters & media\",\"description\":null,\"sort_order\":0,\"metadata\":{},\"created_at\":\"2026-06-13T14:00:00.000Z\",\"updated_at\":\"2026-06-13T14:00:00.000Z\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## `catalog_categories.update`
+
+Update a category's fields. This is a **partial patch** — only the fields you send are changed. Fields you omit stay as they are.
+
+<Callout type="info">
+`catalog_categories.update` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+</Callout>
+
+<Callout type="warning">
+Re-parenting a category under one of its own descendants creates a cycle and is rejected with a `conflict` error. For example, if **Plumbing** is the parent of **Drain & sewer**, you cannot set `Plumbing`'s `parent_id` to `Drain & sewer`'s ID.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The category to update.
+</ParamField>
+
+<ParamField body="name" type="string" optional>
+  New display name. Max 255 characters. Must be unique among siblings after the change.
+</ParamField>
+
+<ParamField body="parent_id" type="string (UUID)" optional>
+  New parent category ID. Pass `null` to move the category to the root. The new parent must belong to the same tenant and must not be a descendant of this category.
+</ParamField>
+
+<ParamField body="description" type="string" optional>
+  Updated description. Max 2,000 characters. Pass `null` to clear.
+</ParamField>
+
+<ParamField body="sort_order" type="integer" optional>
+  Updated sort position within this level.
+</ParamField>
+
+<ParamField body="metadata" type="object" optional>
+  Replaces the stored metadata object wholesale. Pass an empty object (`{}`) to clear all keys.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.update",
+    "arguments": {
+      "id": "a1b2c3d4-0002-0000-0000-000000000000",
+      "name": "Drain, sewer & jetting",
+      "sort_order": 1
+    }
+  }
+}
+```
+
+---
+
+## `catalog_categories.delete`
+
+Permanently delete a category. This is a **hard delete** — the category row is removed and cannot be recovered.
+
+Before deleting, Zoop:
+
+1. Re-parents the category's **direct children** to the deleted category's own parent (one level up). If the deleted category was a root, its children become new roots.
+2. Clears `category_id` on any **catalog items** that belonged to this category.
+
+The operation runs as a single atomic transaction, so you will never see a partial state.
+
+<Callout type="warning">
+`catalog_categories.delete` is a **hard delete**. There is no soft-archive for categories. The row, its position in the tree, and all item assignments to it are permanently gone. Use deliberately.
+</Callout>
+
+<ParamField body="id" type="string (UUID)" required>
+  The category to delete. Returns `not_found` if the ID does not exist in this tenant.
+</ParamField>
+
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "catalog_categories.delete",
+    "arguments": {
+      "id": "a1b2c3d4-0002-0000-0000-000000000000"
+    }
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"deleted\":true,\"id\":\"a1b2c3d4-0002-0000-0000-000000000000\"}"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Response fields
+
+Every category object (returned by `list`, `get`, `create`, and `update`) has the same shape.
+
+<ResponseField name="id" type="string (UUID)">
+  Unique ID for the category.
+</ResponseField>
+
+<ResponseField name="tenant_id" type="string (UUID)">
+  The tenant this category belongs to.
+</ResponseField>
+
+<ResponseField name="parent_id" type="string (UUID) | null">
+  The parent category's `id`, or `null` if this is a root category.
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Display name.
+</ResponseField>
+
+<ResponseField name="description" type="string | null">
+  Optional description text.
+</ResponseField>
+
+<ResponseField name="sort_order" type="integer">
+  Sort position within this level of the tree. Lower numbers sort first.
+</ResponseField>
+
+<ResponseField name="metadata" type="object">
+  Arbitrary key-value pairs. Empty object if none were set.
+</ResponseField>
+
+<ResponseField name="created_at" type="string (ISO 8601)">
+  When the category was created.
+</ResponseField>
+
+<ResponseField name="updated_at" type="string (ISO 8601)">
+  When the category was last updated.
+</ResponseField>
+
+---
+
+## Building a tree from flat rows
+
+`catalog_categories.list` returns every category as a flat array. Each row has `id` and `parent_id`. To build a display tree:
+
+```ts
+type Category = {
+  id: string
+  parent_id: string | null
+  name: string
+  sort_order: number
+  children?: Category[]
+}
+
+function buildTree(rows: Category[]): Category[] {
+  const byId = new Map(rows.map((r) => [r.id, { ...r, children: [] as Category[] }]))
+  const roots: Category[] = []
+
+  for (const row of byId.values()) {
+    if (row.parent_id && byId.has(row.parent_id)) {
+      byId.get(row.parent_id)!.children!.push(row)
+    } else {
+      roots.push(row)
+    }
+  }
+
+  // Sort each level by sort_order, then name (server already ordered this way,
+  // but re-sorting after grouping is cheap and makes the result deterministic).
+  function sort(nodes: Category[]) {
+    nodes.sort((a, b) => a.sort_order - b.sort_order || a.name.localeCompare(b.name))
+    nodes.forEach((n) => n.children && sort(n.children))
+  }
+  sort(roots)
+
+  return roots
+}
+```
+
+---
+
+## Error reference
+
+| Kind | What it means | Common cause |
+|---|---|---|
+| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing `name`, invalid UUID for `parent_id`, calling `create`/`update` with a tenant-key token |
+| `not_found` | The category ID does not exist in this tenant | Stale or wrong ID |
+| `conflict` | The request collides with existing state | Duplicate name under the same parent, or re-parenting that would create a cycle |
+| `insufficient_scope` | The token does not hold the required scope | Missing `read:catalog_categories` or `write:catalog_categories` |
+
+For the full error shape and HTTP status codes, see [Errors](/developers/errors).
+
+---
+
+## Related pages
+
+<Columns>
+  <Card title="Catalog items" href="/developers/api/catalog-items">
+    Create and manage the services, products, and fees in your pricebook.
+  </Card>
+  <Card title="MCP overview" href="/developers/mcp">
+    How to connect, authenticate, and call tools.
+  </Card>
+  <Card title="Scopes" href="/developers/authentication/scopes">
+    Full scope catalog and how umbrella scopes expand.
+  </Card>
+  <Card title="Pricebook" href="/using-zoop/pricebook">
+    How categories appear in the Zoop pricebook for end users.
+  </Card>
+</Columns>

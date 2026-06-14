@@ -1,0 +1,174 @@
+---
+title: Pricebook
+description: Keep your services, materials, and prices ready to drop into any quote or invoice.
+audience: end-user
+---
+
+Your pricebook is the central list of everything you sell or charge for. When you build a [quote](/using-zoop/quotes) or [invoice](/using-zoop/invoices), you pick from this list instead of typing prices from scratch each time.
+
+<Callout type="info">TODO(screenshot): pricebook list view showing the kind filter tabs, category sidebar, and items table with image thumbnails.</Callout>
+
+## Item kinds
+
+Every item has a kind. The kind cannot be changed after you create the item.
+
+| Kind | Use it for |
+|---|---|
+| Service | Work you perform — drain cleaning, lawn cut, HVAC tune-up |
+| Product | Physical parts or materials you supply — a filter, a valve, mulch |
+| Labor | Billable time at an hourly or day rate |
+| Fee | Fixed charges — fuel surcharge, disposal fee, permit fee |
+| Bundle | A packaged group of other items sold together at one price |
+| Discount | A percentage or flat-dollar reduction applied to a quote or invoice |
+
+## Add an item
+
+Go to **Pricebook** and select **+ New**.
+
+Fill in the fields:
+
+- **Name** — what the customer sees on their quote or invoice.
+- **Kind** — choose from the list above.
+- **SKU** — optional internal reference code. Used for CSV imports and matching during updates.
+- **Description** — optional notes about the item.
+- **Category** — group the item so it is easier to find. You can type a new category name and select **+ Add** to create it on the spot.
+- **Unit label** — how the item is priced (for example: per visit, per hour, each, per sqft). Not shown for discounts.
+- **Retail price** — the price shown to customers.
+
+If you are an owner, you also see two additional pricing fields:
+
+- **Cost** — what you pay for the item.
+- **Markup %** — your margin over cost.
+
+If you fill in any two of cost, markup, and retail price, Zoop calculates the third automatically when you move out of the field.
+
+<Callout type="info">TODO(screenshot): item form open on a service item, showing the pricing section with cost, markup, and retail price fields.</Callout>
+
+Select **Create item** to save.
+
+### Add a photo
+
+On any item form you can attach a photo — useful for products or anything where a visual helps the customer. Select the image area to pick a file, or drag one onto it. Photos appear as thumbnails in the pricebook list.
+
+<Callout type="warning">TODO(verify): confirm whether item photos also appear on line items in quotes and invoices.</Callout>
+
+If the image upload fails after the item is saved, Zoop will warn you and you can retry from the item's edit page.
+
+### Products: supplier info
+
+For product items, if you are an owner, you can optionally record a **Supplier URL** and **Supplier SKU** — the link to where you order the part and the supplier's part number. This information stays internal.
+
+### Bundles
+
+A bundle groups existing items and sells them as a single package. After choosing kind **Bundle**, select **+ Add component** to pick items (services, products, labor, or fees). Set the quantity for each component. You can drag components to reorder them.
+
+Optionally set a **flat package price**. When you do, Zoop shows you how much the customer saves compared to buying the components individually.
+
+<Callout type="warning">A bundle cannot contain another bundle or a discount item.</Callout>
+
+### Discounts
+
+For a discount item, choose a type:
+
+- **Percentage (%)** — reduces the subtotal by a percentage.
+- **Flat amount ($)** — reduces the subtotal by a fixed dollar amount.
+
+Then enter the value. Discounts appear as line items on quotes and invoices.
+
+## Edit an item
+
+From the pricebook list, open the item's row menu (the **…** icon) and select **Edit**, or select the item name directly.
+
+Kind is locked after creation. All other fields can be updated.
+
+### Price history
+
+If you are an owner, you can see a full log of every change to an item's cost, markup, and retail price — when it changed and what it changed from. The log appears at the bottom of the item's edit page.
+
+## Duplicate an item
+
+Open the row menu and select **Duplicate**. Zoop creates a copy named "Copy of [item name]" with the SKU cleared so you can assign a new one. You are taken straight to the edit page for the copy.
+
+## Archive and restore
+
+Archiving removes an item from the active list and from the picker when building quotes and invoices. It does not delete the item or affect existing quotes and invoices that already use it.
+
+To archive, open the row menu and select **Archive**.
+
+To see archived items, select **View archived** above the list. From there you can select **Restore** in the row menu to bring an item back.
+
+## Search and filter
+
+Use the search bar to find items by name. Use the kind tabs (All, Service, Product, Labor, Fee, Bundle, Discount) to filter by kind. Use the category sidebar to filter by category.
+
+Filters combine — you can search within a category and a specific kind at the same time.
+
+## Categories
+
+Categories help you group items — for example, Electrical, Plumbing, or HVAC. Selecting a category in the sidebar filters the list to items in that category and all its subcategories.
+
+Go to **Pricebook → Categories** to manage your category tree. You can:
+
+- **Add** a root category or a child category (drag the tree into nesting order).
+- **Rename** a category inline.
+- **Move** a category by dragging it onto another category to make it a child.
+- **Delete** a category. Any items assigned to it become uncategorised. Any child categories are promoted to the deleted category's parent level.
+
+<Callout type="info">TODO(screenshot): category tree showing a two-level hierarchy with the drag handle visible on hover.</Callout>
+
+## Import from CSV
+
+Use CSV import to add or update many items at once. Only owners can run an import.
+
+<Steps>
+  <Step title="Open the import wizard">
+    From the pricebook list, select **Import CSV** in the top right.
+  </Step>
+  <Step title="Upload your file">
+    Drag your CSV file onto the upload area, or select **Browse files**. The file must be in CSV format and under 20 MB.
+
+    Required columns: **Name**, **Kind**, **Retail Price**. All other columns are optional.
+
+    Optional columns you can include:
+
+    | Column | Notes |
+    |---|---|
+    | description | Item description |
+    | sku | Stock-keeping unit. Used to match rows when updating existing items. |
+    | unit | Unit label (e.g. per visit, each) |
+    | cost | Your cost — visible to owners only |
+    | markup_pct | Markup percentage |
+    | discount_type | `percentage` or `flat` — required when kind is `discount` |
+    | discount_value | The discount amount |
+    | category_name | Category to assign the item to. Created automatically if it does not exist. |
+    | supplier_url | Supplier link — products only |
+    | supplier_sku | Supplier part number — products only |
+
+    Zoop reads your column headers and suggests the mapping automatically.
+  </Step>
+  <Step title="Map your columns">
+    Review the suggested mapping. Each column in your file is shown on the left; the Zoop field it maps to is shown on the right. Adjust any that are wrong. Columns you do not want to import can be left as **Skip**.
+
+    A preview of the first three rows is shown below the mapping so you can confirm it looks right before continuing.
+  </Step>
+  <Step title="Choose an import mode">
+    - **Create only** — adds new items. Rows whose SKU already matches an existing item are skipped.
+    - **Create or update** — adds new items and updates existing items matched by SKU. Rows without a SKU are always created as new.
+  </Step>
+  <Step title="Review and import">
+    Confirm the row count and your settings, then select **Import**. Zoop processes all rows and shows you how many were created, updated, or skipped.
+
+    If any rows were skipped, you can download a CSV of the errors to see which rows failed and why.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): CSV import wizard at the mapping step, showing the suggested column mapping and the three-row preview table.</Callout>
+
+<Callout type="warning">If a row's kind is `discount`, the `discount_type` column is required. Rows missing it are skipped.</Callout>
+
+## Related pages
+
+- [Quotes](/using-zoop/quotes) — add pricebook items to a quote as line items.
+- [Invoices](/using-zoop/invoices) — add pricebook items to an invoice.
+- [API: catalog items](/developers/api/catalog-items) — manage items programmatically.
+- [API: catalog categories](/developers/api/catalog-categories) — manage categories via the API.

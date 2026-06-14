@@ -1,0 +1,127 @@
+---
+title: Rate limits
+description: Per-credential and per-tenant request limits, how sliding windows work, and how to handle 429 responses.
+audience: developer
+---
+
+Zoop enforces rate limits on all external API requests to protect the service. Limits are implemented as sliding windows backed by Redis, keyed on either your API credential or your tenant.
+
+## How sliding windows work
+
+A sliding window limit means the counter looks back a rolling period (for example, the last 60 seconds) rather than resetting at a fixed clock boundary. If you send 120 requests in one burst, you must wait for the oldest requests to fall outside the window before you can send more.
+
+## Primary API limits
+
+These two limits apply to every request you make through the Zoop external API.
+
+| Limiter | Scope | Algorithm | Limit |
+|---|---|---|---|
+| Per-credential | Your API key or OAuth token | Sliding window | 120 requests per minute |
+| Per-tenant | All credentials belonging to your tenant combined | Sliding window | 600 requests per minute |
+
+Both limits must pass. A request that clears the per-credential limit can still be rejected if your tenant has reached 600 requests across all integrations in the same window.
+
+<Callout type="info">
+The per-tenant limit means that if you run multiple integrations (for example, a Zapier zap and a custom webhook handler) under the same Zoop account, their requests share the 600 requests-per-minute budget.
+</Callout>
+
+## Handling 429 responses
+
+When a limit is exceeded, Zoop returns HTTP `429 Too Many Requests`. The response includes a `Retry-After` header with the number of seconds to wait before retrying.
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 12
+Content-Type: application/json
+```
+
+<Callout type="warning">TODO(verify): confirm the exact JSON body returned on a 429 — the rate-limit middleware returns only the `Retry-After` value; the response body shape is set in the route handler layer which was not reviewed.</Callout>
+
+The `Retry-After` value is the ceiling of the milliseconds remaining until the oldest request in your window expires, converted to whole seconds (minimum 1).
+
+### Retry with backoff
+
+Read the `Retry-After` header and wait at least that long before retrying. Adding a small amount of random jitter prevents multiple parallel clients from hammering the API at the same instant.
+
+<CodeGroup>
+```typescript TypeScript
+async function zoopFetch(url: string, options: RequestInit): Promise<Response> {
+  const MAX_RETRIES = 3
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const res = await fetch(url, options)
+
+    if (res.status !== 429) {
+      return res
+    }
+
+    if (attempt === MAX_RETRIES - 1) {
+      // No more retries — surface the error to the caller.
+      return res
+    }
+
+    const retryAfter = parseInt(res.headers.get('Retry-After') ?? '5', 10)
+    const jitter = Math.random() * 1000 // up to 1 s of extra wait
+    await new Promise((resolve) =>
+      setTimeout(resolve, retryAfter * 1000 + jitter),
+    )
+  }
+
+  throw new Error('unreachable')
+}
+```
+
+```python Python
+import time
+import random
+import httpx
+
+def zoop_fetch(url: str, **kwargs) -> httpx.Response:
+    MAX_RETRIES = 3
+
+    for attempt in range(MAX_RETRIES):
+        res = httpx.request(**kwargs, url=url)
+
+        if res.status_code != 429:
+            return res
+
+        if attempt == MAX_RETRIES - 1:
+            return res
+
+        retry_after = int(res.headers.get("Retry-After", "5"))
+        jitter = random.random()  # up to 1 s
+        time.sleep(retry_after + jitter)
+
+    raise RuntimeError("unreachable")
+```
+</CodeGroup>
+
+## Other limiters
+
+Beyond the primary API limits, several other rate limiters protect specific endpoints. You are unlikely to hit these during normal integration work, but they can produce 429 responses.
+
+| Endpoint / action | Algorithm | Limit |
+|---|---|---|
+| OAuth token endpoint | Sliding window | 20 requests per minute per IP |
+| Dynamic client registration (DCR) | Fixed window | 10 registrations per hour per IP |
+
+See [Authentication — OAuth](/developers/authentication/oauth) for background on the OAuth and DCR flows.
+
+## Fail-open vs fail-closed behavior
+
+When the Redis instance that backs the rate limiter is unreachable, Zoop applies one of two policies depending on the risk of the endpoint:
+
+**Fail-closed** — the request is rejected with `429` even though Redis is down. This policy applies to unauthenticated or credential-issuance endpoints where unlimited retries could enable abuse (OAuth token endpoint, DCR registration, public PDF rendering). The `Retry-After` returned in this case is 60 seconds.
+
+**Fail-open** — the request is allowed through. This policy applies to the primary per-credential and per-tenant limiters, because your requests are already authenticated and a Redis outage should not break a working integration.
+
+In practice, fail-open means that during a brief Redis outage, your integration continues to work without hitting artificial 429 errors.
+
+## Tips for staying within limits
+
+- **Batch where possible.** Fetching a list of jobs in one request costs the same 1 request as fetching a single job.
+- **Cache responses.** If you need the same data in multiple places, fetch once and reuse it.
+- **Watch your tenant budget.** If you run several integrations, their request counts add up against the shared 600 requests-per-minute ceiling.
+- **Implement retry with `Retry-After`.** Do not use a fixed delay — always read the header.
+
+For questions about authentication and how credentials are scoped, see [API keys](/developers/authentication/api-keys) and [OAuth](/developers/authentication/oauth).

@@ -1,0 +1,171 @@
+---
+title: Dispatch & routes
+description: Assign jobs to your team and keep every route on time.
+audience: end-user
+---
+
+Zoop gives you two route views depending on your role. Owners and office managers see the **dispatch board** — a column for every team member plus an unassigned queue. Technicians land on **My day** — a personal stop list for the current date. Both surfaces show a live map and flag stops that are at risk of running late.
+
+<Callout type="info">The sidebar entry for routing is labeled **Scheduler**. Expand it to reach Calendar, Route manager (your personal My day view), and Dispatch.</Callout>
+
+<Callout type="info">TODO(screenshot): the dispatch board with three member columns, the unassigned rail on the left, and colored map pins above.</Callout>
+
+---
+
+## The dispatch board
+
+The dispatch board is the command center for assigning and rearranging the day's work. Open it from the sidebar under **Scheduler → Dispatch**.
+
+<Callout type="warning">
+Only owners and office-role members can reach the dispatch board. Technicians are redirected to their own My day view when they navigate to Route.
+</Callout>
+
+### What you see
+
+The board has a horizontal scroll with one fixed-width column per team member plus a leading **Unassigned** column on the left. A map sits above the columns and plots every geocoded stop — each member's pins share a color with their column header dot so you can match stops to people at a glance.
+
+- **Unassigned column** — jobs scheduled for the day that have no assignee yet. These show the customer name, job title, and address.
+- **Member columns** — one per active team member, showing their ordered list of stops for the day. Each stop card displays the customer name, address, and a badge for the stop type (job, event, or ad-hoc).
+- **Likely late badge** — a red "Likely late" marker appears on any stop where the projected arrival is past the customer's promised window. See [At-risk warnings](#at-risk-warnings) below.
+
+### Assigning jobs
+
+Drag any card from one column to another to assign or reassign it. Use the grab handle on the left edge of the card.
+
+<Steps>
+  <Step title="Find the job in the unassigned column">
+    Unassigned jobs appear in the left rail with an amber "unassigned" badge.
+  </Step>
+  <Step title="Drag it to a member column">
+    Pick up the card by its drag handle and drop it into the target technician's column. The column highlights when your card is over a valid drop zone.
+  </Step>
+  <Step title="Reassign or unassign">
+    Drag a stop from one member column to another to reassign it. Drag it back to the Unassigned column to remove the assignment.
+  </Step>
+</Steps>
+
+### Reordering stops
+
+Drag stops up or down within the same member column to change the order in which that technician visits them. Drop order is saved immediately.
+
+### Browsing other dates
+
+The board defaults to today. To view a different date, add a `?date=YYYY-MM-DD` parameter to the URL — for example `?date=2026-06-20`. The missed-jobs tray (described below) always reflects today regardless of the date you're browsing.
+
+<Callout type="info">TODO(screenshot): a member column with a Likely late badge on one stop card and the colored dot in the column header.</Callout>
+
+---
+
+## Missed jobs
+
+When jobs pass their scheduled day without being completed, they appear above the board in a **Needs rescheduling** tray.
+
+<Callout type="info">TODO(screenshot): the Needs rescheduling tray with one or two rows, each showing a Reschedule button.</Callout>
+
+Each row shows the customer name, job title, and the date the job was originally scheduled. From here you can:
+
+- **Reschedule** — generates a single-use link and copies it to your clipboard. Send it to the customer so they can pick a new time. This does not automatically move the job; it just hands you the link.
+- **View job** — opens the full job detail page.
+
+<Callout type="warning">
+The tray proposes the reschedule link but never moves or reassigns the job automatically. You decide when and to whom the job is rescheduled.
+</Callout>
+
+---
+
+## My day (the route cockpit)
+
+Every team member — including owners — has a personal **My day** view at **Scheduler → Route manager**. It shows today's assigned stops in order with a map above and a draggable list below.
+
+<Callout type="info">TODO(screenshot): the My day view on a phone-sized screen showing the map, stop list, and Add stop button.</Callout>
+
+### Your stop list
+
+Each stop card shows the customer name, address, and stop type. Tap a card to expand it for actions. Drag the handle on the left to reorder stops — the new order is saved as you go.
+
+### Adding a stop
+
+Tap **Add stop** at the bottom of the list to add an unplanned visit.
+
+<Tabs>
+  <Tab title="By address">
+    Search for any address using the autocomplete field. The stop is added as an ad-hoc entry at the end of your list.
+  </Tab>
+  <Tab title="From calendar">
+    Any of today's scheduled calendar events that are not already on your route appear here. Tap one to add it.
+  </Tab>
+</Tabs>
+
+### Notifying a customer
+
+If you are running late, tap a stop card and choose **Notify client**. Zoop suggests whether to send a heads-up (FYI) or ask to reschedule, based on how your arrival compares to the promised window. You can change the cause (traffic, rain, running long, route change), edit the message, and choose to send by text or email before tapping **Send**.
+
+### Rescheduling from the cockpit
+
+Tap a stop card and choose **Reschedule** to generate a single-use link your customer can use to pick a new time. The link appears in a read-only field — copy it or tap **Send to customer** to send it directly via text or email.
+
+---
+
+## At-risk warnings
+
+Zoop monitors each stop's projected arrival against the customer's promised window and marks stops **Likely late** when the ETA breaches that window.
+
+The "Likely late" badge appears on:
+- stop cards on the dispatch board, so dispatchers can spot problems across the whole team,
+- stop cards in a technician's My day list.
+
+The badge fires only when a job has a hard-window flexibility type and the projected arrival breaks its promised window. Stops without a promised window, flexible jobs (same-day or multi-day), or stops where the ETA is within the window show no marker.
+
+<Callout type="warning">TODO(verify): confirm whether the at-risk ETA walk runs automatically in the background or requires a manual trigger (cron watcher behavior).</Callout>
+
+---
+
+## Route intelligence
+
+The **Route intelligence** page gives owners and office managers a weekly view of how efficiently the team's routes are running. It covers the current week and requires operational-reports access.
+
+<Callout type="warning">TODO(verify): confirm where Route intelligence appears in the sidebar navigation — the current source places the page at a top-level URL separate from the Scheduler submenu.</Callout>
+
+<Callout type="info">TODO(screenshot): the Route intelligence page showing the capacity table and profitability table.</Callout>
+
+### Capacity & load
+
+A table showing, for each day of the week:
+
+| Column | What it means |
+|---|---|
+| Day | The calendar date |
+| Crew | Number of team members with stops that day |
+| Jobs | Total jobs on the route |
+| On-site | Total hours spent at job sites |
+| Utilization | On-site hours as a share of an 8-hour workday — green when healthy, amber when underbooked, red when overbooked |
+
+### Profitability
+
+Shows revenue and revenue per on-site hour by day. Only visible to owners.
+
+### Geographic clustering
+
+A map of all job-site pins for the week, plus a count of consolidation opportunities — nearby jobs that are scheduled on different days and could potentially be batched. This panel requires enough geocoded addresses to be reliable.
+
+### Travel efficiency
+
+A table showing, per day:
+
+| Column | What it means |
+|---|---|
+| Day | The calendar date |
+| Drive | Total drive time between stops |
+| Miles | Total distance driven |
+| Drive vs billable | Drive time as a share of on-site time — useful for spotting routes where travel is eating into productive hours |
+
+<Callout type="warning">TODO(verify): confirm whether Route intelligence is available on all plans or requires a specific tier.</Callout>
+
+---
+
+## Related pages
+
+- [Calendar](/using-zoop/calendar) — view and manage scheduled events that can be added as route stops.
+- [Jobs](/using-zoop/jobs) — create or update jobs before dispatching them.
+- [Team](/using-zoop/team) — manage which members appear as columns on the dispatch board.
+- [Communications](/using-zoop/communications) — review messages sent from the notify and reschedule flows.

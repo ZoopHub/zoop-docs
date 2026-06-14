@@ -1,0 +1,226 @@
+---
+title: Core concepts
+description: Tenants, actors, resources, and the CRUD conventions every tool follows.
+audience: developer
+---
+
+This page explains the mental model behind every Zoop API call. Read it once before you write any integration code — the terms show up everywhere.
+
+## Tenants
+
+A **tenant** is one Zoop account — one contractor business. All data in Zoop belongs to exactly one tenant. When you make an API call, you operate on **one tenant only**, and that tenant is determined by your access token, not by anything in the URL.
+
+There is no way to ask the API to operate across multiple tenants in a single request. If you build a platform that manages many Zoop accounts, you need one token per tenant.
+
+## Actors
+
+Every request is made by an **actor** — the entity your token represents. There are two kinds:
+
+<Tabs>
+<Tab title="User actor">
+
+A **user actor** (`actorKind: 'user'`) represents a real person who is a member of the tenant. The actor has:
+
+- A `userId` identifying the person.
+- A `role` within the tenant: `owner`, `office`, or `tech`.
+- A set of `scopes` controlling what the token can read or write.
+
+User actors are issued by OAuth access tokens and by user-bound API keys (prefixed `zoop_uk_`).
+
+Many write operations — anything that stamps an author or assignee — require a user actor. Tenant-key tokens cannot call those tools.
+
+</Tab>
+<Tab title="Tenant actor">
+
+A **tenant actor** (`actorKind: 'tenant'`) is a headless bot that represents the tenant account itself. It has no `userId` and no `role`. It is issued only by tenant-bound API keys (prefixed `zoop_tk_`).
+
+Tenant actors can call any read tool and any write tool that does not require user attribution. Tools that require a user actor return an `invalid_input` error if you call them with a tenant-key token.
+
+</Tab>
+</Tabs>
+
+<Callout type="info">
+If you are building an automation that creates jobs, notes, or other records that need an author, use a user-bound API key or OAuth, not a tenant key.
+</Callout>
+
+## Resources
+
+Zoop organizes its data into **13 resources**. Each resource maps to a set of tools and a pair of scopes (`read:<resource>` / `write:<resource>`).
+
+| Resource | What it represents | Scope pair |
+|---|---|---|
+| Customers | People and companies you do work for | `read:customers` / `write:customers` |
+| Contacts | Phone/email contacts on a customer | (sub-resource of customers) |
+| Locations | Service addresses on a customer | (sub-resource of customers) |
+| Tags | Labels in the tenant's tag library | (sub-resource of customers) |
+| Notes | Free-text notes attached to any subject | `read:notes` / `write:notes` |
+| Jobs | Individual work orders | `read:jobs` / `write:jobs` |
+| Job series | Recurring job templates | `read:job_series` / `write:job_series` |
+| Invoices | Bills sent to customers | `read:invoices` / `write:invoices` |
+| Quotes | Estimates sent before work starts | `read:quotes` / `write:quotes` |
+| Catalog items | Pricebook entries (services, products, bundles) | `read:catalog_items` / `write:catalog_items` |
+| Catalog categories | Folders for catalog items | `read:catalog_categories` / `write:catalog_categories` |
+| Plans | Recurring billing plan templates | `read:plans` / `write:plans` |
+| Tax rates | Tax rates applied to invoices and quotes | `read:tax_rates` / `write:tax_rates` |
+
+Contacts, locations, and tags are **sub-resources** of customers — they share the `read:customers` / `write:customers` scopes and cannot exist outside a tenant's customer domain.
+
+Notes are the exception: they have their own scope pair because a note can attach to many subject types, not just customers.
+
+## The 5-verb CRUD convention
+
+Every resource exposes exactly five operations, always in this shape:
+
+| Verb | What it does |
+|---|---|
+| **list** or **search** | Returns multiple records with pagination. |
+| **get** | Fetches one full record by ID. |
+| **create** | Creates a new record. |
+| **update** | Partially updates an existing record (only fields you send change). |
+| **destructive verb** | Removes or terminates the record. Usually `archive`, but some resources diverge (see below). |
+
+Tool names follow the pattern `<resource>.<verb>`, for example `customers.search`, `jobs.create`, `invoices.void`.
+
+### List and search
+
+List tools return a page of records. Every list response includes pagination metadata so you can fetch the next page.
+
+There are two pagination styles — cursor-based and page-based — depending on the resource.
+
+### Get
+
+Fetch one record by its UUID. If the record does not exist in this tenant (or has been soft-deleted), the tool returns a `not_found` error — never an empty success.
+
+### Create
+
+Creates the record. You do not compute derived fields — the server calculates totals, tax, next billing dates, and similar values. Records that have a lifecycle (invoices, quotes) start in their initial draft status.
+
+### Update
+
+Sends a partial patch: only the fields you include in the request are changed. However, **collection fields** (line items, bundle components, plan items, assigned users) use **replace-wholesale** semantics — if you send the collection, the entire collection is replaced with what you sent.
+
+```json title="Partial update — only title changes"
+{
+  "title": "Repipe master bath"
+}
+```
+
+```json title="Replace-wholesale — all line items replaced"
+{
+  "line_items": [
+    { "catalog_item_id": "abc123", "quantity": 1 }
+  ]
+}
+```
+
+### Destructive verb
+
+The default destructive verb is `archive` (soft-delete). Six resources use a different verb because their data model or status machine demands it:
+
+| Tool | Verb | Why |
+|---|---|---|
+| `jobs.cancel` | `cancel` | Jobs have a status machine; the terminal state is `cancelled`. |
+| `invoices.void` | `void` | Invoices use `void` as their soft-delete. One-way. |
+| `job_series.end` | `end` | Series have no archive column; `end` caps the schedule and cancels future instances. One-way. |
+| `plans.cancel` | `cancel` | Plans have a status machine; `cancel` is terminal with no resume. |
+| `tags.delete` | `delete` | Hard delete — the tags table has no soft-delete column. Removes the tag and all its assignments permanently. |
+| `catalog_categories.delete` | `delete` | Hard delete — re-parents children and clears items' `category_id`. Permanent. |
+
+<Callout type="warning">
+`tags.delete` and `catalog_categories.delete` are **permanent hard deletes**. They cannot be undone. All other destructive verbs either soft-delete (hiding the record while preserving its history) or make a one-way status transition that keeps history intact.
+</Callout>
+
+## Soft delete vs. hard delete
+
+### Soft delete
+
+Most resources support soft-delete via `archive`. When you archive a record:
+
+- It disappears from default list and get responses.
+- Its data is preserved; any records that reference it stay intact.
+- Some list tools accept an `include_archived` flag to show archived records.
+
+### Hard delete
+
+Tags and catalog categories do not have a soft-delete column in the database. Deleting them permanently removes the row:
+
+- **`tags.delete`** — removes the tag and cascades to remove all tag assignments on customers.
+- **`catalog_categories.delete`** — removes the category, re-parents any child categories under the deleted category's parent, and clears the `category_id` on any catalog items that were in the category.
+
+## Pagination
+
+Two pagination styles are in use, depending on the resource:
+
+<Tabs>
+<Tab title="Cursor-based">
+
+Used by `customers.search` and `notes.list`.
+
+Pass the opaque `cursor` string from the previous response to get the next page. Read `nextCursor` and `hasMore` in the response to know whether more pages exist.
+
+```json title="First request — no cursor"
+{
+  "query": "smith"
+}
+```
+
+```json title="Response with cursor"
+{
+  "data": [ ... ],
+  "nextCursor": "eyJpZCI6IjEyMyJ9",
+  "hasMore": true
+}
+```
+
+```json title="Next request — pass the cursor"
+{
+  "query": "smith",
+  "cursor": "eyJpZCI6IjEyMyJ9"
+}
+```
+
+</Tab>
+<Tab title="Page-based">
+
+Used by jobs, invoices, quotes, plans, job series, catalog items, and catalog categories.
+
+Pass a 1-based `page` integer. The response includes the records for that page.
+
+```json title="Page 2"
+{
+  "page": 2
+}
+```
+
+</Tab>
+</Tabs>
+
+## Error kinds
+
+When a tool call fails, the error has a `kind` that tells you why. Here are all five kinds and what to do about each:
+
+| Kind | Meaning | What to check |
+|---|---|---|
+| `invalid_input` | A field failed validation, or a precondition was not met (for example, calling a user-only tool with a tenant-key token). | Check required fields, field types, and whether your token is a user actor. |
+| `not_found` | The record does not exist in this tenant, or it has been archived. | Confirm the UUID is correct and belongs to this tenant, and that the record has not been soft-deleted. |
+| `conflict` | The request collides with current state. | Common causes: duplicate unique name, illegal status transition, trying to edit a non-draft invoice, or trying to set a second primary contact without demoting the first. |
+| `insufficient_scope` | Your token does not hold a required scope. | Add the missing scope to your API key or OAuth token request. See [scopes](/developers/authentication/scopes). |
+| `internal` | An unexpected server or database error occurred. | Retry with backoff. Details are never sent to the client. |
+
+Auth-layer failures — before any tool runs — return standard HTTP status codes: `401` for a missing, invalid, expired, or revoked token; `403` for wrong tenant or insufficient scope; `429` for rate limiting (the response includes a `Retry-After` header).
+
+See [Errors](/developers/errors) for the full error reference.
+
+## Identifiers and data types
+
+- All IDs are **UUIDs** and are validated at the API boundary. A malformed UUID returns `invalid_input` immediately.
+- Phone numbers on contacts are normalized to **E.164** format (for example, `+15125550199`). The raw input is also preserved.
+- Tax rates are stored as a decimal internally (for example, `0.0825` for 8.25%), but the create and update tools accept a human-readable `rate_percentage` value (for example, `8.25`) and do the conversion for you.
+- Monetary values on invoices and quotes are **computed server-side** from line items and the applied tax rate. You do not send a total; you send line items.
+
+## What comes next
+
+- To authenticate and get a token, see [API keys](/developers/authentication/api-keys) or [OAuth](/developers/authentication/oauth).
+- For the full list of scopes, see [Scopes](/developers/authentication/scopes).
+- To browse the tools for a specific resource, see the API reference under [Customers](/developers/api/customers), [Jobs](/developers/api/jobs), [Invoices](/developers/api/invoices), and the other resource pages.
+- To use these tools from an AI agent, see [MCP](/developers/mcp).

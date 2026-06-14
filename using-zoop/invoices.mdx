@@ -1,0 +1,220 @@
+---
+title: Invoices
+description: Create invoices from jobs or quotes and send them in a tap.
+audience: end-user
+---
+
+Invoices are how you ask for money. You can create one from scratch, from a completed [job](/using-zoop/jobs), or from an accepted [quote](/using-zoop/quotes). Once sent, your customer gets a payment link they can use to pay by card — or you can record an offline payment yourself.
+
+<Callout type="info">TODO(screenshot): invoices list page showing the status tabs (All, Draft, Sent, Overdue, Paid, Void) and a sample table row.</Callout>
+
+## Invoice statuses
+
+| Status | What it means |
+|--------|---------------|
+| Draft | Created but not yet sent to the customer. |
+| Sent | Sent to the customer with a payment link. |
+| Overdue | The due date has passed and it is not yet paid. |
+| Paid | Payment received in full. |
+| Dunning | Stripe is retrying an automatic payment that initially failed. |
+| Uncollectible | Written off — stays on your books but is removed from the overdue list. |
+| Void | Cancelled. History is preserved; collection stops. |
+
+For recording and tracking payments, see [Payments](/using-zoop/payments).
+
+---
+
+## Create an invoice
+
+<Tabs>
+  <Tab title="From scratch">
+    <Steps>
+      <Step title="Open the new invoice form">
+        Go to **Invoices** and select **New invoice**.
+      </Step>
+      <Step title="Pick a customer">
+        Start typing a name in the customer field and select from the list. You must link a customer before saving.
+      </Step>
+      <Step title="Set the issue and due dates">
+        The issue date defaults to today. The due date defaults to 30 days out. Adjust both to match your terms.
+      </Step>
+      <Step title="Add line items">
+        Select **Add line** for each service or product. For each line, enter:
+        - **Description** — what the customer is paying for.
+        - **Qty** — quantity or hours.
+        - **Unit price** — price per unit.
+        - **Taxable** — whether tax applies to this line.
+        - **Tax rate** — leave as "Use default" to apply the invoice-level default, or pick a specific rate.
+
+        The subtotal, tax, and total update as you type.
+      </Step>
+      <Step title="Set a default tax rate (optional)">
+        Pick a tax rate from the **Default tax rate** dropdown. Any taxable line that does not have its own rate set will use this rate. Leave it blank for zero-tax invoices.
+      </Step>
+      <Step title="Add notes (optional)">
+        Notes are internal — they do not appear on the customer-facing invoice.
+      </Step>
+      <Step title="Save the draft">
+        Select **Save draft**. The invoice is saved with status **Draft** and assigned an invoice number automatically.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="From a job">
+    <Steps>
+      <Step title="Open the job">
+        Go to [Jobs](/using-zoop/jobs) and open the job you want to invoice.
+      </Step>
+      <Step title="Create invoice from the job">
+        Use the invoice action on the job detail page.
+
+        <Callout type="info">TODO(screenshot): job detail page showing the "Create invoice" action or button.</Callout>
+
+        Zoop derives the customer and total from the job. You cannot supply separate line items through this path — the job's amount drives the total directly.
+      </Step>
+      <Step title="Review and send">
+        The new invoice opens in draft. Adjust dates or notes if needed, then send it.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="From a quote">
+    <Steps>
+      <Step title="Open the quote">
+        Go to [Quotes](/using-zoop/quotes) and open the accepted quote.
+      </Step>
+      <Step title="Create invoice from the quote">
+        Use the invoice action on the quote detail page.
+
+        <Callout type="info">TODO(screenshot): quote detail page showing the "Create invoice" action.</Callout>
+
+        Zoop derives the customer and total from the quote. As with the job path, line items are not carried over separately.
+      </Step>
+      <Step title="Review and send">
+        Adjust dates if needed, then send.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+---
+
+## Send an invoice
+
+Sending delivers the invoice to your customer and generates a payment link they can use to pay by card online.
+
+<Steps>
+  <Step title="Open the invoice">
+    Go to **Invoices** and select the invoice number.
+  </Step>
+  <Step title="Select Send">
+    In the action bar at the bottom of the page, select **Send**. Zoop delivers the invoice to the customer and moves the status to **Sent**.
+  </Step>
+</Steps>
+
+<Callout type="info">
+Sending is the only action that creates the public payment link. If you mark an invoice as "sent" manually (via the row menu on the list page) without using the Send button, no link is generated and no notification goes to the customer.
+</Callout>
+
+### Share the payment link
+
+After an invoice is sent, you can copy the payment link directly.
+
+<Steps>
+  <Step title="Select Share with customer">
+    On the invoice detail page, select **Share with customer**. A dialog shows the payment link and a QR code.
+  </Step>
+  <Step title="Copy and send">
+    Select **Copy link** and paste it into a text, email, or chat. The link works until the invoice is paid.
+  </Step>
+</Steps>
+
+### Send a reminder
+
+For sent, overdue, or dunning invoices, select **Send reminder** on the invoice detail page. Zoop re-delivers the payment link to the customer.
+
+---
+
+## Record an offline payment
+
+If a customer pays by cash, check, Zelle, Venmo, wire, or any other method outside Zoop, log it so your books stay accurate.
+
+<Steps>
+  <Step title="Open the invoice">
+    Select the invoice from the list.
+  </Step>
+  <Step title="Select Record payment">
+    In the action bar, select **Record payment**.
+  </Step>
+  <Step title="Fill in the details">
+    - **Amount** — defaults to the outstanding balance.
+    - **Method** — cash, check, Zelle, Venmo, wire, or other.
+    - **Reference** (optional) — check number, transaction ID, or anything useful.
+    - **Paid on** — the date payment was received.
+    - **Notes** (optional) — any internal notes about the payment.
+  </Step>
+  <Step title="Save">
+    Select **Record payment**. The payment appears in the invoice's payment history and the status updates automatically.
+  </Step>
+</Steps>
+
+---
+
+## Edit a draft invoice
+
+You can edit any invoice while it is still in **Draft** status. Once an invoice is sent, the full editor is locked.
+
+<Steps>
+  <Step title="Open the draft">
+    Select the draft invoice from the list, or use the row menu and select **Edit**.
+  </Step>
+  <Step title="Select Edit">
+    On the invoice detail page, select **Edit** in the action bar.
+  </Step>
+  <Step title="Make your changes">
+    Update the status, total, issue date, due date, or notes. Select **Save changes** when done.
+  </Step>
+</Steps>
+
+To edit line items on a draft, go to **Invoices**, open the draft, then select **Edit** from the row menu to open the full line-item editor.
+
+<Callout type="warning">
+Only draft invoices can have their amounts, line items, and dates edited. Sent and paid invoices cannot be changed through the standard editor.
+</Callout>
+
+---
+
+## Void an invoice
+
+Voiding stops collection on an invoice. Past payments and history remain on record. You cannot undo a void.
+
+<Steps>
+  <Step title="Open the invoice">
+    Select it from the list.
+  </Step>
+  <Step title="Select Void">
+    In the action bar, select **Void**. Confirm in the dialog.
+  </Step>
+</Steps>
+
+You can also void from the row menu on the invoice list — select the three-dot menu next to any invoice that is not yet paid or already voided, and select **Void**.
+
+---
+
+## Mark as uncollectible
+
+If you have given up collecting on an overdue invoice but want to keep it for write-off purposes, mark it uncollectible. It disappears from the overdue list but stays on your books.
+
+On the invoice detail page, select **Mark uncollectible** from the action bar (visible on overdue and dunning invoices).
+
+---
+
+## Find invoices
+
+Use the status tabs at the top of the invoices list to filter by **Draft**, **Sent**, **In dunning**, **Overdue**, **Paid**, **Uncollectible**, or **Void**. Use the search bar to search by invoice number or customer name.
+
+---
+
+## Invoice notes
+
+Each invoice has a notes section at the bottom of its detail page. Notes are internal — add context, follow-up reminders, or anything your team needs to know. They do not appear on the customer-facing payment page.
+
+See [Notes](/using-zoop/notes) for full details on how notes work across Zoop.

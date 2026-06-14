@@ -1,0 +1,181 @@
+---
+title: Customers
+description: Add and organize customers with contacts, service locations, tags, and history.
+audience: end-user
+---
+
+The customers list is your address book. Every job, quote, and invoice ties back to a customer record. You can add individuals or companies, keep multiple contacts and service locations on each record, and view the full communication history in one place.
+
+<Callout type="info">TODO(screenshot): customers list page showing the summary cards (total, active, VIP, companies) and the table below.</Callout>
+
+## The customer list
+
+Open **Customers** from the left nav. The page shows four summary cards at the top — total customers, active, VIP, and companies — followed by a searchable, filterable table.
+
+Each row shows the customer's name (with a star for VIP or a ban icon for do-not-contact), type, phone number, status, and time of last activity. Select any row to open the customer detail page.
+
+### Search and filter
+
+Use the search bar to find customers by name, phone, or email. Use the dropdowns to narrow by status (active, inactive, archived), type (individual or company), or tag.
+
+## Add a customer
+
+<Steps>
+  <Step title="Open the new customer form">
+    On the customers list, select **+ New**. A modal appears with two modes: **Individual** and **Company**. Choose the one that fits.
+  </Step>
+  <Step title="Fill in the required fields">
+    **Individual:** enter first name (required) and optionally last name, then phone (required) and email.
+
+    **Company:** enter company name (required) and phone (required). You can optionally add a primary contact's first and last name. Email is optional.
+
+    Phone must be a valid US number. Zoop formats it as you type.
+  </Step>
+  <Step title="Create the record">
+    Select **Create**. If the phone number already matches an existing customer, Zoop opens that record instead of creating a duplicate.
+
+    You land on the new customer's detail page.
+  </Step>
+</Steps>
+
+<Callout type="info">TODO(screenshot): new customer modal in Individual mode with first name, phone, and email fields visible.</Callout>
+
+## The customer detail page
+
+The detail page has seven tabs: **Overview**, **Contacts**, **Locations**, **Timeline**, **Billing**, **Notes**, and **Files**.
+
+<Callout type="info">TODO(screenshot): customer detail page showing the tab bar and the Overview tab with identity and contact cards.</Callout>
+
+### Overview tab
+
+The overview shows four cards: **Identity** (name, customer number, type, status, VIP badge, do-not-contact badge, and source), **Contact** (primary phone, email, and primary contact name), **Quick Stats** (open balance — available when billing ships), and **Manage** (where you find the duplicate-merge tool).
+
+### Edit a customer
+
+To change a customer's name, status, VIP flag, do-not-contact flag, source, or internal notes, open the customer detail page and select the edit button (pencil icon) in the header.
+
+The edit form is organized into sections:
+
+- **Identity** — first/last name for individuals, company name for companies. Customer type cannot be changed after creation.
+- **Source** — how the customer came to you (manual, storefront, referral, import, and others).
+- **Behavior** — two toggles:
+  - **VIP customer** — marks the customer with a star indicator in the list and on their record.
+  - **Do not contact** — marks the customer with a ban icon. A reason is required when you turn this on.
+- **Status** — active, inactive, or archived.
+- **Internal notes** — private text visible only to your team, not to the customer.
+
+Select **Save** when done.
+
+<Callout type="info">TODO(screenshot): edit customer sheet open showing the Behavior section with VIP and Do not contact toggles.</Callout>
+
+## Contacts
+
+A customer can have multiple contacts. For individuals, a primary contact is created automatically when you add the customer. For companies, you can add a primary contact during creation and add more at any time.
+
+To manage contacts, open the customer detail page and select the **Contacts** tab.
+
+### Add a contact
+
+Select **Add contact**. Fill in first name, last name, phone, email, and preferred channel (SMS, email, or phone). Select **Save**.
+
+### Edit or delete a contact
+
+Each contact card has edit and delete actions. To make a contact the primary one, use the promote-to-primary action on that card.
+
+<Callout type="info">TODO(screenshot): Contacts tab showing a list of contact cards with edit, delete, and promote-to-primary actions.</Callout>
+
+## Service locations
+
+Locations are the addresses where you do work — or where billing and mailing go. A customer can have multiple locations of different types: service, billing, mailing, or other.
+
+To manage locations, open the customer detail page and select the **Locations** tab.
+
+### Add a location
+
+Select **Add location**, then:
+
+1. Choose the **type** (service, billing, mailing, or other).
+2. Optionally add a **label** such as "Main office" or "Warehouse".
+3. Use the address search to autocomplete from Google Places, or type the address manually.
+4. Fill in address line 1, city, state, and ZIP (all required).
+5. Optionally add **access notes**, **parking notes**, and **service notes** — your techs see these on the job.
+
+Select **Save**.
+
+<Callout type="info">TODO(screenshot): Add location dialog open with the address autocomplete field and the notes fields.</Callout>
+
+## Communication timeline
+
+The **Timeline** tab shows every SMS, email, call, and AI session that Zoop has logged for this customer, in reverse-chronological order. Use the filter chips (All, SMS, Email, Calls, AI sessions) to narrow to a specific channel. Select **Load more** to page through older entries.
+
+<Callout type="info">TODO(screenshot): Timeline tab with filter chips and a few timeline entry cards.</Callout>
+
+## Notes
+
+The **Notes** tab is a shared internal feed for your team. Notes are private — customers never see them. For more on how notes work across jobs and customers, see [Notes](/using-zoop/notes).
+
+## Files
+
+The **Files** tab lets you attach documents to a customer record. Supported categories are MSA, contract, COI, photo, and other. Filter by type using the chips at the top. Select the download icon to open a file, or delete to remove it.
+
+## Tags
+
+Tags let you group and filter customers. When tags exist in your account, a tag filter dropdown appears on the customer list, and you can filter the list by any tag.
+
+<Callout type="warning">TODO(verify): confirm where tags are assigned to a customer (no tag-assignment UI was found in the customer form or detail components reviewed — may live in settings or be assigned elsewhere).</Callout>
+
+## Mark as VIP
+
+On the edit form, turn on the **VIP customer** toggle. The customer's name will show a gold star in the list and on their detail page. Turn it off the same way.
+
+## Do not contact
+
+On the edit form, turn on the **Do not contact** toggle. You must enter a reason. Once set, a ban icon appears next to the customer's name in the list and a "Do not contact" badge shows on their overview. The reason is displayed on the overview for reference.
+
+To clear it, open the edit form and turn the toggle off. The reason field disappears and is cleared automatically.
+
+## Merge duplicate customers
+
+If the same person or company ended up with two records, you can merge them.
+
+<Steps>
+  <Step title="Open the customer you want to keep">
+    Go to the detail page of the record that should survive the merge (the one whose data and history you want to keep).
+  </Step>
+  <Step title="Find duplicates">
+    On the **Overview** tab, find the **Manage** card and select **Find duplicates**. Zoop searches for candidates that share a phone number, email address, or similar name, and ranks them by confidence (high, medium, low).
+  </Step>
+  <Step title="Select the duplicate">
+    Choose the candidate you want to merge into the surviving record.
+  </Step>
+  <Step title="Confirm the merge">
+    A preview shows both records. Choose which customer's primary contact to keep — the surviving customer's or the merged one's. Then confirm. The merged record's data (contacts, locations, jobs, invoices) is folded into the surviving record, and the merged record is removed from the list.
+  </Step>
+</Steps>
+
+<Callout type="warning">A merge cannot be undone. Double-check both records before confirming.</Callout>
+
+<Callout type="info">TODO(screenshot): Find duplicates dialog showing a list of candidates with confidence badges.</Callout>
+
+## Archive a customer
+
+Archiving hides a customer from the default list. It does not delete them or their history.
+
+To archive from the list: select the trash icon on any row and confirm.
+
+To archive from the detail page: open the edit form, scroll to the bottom, and select **Archive customer**.
+
+To find archived customers: on the customer list, open the status filter and choose **Archived**.
+
+## Customer portal
+
+Owners can give a customer a portal link so they can view their invoices and manage payment methods without calling you. See [Customer portal](/using-zoop/customer-portal) for how to generate and share a link.
+
+## Related
+
+- [Jobs](/using-zoop/jobs) — create a job for a customer
+- [Quotes](/using-zoop/quotes) — send a quote before booking the job
+- [Invoices](/using-zoop/invoices) — invoice a customer after the work is done
+- [Notes](/using-zoop/notes) — internal notes on customers and jobs
+- [Customer portal](/using-zoop/customer-portal) — give customers self-service access
+- [API reference — customers](/developers/api/customers) — manage customers programmatically

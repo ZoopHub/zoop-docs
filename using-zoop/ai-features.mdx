@@ -1,0 +1,129 @@
+---
+title: AI features
+description: Let Zoop handle the busywork — missed calls, maintenance reminders, and late-arrival alerts.
+audience: end-user
+---
+
+Zoop has a small set of AI-powered automations that run in the background so you can stay on the job. You turn them on in [Settings](/using-zoop/settings) under the **AI & automation** tab.
+
+<Callout type="info">TODO(screenshot): the AI & automation settings tab showing the AI receptionist toggle, knowledge base fields, and maintenance reminders toggle.</Callout>
+
+---
+
+## AI virtual receptionist
+
+When you are on a job and cannot answer your phone, the AI receptionist can reply automatically to customers who text or call your Zoop business number. It introduces itself and answers common questions based on what you tell it.
+
+<Callout type="warning">TODO(verify): confirm whether the AI receptionist collects the customer's name and request during the conversation, and where those details surface in Zoop afterward.</Callout>
+
+### What the receptionist can say
+
+You control what information it shares. In the **AI knowledge base** section you can set:
+
+- **Dispatch fee** — if you charge one, the receptionist will quote it when a customer asks.
+- **Services offered** — a list of what you do (for example: water heater replacement, drain cleaning).
+- **Services not offered** — a list of what you do not do (for example: commercial jobs, septic work).
+- **Service area description** — a plain-English description of your coverage (for example: Greater Orlando area within 25 miles of zip 32801).
+
+The receptionist will only answer within those guardrails. It will not invent prices, offer discounts, or make commitments beyond what you have specified.
+
+### Intro message
+
+The **intro message** is the first thing the receptionist sends when it takes over. You write it. Keep it short and personal — something like: "Hi, I'm currently on a job and can't get to my phone right now. I'll follow up as soon as I'm done."
+
+There is a 500-character limit. The settings form shows an SMS preview of your message as you type it.
+
+### Turn it on
+
+<Steps>
+  <Step title="Open settings">
+    Go to [Settings](/using-zoop/settings) and select the **AI & automation** tab.
+  </Step>
+  <Step title="Enable the receptionist">
+    Toggle **Enable AI receptionist** on.
+  </Step>
+  <Step title="Write your intro message">
+    Type your intro message in the **Intro message** field. The SMS preview updates as you type.
+  </Step>
+  <Step title="Fill in the knowledge base">
+    Add your dispatch fee, services offered, services not offered, and service area description. These fields appear once the toggle is on.
+  </Step>
+  <Step title="Save">
+    Select **Save changes**.
+  </Step>
+</Steps>
+
+<Callout type="warning">
+The AI receptionist only activates on your Zoop business number. If customers reach you on a personal cell number, this feature has no effect.
+</Callout>
+
+<Callout type="info">TODO(screenshot): the intro message field with the SMS preview bubble below it.</Callout>
+
+---
+
+## Maintenance reminders
+
+When this is on, Zoop prompts you to schedule a follow-up maintenance visit after equipment installations — for example, after you install an A/C unit or a water heater. The reminder surfaces inside Zoop; it does not automatically contact the customer.
+
+To turn it on, go to [Settings](/using-zoop/settings) → **AI & automation** and toggle **Enable maintenance reminders** on.
+
+<Callout type="warning">TODO(verify): confirm the exact trigger conditions for maintenance reminders — which job types or line items cause a reminder to appear, and where in the UI it surfaces.</Callout>
+
+---
+
+## Auto-text when a job is running late
+
+Zoop watches your route in real time. When a hard-window visit's estimated arrival slips past the promised window, Zoop can automatically send the customer a heads-up text.
+
+This is **off by default.** When it is off, you or your tech send the message manually from the route cockpit. Turn it on only if you want Zoop to send it without you reviewing it first.
+
+To enable it, go to [Settings](/using-zoop/settings) → **Notifications** and toggle **Auto-text customers when a job is likely to run late**.
+
+<Callout type="info">
+This only fires for hard-window visits (where you confirmed a specific arrival window with the customer). Flexible or FYI-window visits are not affected.
+</Callout>
+
+---
+
+## Missed jobs
+
+If a job's scheduled day passes without it being marked done, it appears in a **Needs rescheduling** tray at the top of the [dispatch board](/using-zoop/dispatch). From there you can generate a reschedule link and send it to the customer so they can pick a new time.
+
+Zoop does not automatically move or reassign the job. You decide whether and when to send the link.
+
+<Callout type="info">TODO(screenshot): the "Needs rescheduling" tray on the dispatch board showing a missed job row with the Reschedule button.</Callout>
+
+---
+
+## Job drafting from notes (MCP / AI assistant)
+
+If you use an external AI assistant — such as Claude Desktop — connected to Zoop via MCP, you can dictate rough notes and have the assistant draft a job for you. You review and confirm before anything is saved.
+
+This works through Zoop's **customer-job-draft** prompt. You provide a customer and your spoken or typed notes; the assistant proposes a job title and description in plain language, then calls `jobs.create` once you confirm.
+
+This is a developer / power-user feature. See [MCP](/developers/mcp) for setup instructions.
+
+<Callout type="warning">TODO(verify): confirm whether an in-product AI chat interface for job drafting exists, or whether this is currently only available via external MCP clients such as Claude Desktop.</Callout>
+
+---
+
+## Voice notes
+
+The note composer has a microphone icon in the toolbar. This feature is not yet active.
+
+<Callout type="warning">TODO(verify): confirm when voice-to-note transcription ships and update this section at that time. The microphone button is visible in the UI but is currently disabled.</Callout>
+
+---
+
+## Where to configure AI features
+
+All AI automations live in one place:
+
+<Columns>
+  <Card title="AI & automation settings" href="/using-zoop/settings">
+    Turn on the AI receptionist, fill in the knowledge base, and enable maintenance reminders.
+  </Card>
+  <Card title="Notifications settings" href="/using-zoop/settings">
+    Enable auto-text for late arrivals and configure review prompts.
+  </Card>
+</Columns>

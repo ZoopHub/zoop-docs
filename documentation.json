@@ -1,0 +1,156 @@
+{
+  "name": "Zoop",
+  "initialRoute": "welcome",
+  "template": "classic",
+  "colors": {
+    "light": {
+      "brand": "#4f46e5",
+      "heading": "#111827",
+      "text": "#374151"
+    },
+    "dark": {
+      "brand": "#a5b4fc",
+      "heading": "#f9fafb",
+      "text": "#d1d5db"
+    }
+  },
+  "navbar": {
+    "actions": [
+      {
+        "label": "Open Zoop",
+        "href": "https://zoop.pro"
+      }
+    ]
+  },
+  "redirects": [],
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Using Zoop",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              { "title": "Welcome to Zoop", "path": "welcome" },
+              { "title": "Get set up", "path": "using-zoop/getting-started" },
+              { "title": "Your dashboard", "path": "using-zoop/dashboard" }
+            ]
+          },
+          {
+            "group": "Customers & jobs",
+            "pages": [
+              { "title": "Customers", "path": "using-zoop/customers" },
+              { "title": "Jobs", "path": "using-zoop/jobs" },
+              { "title": "Recurring jobs", "path": "using-zoop/recurring-jobs" },
+              { "title": "Quotes", "path": "using-zoop/quotes" }
+            ]
+          },
+          {
+            "group": "Schedule & dispatch",
+            "pages": [
+              { "title": "Calendar", "path": "using-zoop/calendar" },
+              { "title": "Dispatch & routes", "path": "using-zoop/dispatch" }
+            ]
+          },
+          {
+            "group": "Invoicing & payments",
+            "pages": [
+              { "title": "Invoices", "path": "using-zoop/invoices" },
+              { "title": "Getting paid", "path": "using-zoop/payments" },
+              { "title": "Recurring billing", "path": "using-zoop/recurring-billing" },
+              { "title": "Pricebook", "path": "using-zoop/pricebook" }
+            ]
+          },
+          {
+            "group": "Communicate",
+            "pages": [
+              { "title": "Messaging customers", "path": "using-zoop/communications" },
+              { "title": "Notes", "path": "using-zoop/notes" }
+            ]
+          },
+          {
+            "group": "Team, storefront & mobile",
+            "pages": [
+              { "title": "Team & crews", "path": "using-zoop/team" },
+              { "title": "Your storefront", "path": "using-zoop/storefront" },
+              { "title": "The customer portal", "path": "using-zoop/customer-portal" },
+              { "title": "The mobile app", "path": "using-zoop/mobile" },
+              { "title": "AI features", "path": "using-zoop/ai-features" }
+            ]
+          },
+          {
+            "group": "Settings",
+            "pages": [
+              { "title": "Settings", "path": "using-zoop/settings" }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Developers",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              { "title": "Introduction", "path": "developers/introduction" },
+              { "title": "Quickstart", "path": "developers/quickstart" }
+            ]
+          },
+          {
+            "group": "Authentication",
+            "pages": [
+              { "title": "API keys", "path": "developers/authentication/api-keys" },
+              { "title": "OAuth 2.0", "path": "developers/authentication/oauth" },
+              { "title": "Scopes & permissions", "path": "developers/authentication/scopes" }
+            ]
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              { "title": "Core concepts", "path": "developers/concepts" },
+              { "title": "Connecting to the MCP server", "path": "developers/mcp" }
+            ]
+          },
+          {
+            "group": "API reference",
+            "pages": [
+              { "title": "Customers", "path": "developers/api/customers" },
+              { "title": "Notes", "path": "developers/api/notes" },
+              { "title": "Jobs", "path": "developers/api/jobs" },
+              { "title": "Job series", "path": "developers/api/job-series" },
+              { "title": "Invoices", "path": "developers/api/invoices" },
+              { "title": "Quotes", "path": "developers/api/quotes" },
+              { "title": "Catalog items", "path": "developers/api/catalog-items" },
+              { "title": "Catalog categories", "path": "developers/api/catalog-categories" },
+              { "title": "Plans", "path": "developers/api/plans" },
+              { "title": "Tax rates", "path": "developers/api/tax-rates" }
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              { "title": "Webhooks", "path": "developers/webhooks" },
+              { "title": "Errors", "path": "developers/errors" },
+              { "title": "Rate limits", "path": "developers/rate-limits" }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "More",
+        "icon": "sparkles",
+        "groups": [
+          {
+            "group": "Resources",
+            "pages": [
+              { "title": "Changelog", "path": "changelog" },
+              { "title": "Glossary", "path": "glossary" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

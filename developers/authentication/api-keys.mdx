@@ -1,0 +1,135 @@
+---
+title: API keys
+description: Two key types for server-to-server access, with instant revocation.
+audience: developer
+---
+
+API keys are the machine-to-machine (M2M) authentication path. There is no browser redirect, no consent screen, and no token exchange step — the key itself is the credential. Use them in server-side scripts, background jobs, or agent pipelines that run unattended.
+
+## Two key types
+
+Zoop issues two kinds of API key, distinguished by their prefix:
+
+| Type | Prefix | Actor | Has `userId` | Can call user-only tools |
+|---|---|---|---|---|
+| User key | `zoop_uk_` | `user` | Yes — the issuing user | Yes |
+| Tenant key | `zoop_tk_` | `tenant` | No | No |
+
+**User keys** attribute writes to a specific team member. Any tool that stamps `created_by` or `updated_by`, or that requires a real user identity, requires a user key. Use a user key when your integration writes data on behalf of a specific person — for example, a job-creation script that records which technician submitted the work.
+
+**Tenant keys** are for read-heavy integrations or unattributed pipelines where individual attribution does not matter — for example, a reporting dashboard that reads invoices and jobs. They cannot call tools that are gated on a user identity.
+
+<Callout type="info">
+The actor type on a key is set by the database row (`actor_kind` column), not solely by the prefix. The prefix is a hint, not the authority.
+</Callout>
+
+## Create a key
+
+<Steps>
+  <Step title="Open settings">
+    In Zoop, go to **Settings → API & MCP**. You need the owner role to manage API keys.
+  </Step>
+  <Step title="Click New API key">
+    Choose **User key** or **Tenant key**, then select the scopes your integration needs.
+  </Step>
+  <Step title="Copy the key immediately">
+    The plaintext key is shown **once**. Zoop stores only the SHA-256 hash — it cannot be retrieved again. If you lose it, revoke it and issue a new one.
+  </Step>
+</Steps>
+
+The key is active immediately after creation.
+
+<Callout type="info">
+TODO(screenshot): Settings → API & MCP page showing the key list and New API key button.
+</Callout>
+
+## Send a request
+
+Pass the key as a `Bearer` token in the `Authorization` header on every request. There is no separate login step.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://app.zoop.pro/api/mcp \
+  -H "Authorization: Bearer zoop_uk_<your-secret>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"customers.search","arguments":{"q":"Henderson"}}}'
+```
+
+```ts TypeScript
+const response = await fetch('https://app.zoop.pro/api/mcp', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream',
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: {
+      name: 'customers.search',
+      arguments: { q: 'Henderson' },
+    },
+  }),
+})
+```
+</CodeGroup>
+
+On every request, Zoop hashes the token with SHA-256 and looks it up in the `external_api_keys` table. There is no caching of the plaintext — the hash lookup happens on every call.
+
+## Scopes
+
+Scopes are set at issuance and stored on the key's database row. A key cannot call a tool that requires a scope it was not issued with. To add scopes to an existing key, you must revoke it and issue a new one with the broader scope set.
+
+See [scopes](/developers/authentication/scopes) for the full scope catalog.
+
+## Key expiry
+
+Keys do not expire by default. You can set an expiry date at issuance. An expired key returns `401` with `error: "expired"`.
+
+## Revoke a key
+
+Go to **Settings → API & MCP**, find the key, and revoke it. Revocation is instant — the key stops working on the next request. There is no grace period.
+
+## Rotate a key
+
+<Steps>
+  <Step title="Issue a new key">
+    Create a new key with the same type and scopes as the one you are replacing.
+  </Step>
+  <Step title="Update your integration">
+    Deploy the new key value to your environment variables or secrets manager before revoking the old key.
+  </Step>
+  <Step title="Revoke the old key">
+    Once your integration is running on the new key, revoke the old one from **Settings → API & MCP**.
+  </Step>
+</Steps>
+
+## Error reference
+
+| Situation | Status | Body |
+|---|---|---|
+| Key not found | `401` | `{"error":"invalid_token","reason":"key_not_found"}` |
+| Key revoked | `401` | `{"error":"invalid_token","reason":"key_revoked"}` |
+| Key expired | `401` | `{"error":"expired"}` |
+| Scope missing | `403` | `{"error":"insufficient_scope"}` |
+| No `Authorization` header | `401` | `{"error":"missing_token"}` |
+| Rate limited | `429` | `Retry-After` header included |
+
+Handle `401` with `reason: "key_revoked"` as a permanent failure — the key will never work again. Pause your integration and alert an operator.
+
+## Security checklist
+
+- Store the key in an environment variable or a secrets manager, never in source code or version control.
+- Issue the minimum scopes your integration actually needs.
+- Use one key per integration. Separate keys mean separate blast radii and independent rotation schedules.
+- If a key may be compromised, revoke it immediately — revocation takes effect on the next request.
+
+## Related
+
+- [Scopes](/developers/authentication/scopes) — full list of available scopes
+- [OAuth](/developers/authentication/oauth) — user-delegated access via browser flow
+- [Errors](/developers/errors) — full error code reference
+- [Rate limits](/developers/rate-limits) — per-credential and per-tenant limits
