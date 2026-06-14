@@ -30,7 +30,7 @@ const HEADLESS = process.env.HEADLESS === '1';
 const IMAGES_DIR = path.resolve(__dirname, '../../images');
 // Session/cookies live OUTSIDE the docs repo so auth never risks being committed.
 const USER_DATA = process.env.ZOOP_USERDATA || '/Users/david/Repo/.zoop-docs-src/screenshots-userdata';
-const MANIFEST = path.resolve(__dirname, 'manifest.json');
+const MANIFEST = path.resolve(__dirname, process.env.MANIFEST || 'manifest.json');
 
 if (!fs.existsSync(MANIFEST)) {
   console.error('No manifest.json found at', MANIFEST);

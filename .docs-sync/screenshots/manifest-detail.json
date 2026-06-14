@@ -1,0 +1,62 @@
+[
+  {
+    "id": "customer-detail-overview",
+    "route": "/{tenant}/customers/629283e3-4b4f-4df4-8463-f5ececea316e",
+    "filename": "using-zoop/customers/customer-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A customer detail page showing the customer’s identity, contact, and quick-stats cards with their linked jobs and invoices.",
+    "manual": false,
+    "note": ""
+  },
+  {
+    "id": "job-detail-overview",
+    "route": "/{tenant}/jobs/8af62a0b-c2f4-415d-b3f8-daeb87639960",
+    "filename": "using-zoop/jobs/job-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A job detail page showing the customer, schedule, line items, and status.",
+    "manual": false,
+    "note": ""
+  },
+  {
+    "id": "quote-detail-overview",
+    "route": "/{tenant}/quotes/89e1c5a9-83ed-42ac-935e-6078799acc56",
+    "filename": "using-zoop/quotes/quote-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A quote detail page showing the customer and quote status.",
+    "manual": false,
+    "note": ""
+  },
+  {
+    "id": "invoice-detail-paid",
+    "route": "/{tenant}/invoices/26e1aa8f-ae82-4402-a7b4-5b1d34f5f1e5",
+    "filename": "using-zoop/invoices/invoice-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A paid invoice detail page showing line items, tax, total, and a paid status badge.",
+    "manual": false,
+    "note": ""
+  },
+  {
+    "id": "plan-detail-overview",
+    "route": "/{tenant}/plans/b0c974f6-f8c0-415f-bf90-33e8694422b6",
+    "filename": "using-zoop/recurring-billing/plan-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A recurring plan detail page showing the billing cadence, line items, and generated invoices.",
+    "manual": false,
+    "note": ""
+  },
+  {
+    "id": "series-detail-overview",
+    "route": "/{tenant}/jobs/series/b1db73bb-07ff-4576-82fe-95fe280d0820",
+    "filename": "using-zoop/recurring-jobs/series-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "A recurring job series detail page showing the schedule and upcoming generated visits.",
+    "manual": false,
+    "note": ""
+  }
+]
