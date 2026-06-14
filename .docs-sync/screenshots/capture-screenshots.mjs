@@ -40,7 +40,13 @@ if (!fs.existsSync(MANIFEST)) {
 fs.mkdirSync(IMAGES_DIR, { recursive: true });
 
 let shots = JSON.parse(fs.readFileSync(MANIFEST, 'utf8'));
-if (ONLY) shots = shots.filter(s => ONLY.has(s.page));
+if (ONLY) shots = shots.filter(s => [...ONLY].some(p => (s.filename || '').startsWith(p)));
+// Only capture shots with a navigable route (no unresolved [param]); manual ones
+// live in MANUAL-SHOTS.md and are captured by hand.
+const navigable = s => s.url || (s.route && s.route.trim() && !s.route.includes('['));
+const manualCount = shots.filter(s => !navigable(s)).length;
+shots = shots.filter(navigable);
+if (manualCount) console.log(`Skipping ${manualCount} manual shots (capture by hand — see MANUAL-SHOTS.md).`);
 
 // resolve {tenant} placeholder and relative routes
 function urlFor(shot) {
@@ -99,7 +105,7 @@ async function run() {
       fs.mkdirSync(path.dirname(out), { recursive: true });
       await page.screenshot({ path: out, fullPage: shot.fullPage ?? false });
       results.ok.push(shot.filename);
-      console.log('  captured', shot.filename, '   (', shot.page, ')');
+      console.log('  captured', shot.filename, '  (' + shot.id + ')');
     } catch (e) {
       results.failed.push({ filename: shot.filename, error: String(e.message || e) });
       console.warn('  FAILED  ', shot.filename, '-', e.message || e);

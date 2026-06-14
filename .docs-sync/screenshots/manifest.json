@@ -1,0 +1,1080 @@
+[
+  {
+    "id": "dashboard-overview",
+    "callout": "home screen or dashboard showing the core flow at a glance.",
+    "route": "/{tenant}/dashboard",
+    "filename": "welcome/dashboard-overview.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Zoop dashboard showing open jobs, upcoming schedule, pending invoices, and active customers at a glance.",
+    "manual": false,
+    "note": "Requires an authenticated session. Capture with a seeded tenant so the stat cards show non-zero values (open jobs, pending invoices, active customers) to illustrate the core flow meaningfully. The getting-started CTA row at the bottom should be visible — avoid cutting it off.",
+    "actions": []
+  },
+  {
+    "id": "sign-in-page",
+    "callout": "sign-in page showing the email/password form and the \"Continue with Google\" button",
+    "route": "",
+    "filename": "using-zoop/getting-started/sign-in-page.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Zoop sign-in page with email and password fields and a Continue with Google button",
+    "manual": true,
+    "note": "This is the unauthenticated /login route (app.zoop.pro/login). Must be captured while logged out. The page renders the email/password form and the Google OAuth button side-by-side below a divider."
+  },
+  {
+    "id": "onboarding-company-setup",
+    "callout": "onboarding screen showing the company name field and trade picker",
+    "route": "",
+    "filename": "using-zoop/getting-started/onboarding-company-setup.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Zoop onboarding screen with a company name field and trade picker dropdown",
+    "manual": true,
+    "note": "Lives at app.zoop.pro/onboarding. Only shown to authenticated users who have no tenant membership yet. Capture with a fresh test account that has signed up but not yet completed onboarding. Scroll to show both the Company name field and the trade picker (TradePicker component) and the Get started button."
+  },
+  {
+    "id": "settings-business-info",
+    "callout": "Business info tab in Settings with the logo upload, company name, and address fields visible",
+    "route": "/{tenant}/settings?tab=business",
+    "filename": "using-zoop/getting-started/settings-business-info.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Settings Business info tab showing the logo upload area, company name field, and business address fields",
+    "manual": false,
+    "note": "Navigate to /{tenant}/settings — the default tab is business so ?tab=business is redundant but safe. Scroll to show the logo upload, company name, tagline, trade types, contact info, address, and brand colour fields together. Seed the account with a logo and a saved address for a realistic capture."
+  },
+  {
+    "id": "settings-service-area-hours",
+    "callout": "Service area & hours tab showing the radius field, ZIP code list, and business hours table",
+    "route": "/{tenant}/settings?tab=service-area",
+    "filename": "using-zoop/getting-started/settings-service-area-hours.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Settings Service area & hours tab with the service radius field, ZIP code list, and weekly hours table",
+    "manual": false,
+    "note": "Navigate to /{tenant}/settings?tab=service-area. Ensure the test account has at least one ZIP code saved and several days toggled on so the hours table looks populated rather than empty."
+  },
+  {
+    "id": "settings-card-payments-active",
+    "callout": "Settings → Card payments page in the active state, showing the green Active badge and the \"Open Stripe dashboard\" button",
+    "route": "",
+    "filename": "using-zoop/getting-started/settings-card-payments-active.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Settings Card payments page showing a green Active badge and an Open Stripe dashboard button",
+    "manual": true,
+    "note": "Route is /{tenant}/settings/payments (confirmed sub-route in codebase). The active state requires a fully onboarded Stripe Connect account linked to the tenant (charges_enabled=true, payouts_enabled=true). Use a Stripe test-mode account that has completed onboarding so the PaymentsClient renders the emerald Active badge and the Open Stripe dashboard button. Cannot be auto-navigated without a live Stripe Connect setup."
+  },
+  {
+    "id": "dashboard-full",
+    "callout": "full dashboard page showing all stat cards, the route intelligence card, expiring cards card, and the payment recovery card.",
+    "route": "/{tenant}/dashboard",
+    "filename": "using-zoop/dashboard/dashboard-full.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Zoop dashboard showing the four business-overview stat cards, expiring cards card, route intelligence card, and payment recovery card.",
+    "manual": true,
+    "note": "Requires a seeded account with open jobs, pending invoices, active customers, and at least one dunning/expiring-card entry so all cards show non-zero data. Navigate to /david-company/dashboard and capture the full page."
+  },
+  {
+    "id": "dashboard-route-intelligence-card",
+    "callout": "route intelligence card in both the empty and populated states.",
+    "route": "/{tenant}/dashboard",
+    "filename": "using-zoop/dashboard/route-intelligence-card.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Route intelligence card on the dashboard in its empty state (no scheduled jobs) and its populated state (showing capacity and travel-time data).",
+    "manual": true,
+    "note": "Two crops needed side by side: (1) empty state — use a fresh tenant with no scheduled jobs this week; (2) populated state — use an account with multiple jobs scheduled for the current week so the card shows capacity and clustering. The RouteIntelligenceCard component is rendered directly inside the dashboard grid at /{tenant}/dashboard; scroll to the card and crop it."
+  },
+  {
+    "id": "dashboard-payment-recovery-card",
+    "callout": "payment recovery card showing all three buckets with non-zero counts, and the empty \"all caught up\" state side by side.",
+    "route": "/{tenant}/dashboard",
+    "filename": "using-zoop/dashboard/payment-recovery-card.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Payment recovery card showing non-zero counts in all three buckets (Stripe retrying, Zoop nudging, Uncollectible — review needed) alongside the empty 'All caught up' state.",
+    "manual": true,
+    "note": "Two crops needed side by side: (1) populated state — use a seeded account that has invoices in each of the three dunning buckets (stripeRetrying > 0, zoopNudging > 0, uncollectible30d > 0); (2) empty state — use a clean account with no overdue or failed-payment invoices. The DunningOverviewCard component lives in the lower grid section of /{tenant}/dashboard."
+  },
+  {
+    "id": "customers-list",
+    "callout": "customers list page showing the summary cards (total, active, VIP, companies) and the table below.",
+    "route": "/{tenant}/customers",
+    "filename": "using-zoop/customers/customers-list.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Customers list page with summary cards for total, active, VIP, and companies counts above the searchable customer table.",
+    "manual": false,
+    "note": "Navigate to /{tenant}/customers. The summary cards and table render from seeded data; ensure the tenant has at least a few customers (including one VIP and one company) so all four cards show non-zero counts.",
+    "actions": []
+  },
+  {
+    "id": "new-customer-modal-individual",
+    "callout": "new customer modal in Individual mode with first name, phone, and email fields visible.",
+    "route": "/{tenant}/customers",
+    "filename": "using-zoop/customers/new-customer-modal-individual.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New customer modal open in Individual mode showing the first name, phone, and email fields.",
+    "manual": false,
+    "note": "The modal is triggered by clicking the '+ New' button on the customers list page. It opens as a Dialog overlay — capture the modal at rest with the Individual tab selected (default). The modal does not have its own route.",
+    "actions": [
+      {
+        "click": "button:has-text('+ New')"
+      },
+      {
+        "waitFor": "dialog[role='dialog']"
+      }
+    ]
+  },
+  {
+    "id": "customer-detail-overview",
+    "callout": "customer detail page showing the tab bar and the Overview tab with identity and contact cards.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/customer-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Customer detail page with the Overview, Contacts, Locations, Timeline, Billing, Notes, and Files tab bar, and the Overview tab content showing identity and contact cards.",
+    "manual": true,
+    "note": "Replace [id] with the UUID of a real seeded customer in the david-company tenant. Navigate to /{tenant}/customers/{id} — the Overview tab is the default (no ?tab= param needed). Capture with the tab bar and both identity and contact card sections fully visible."
+  },
+  {
+    "id": "edit-customer-sheet-behavior",
+    "callout": "edit customer sheet open showing the Behavior section with VIP and Do not contact toggles.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/edit-customer-sheet-behavior.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Edit customer slide-over sheet open and scrolled to the Behavior section, showing the VIP customer and Do not contact toggles.",
+    "manual": true,
+    "note": "From a customer detail page, click the pencil/Edit button in the header to open the EditCustomerSheet (a right-side slide-over panel). Scroll the panel down to the Behavior section so both the 'VIP customer' and 'Do not contact' switches are visible. Capture just the sheet panel — the Behavior section is roughly mid-form, below Identity and Source."
+  },
+  {
+    "id": "contacts-tab",
+    "callout": "Contacts tab showing a list of contact cards with edit, delete, and promote-to-primary actions.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/contacts-tab.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Contacts tab on the customer detail page showing multiple contact cards, each with edit, delete, and promote-to-primary action buttons.",
+    "manual": true,
+    "note": "Navigate to /{tenant}/customers/{id}?tab=contacts for a customer that has at least two contacts so the card list and all three per-card actions (edit, delete, promote-to-primary) are visible. Replace [id] with the appropriate seeded customer UUID."
+  },
+  {
+    "id": "add-location-dialog",
+    "callout": "Add location dialog open with the address autocomplete field and the notes fields.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/add-location-dialog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Add location dialog open on the Locations tab, showing the type selector, address autocomplete field, and access, parking, and service notes fields.",
+    "manual": false,
+    "note": "Navigate to /{tenant}/customers/{id}?tab=locations, then click the 'Add location' button to open the Dialog. The LocationForm renders inside a Dialog size='2xl'. Replace [id] with a real customer UUID. Scroll the dialog if needed to show the address autocomplete and the three notes fields.",
+    "actions": [
+      {
+        "click": "a[href*='tab=locations'], button:has-text('Locations')"
+      },
+      {
+        "waitFor": "button:has-text('Add location')"
+      },
+      {
+        "click": "button:has-text('Add location')"
+      },
+      {
+        "waitFor": "dialog[role='dialog']"
+      }
+    ]
+  },
+  {
+    "id": "timeline-tab",
+    "callout": "Timeline tab with filter chips and a few timeline entry cards.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/timeline-tab.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Timeline tab on the customer detail page showing All, SMS, Email, Calls, and AI sessions filter chips above a list of communication entry cards.",
+    "manual": true,
+    "note": "Navigate to /{tenant}/customers/{id}?tab=timeline for a customer that has recorded communications (SMS, email, or calls) so the filter chips and at least 2–3 timeline entry cards are visible. Replace [id] with an appropriate seeded customer UUID."
+  },
+  {
+    "id": "find-duplicates-dialog",
+    "callout": "Find duplicates dialog showing a list of candidates with confidence badges.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customers/find-duplicates-dialog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Find duplicates dialog listing candidate customer records with High, Medium, and Low confidence badges and a 'Merge into this customer' button on each.",
+    "manual": true,
+    "note": "Open a customer detail page (Overview tab), locate the Manage card, and click 'Find Duplicates'. The FindDuplicatesDialog opens only after the API returns candidates. This requires a tenant with seeded near-duplicate customers so the candidates list is non-empty. Cannot be auto-navigated — the dialog is triggered by an async button action and depends on the API returning results."
+  },
+  {
+    "id": "jobs-list-tabs",
+    "callout": "jobs list page showing the All / Unscheduled / Scheduled / Done tabs and a mix of job statuses.",
+    "route": "/{tenant}/jobs",
+    "filename": "using-zoop/jobs/jobs-list-tabs.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Jobs list with All, Unscheduled, Scheduled, and Done tabs and a mix of job status badges",
+    "manual": false,
+    "note": "Needs seeded data with at least one job in each status (unscheduled, scheduled, done) so all four tabs are meaningful and the list shows a variety of status badges. The All tab should be active."
+  },
+  {
+    "id": "job-detail-overview",
+    "callout": "job detail page showing the header strip (title, status badge, Edit and Mark done buttons), the three overview cards (Customer, Schedule, Assigned techs), the line-items table, and the photos and notes sections.",
+    "route": "/{tenant}/jobs/[id]",
+    "filename": "using-zoop/jobs/job-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Job detail page showing the title and status badge in the header, Customer, Schedule, and Assigned techs overview cards, the line-items table with a subtotal row, and the photos and notes panels below",
+    "manual": false,
+    "note": "Use a one-time (non-recurring) scheduled job that has a customer, at least one assigned tech, two or more line items, and at least one structured note so all sections render. Replace [id] with the real job ID from the seeded data."
+  },
+  {
+    "id": "job-edit-mode-modal",
+    "callout": "the \"Apply changes to\" modal showing the three radio options.",
+    "route": "/{tenant}/jobs/[id]",
+    "filename": "using-zoop/jobs/job-edit-mode-modal.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Apply changes to dialog with three radio options: Just this occurrence, This and future occurrences, and All occurrences",
+    "manual": true,
+    "note": "This modal only opens when the user clicks Edit on a job that belongs to a recurring series (series_id is set). Navigate to a recurring job detail page, then click the Edit button to trigger the EditModeModal dialog, then capture the open dialog. Cannot be auto-navigated because it requires a seeded recurring series and a button-click interaction."
+  },
+  {
+    "id": "series-detail-overview",
+    "callout": "Series detail page showing the recurrence summary, upcoming list, and past list.",
+    "route": "/{tenant}/jobs/series/[id]",
+    "filename": "using-zoop/recurring-jobs/series-detail-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Series detail page showing the recurrence rule summary, customer link, line items, and the upcoming and past instance lists.",
+    "manual": true,
+    "note": "Requires a seeded recurring job series with at least one upcoming and one past/completed instance. Navigate to /{tenant}/jobs/series/<id> for a series that has both upcoming and past visits populated. Capture the full page so the recurrence summary pill, the Upcoming section, and the Past section are all visible."
+  },
+  {
+    "id": "recurrence-editor",
+    "callout": "Recurrence editor with frequency, start date, timezone, and end controls visible.",
+    "route": "/{tenant}/jobs/new",
+    "filename": "using-zoop/recurring-jobs/recurrence-editor.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New job form with the Recurring toggle active, showing frequency, start date, timezone, and end-condition controls.",
+    "manual": false,
+    "note": "Click the Recurring radio button in the schedule toggle to reveal RecurrenceConfig. The button renders as role=radio with text 'Recurring' inside the inline radio group.",
+    "actions": [
+      {
+        "click": "button[role='radio'][aria-checked='false']:last-of-type"
+      }
+    ]
+  },
+  {
+    "id": "series-detail-instance-lists",
+    "callout": "Series detail page upcoming and past instance lists.",
+    "route": "/{tenant}/jobs/series/[id]",
+    "filename": "using-zoop/recurring-jobs/series-detail-instance-lists.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Series detail page scrolled to the Upcoming and Past instance lists, each row showing job title, scheduled date, and status badge.",
+    "manual": true,
+    "note": "Requires a seeded series with populated upcoming and past visits (same series used for series-detail-overview). Navigate to /{tenant}/jobs/series/<id> and scroll down past the line items divider so both the Upcoming and Past sections are in frame."
+  },
+  {
+    "id": "edit-scope-modal",
+    "callout": "Edit job page showing the three scope options (just this one, this and future, all occurrences).",
+    "route": "/{tenant}/jobs/[id]",
+    "filename": "using-zoop/recurring-jobs/edit-scope-modal.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Apply changes to dialog open on a recurring job detail page, with three radio options: Just this occurrence, This and future occurrences, and All occurrences.",
+    "manual": true,
+    "note": "The scope picker is an in-page dialog (EditModeModal) that only appears when clicking Edit on a job that belongs to a series (job.series_id is set). Requires a seeded recurring job instance. Navigate to /{tenant}/jobs/<recurring-job-id>, click the plain Edit button in the top-right of the job card, then capture the dialog before clicking Continue."
+  },
+  {
+    "id": "quotes-list-status-tabs",
+    "callout": "Quotes list page showing the status tabs (All, Draft, Sent, Accepted, Declined) and the table with title, status badge, and row actions.",
+    "route": "/{tenant}/quotes",
+    "filename": "using-zoop/quotes/quotes-list-status-tabs.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Quotes list page with All, Draft, Sent, Accepted, and Declined status tabs and a table of quotes with title, status badge, and row action menus.",
+    "manual": false,
+    "note": "Requires seeded quote data covering all four statuses so each tab label is visible and the table has at least a few rows. Navigate to /{tenant}/quotes with no query params to show the All tab active.",
+    "actions": []
+  },
+  {
+    "id": "quotes-new-form",
+    "callout": "New quote form with the title field and customer picker.",
+    "route": "/{tenant}/quotes/new",
+    "filename": "using-zoop/quotes/quotes-new-form.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New quote form showing the Title input and the optional Customer search picker.",
+    "manual": false,
+    "note": "Route /{tenant}/quotes/new renders the NewQuoteClient component with a title field and CustomerPicker. No extra actions needed — the form is visible on load.",
+    "actions": []
+  },
+  {
+    "id": "quotes-line-items-catalog",
+    "callout": "Line items table with a catalog item selected and the unit price filled in.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/quotes/quotes-line-items-catalog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Quote editor line items table with a pricebook catalog item selected and its unit price auto-populated.",
+    "manual": true,
+    "note": "Requires an existing draft quote with at least one line item linked to a catalog item (catalog_item_id set and unit_price populated). Open the quote detail page, scroll to the line items table. Cannot be auto-navigated because the right data state must be pre-seeded.",
+    "actions": []
+  },
+  {
+    "id": "quotes-sections-expanded",
+    "callout": "Quote editor with two sections expanded, each with their own line items and date badge.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/quotes/quotes-sections-expanded.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Quote editor showing two named sections, each expanded with its own line items table and a date range badge in the section header.",
+    "manual": true,
+    "note": "Requires a draft quote with two sections, each having at least one line item and start/end dates set (so the date badge is visible). Open the quote detail page and scroll to the Sections area. Pre-seed the data before capture.",
+    "actions": []
+  },
+  {
+    "id": "lawn-estimator-map-polygon",
+    "callout": "Satellite map view with a closed green polygon over a yard and the area readout visible.",
+    "route": "/{tenant}/lawn-estimator",
+    "filename": "using-zoop/quotes/lawn-estimator-map-polygon.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Lawn estimator satellite map with a closed green polygon drawn over a yard and the calculated square footage readout displayed.",
+    "manual": true,
+    "note": "The map requires an interactive drawing session — navigate to /{tenant}/lawn-estimator, search for a property address, draw a polygon by clicking corners, then close the shape to trigger the area calculation. The state is transient and cannot be pre-seeded via URL params.",
+    "actions": []
+  },
+  {
+    "id": "quotes-tool-inputs-chip",
+    "callout": "Tool inputs panel showing a lawn measurement chip with square footage and address.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/quotes/quotes-tool-inputs-chip.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Quote editor Tool inputs panel showing a lawn measurement chip labelled with square footage and property address.",
+    "manual": true,
+    "note": "Requires a quote with a saved lawn measurement attached (a quote_tool_inputs row with kind='lawn' and populated data). Open the quote detail page and scroll to the Tool inputs panel. Pre-seed the measurement before capture.",
+    "actions": []
+  },
+  {
+    "id": "quotes-share-dialog-url",
+    "callout": "Share with customer dialog showing the generated URL and the copy button.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/quotes/quotes-share-dialog-url.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Share with customer dialog open on a quote, showing the generated share URL in a read-only field and the Copy button beside it.",
+    "manual": true,
+    "note": "The generated URL is only shown immediately after clicking 'Issue new link' in the ShareQuoteDialog — it is never re-displayed on reopen. To capture: open an existing quote, click 'Share with customer' in the header, then click 'Issue new link', and screenshot before closing the dialog.",
+    "actions": [
+      {
+        "click": "button:has-text('Share with customer')"
+      },
+      {
+        "waitFor": "dialog:has-text('Share with customer')"
+      },
+      {
+        "click": "button:has-text('Issue new link')"
+      },
+      {
+        "waitFor": "input[readonly]"
+      }
+    ]
+  },
+  {
+    "id": "quotes-accepted-sidebar",
+    "callout": "\"What would you like to do next?\" sidebar panel on an accepted quote, with the Create job and Create invoice buttons.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/quotes/quotes-accepted-sidebar.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Accepted quote detail page showing the 'What would you like to do next?' sidebar panel with Create job and Create invoice buttons.",
+    "manual": true,
+    "note": "Requires a quote in 'accepted' status with at least one line item (so the buttons are enabled, not greyed out). The sidebar only renders when quote.status === 'accepted'. Open the quote detail page — no extra UI actions are needed, the sidebar is visible immediately.",
+    "actions": []
+  },
+  {
+    "id": "calendar-week-view",
+    "callout": "calendar page in week view with a mix of jobs and events visible.",
+    "route": "/{tenant}/calendar",
+    "filename": "using-zoop/calendar/week-view.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Calendar in week view showing job chips and event chips across multiple days",
+    "manual": true,
+    "note": "Week view is the default (no ?view= param needed). Requires seeded data: at least one scheduled job and one calendar event (of any kind) within the current week so that a realistic mix of chips is visible on the grid. Capture at a viewport wide enough to show all 7 day columns (1280px+).",
+    "actions": []
+  },
+  {
+    "id": "calendar-new-event-modal",
+    "callout": "event creation modal with kind selector, title, time fields, and assignee picker visible.",
+    "route": "/{tenant}/calendar",
+    "filename": "using-zoop/calendar/new-event-modal.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New event modal open with kind selector, title field, start and end time inputs, and assignee checkboxes",
+    "manual": false,
+    "note": "Requires at least one team member in the tenant so the assignee picker is populated. Click the indigo 'New' button in the top-right of the calendar toolbar (aria-label includes 'New' text and a PlusIcon). The EventEditModal opens with Title, Kind (Meeting/Block/Personal/Other select), Starts, Ends datetime-local inputs, All day checkbox, and Assignees checkboxes visible without scrolling on a 1280px viewport.",
+    "actions": [
+      {
+        "click": "button:has(svg) + span:text('New'), button[color='indigo']"
+      }
+    ]
+  },
+  {
+    "id": "calendar-holds-inbox",
+    "callout": "Holds inbox panel open with one or two pending hold requests.",
+    "route": "/{tenant}/calendar",
+    "filename": "using-zoop/calendar/holds-inbox.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Holds inbox slide-over showing one or two pending booking hold requests with Confirm, Suggest other time, and Decline buttons",
+    "manual": true,
+    "note": "Requires seeded pending rows in the booking_holds table (status='pending') for the tenant. The 'Holds (N)' pill button only appears for owner and office roles, and the panel (HoldsInbox) fetches from /{tenant}/api/calendar/holds?status=pending at open time. Seed at least two pending holds with guest_name, guest_email, requested_start, and requested_end set so each row shows a name, email, time slot, expiry chip, and the three action buttons. After seeding, click the 'Holds (N)' pill button (aria-label='Holds (N)') in the top-right toolbar to open the slide-over.",
+    "actions": [
+      {
+        "click": "button[aria-label^='Holds']"
+      }
+    ]
+  },
+  {
+    "id": "dispatch-board-overview",
+    "callout": "the dispatch board with three member columns, the unassigned rail on the left, and colored map pins above.",
+    "route": "/{tenant}/route/dispatch",
+    "filename": "using-zoop/dispatch/dispatch-board-overview.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Dispatch board showing the unassigned column on the left, three member columns with stop cards, and colored map pins above the board.",
+    "manual": false,
+    "note": "Requires seeded data: at least three active team members with stops assigned for today and at least one unassigned job in the queue. If the board is empty the shot will be blank — seed via the Jobs page before capturing.",
+    "actions": []
+  },
+  {
+    "id": "dispatch-likely-late-badge",
+    "callout": "a member column with a Likely late badge on one stop card and the colored dot in the column header.",
+    "route": "/{tenant}/route/dispatch",
+    "filename": "using-zoop/dispatch/dispatch-likely-late-badge.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "A member column on the dispatch board with a red Likely late badge on one stop card and the member's color dot in the column header.",
+    "manual": true,
+    "note": "The Likely late badge only appears after the background watcher fires (every 15 min) and only when a stop has a hard-window flexibility type whose projected ETA has breached the promised window. This state cannot be reliably triggered by navigation alone — capture it on a live day with a real late stop, or temporarily seed a stop whose promised window is already past."
+  },
+  {
+    "id": "dispatch-needs-rescheduling-tray",
+    "callout": "the Needs rescheduling tray with one or two rows, each showing a Reschedule button.",
+    "route": "/{tenant}/route/dispatch",
+    "filename": "using-zoop/dispatch/dispatch-needs-rescheduling-tray.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Needs rescheduling tray above the dispatch board showing two missed jobs with customer name, job title, original date, and a Reschedule button on each row.",
+    "manual": true,
+    "note": "The tray only renders when loadMissedJobs returns results (jobs whose scheduled day is in the past and are not completed). Seed one or two jobs with a past scheduled date, leave them incomplete, then navigate to the dispatch board. The tray appears above the board columns — scroll up if needed before capturing."
+  },
+  {
+    "id": "my-day-mobile",
+    "callout": "the My day view on a phone-sized screen showing the map, stop list, and Add stop button.",
+    "route": "/{tenant}/route",
+    "filename": "using-zoop/dispatch/my-day-mobile.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "My day route cockpit on a mobile screen showing the map at the top, an ordered stop list below, and the Add stop button at the bottom.",
+    "manual": false,
+    "note": "Capture at a mobile viewport (e.g. 390×844). Requires at least one assigned stop for today for the logged-in member so the stop list is not empty. The route is /{tenant}/route (the RouteCockpit component).",
+    "actions": []
+  },
+  {
+    "id": "route-intelligence-overview",
+    "callout": "the Route intelligence page showing the capacity table and profitability table.",
+    "route": "/{tenant}/route-intelligence",
+    "filename": "using-zoop/dispatch/route-intelligence-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Route intelligence page showing the weekly capacity and load table alongside the profitability table with revenue and revenue-per-hour columns.",
+    "manual": false,
+    "note": "Must be logged in as an owner (profitability table is owner-only). Requires operational data for the current week — if no routes are present both tables will be empty. Seed at least one completed job per day to populate meaningful rows.",
+    "actions": []
+  },
+  {
+    "id": "invoices-list-status-tabs",
+    "callout": "invoices list page showing the status tabs (All, Draft, Sent, Overdue, Paid, Void) and a sample table row.",
+    "route": "/{tenant}/invoices",
+    "filename": "using-zoop/invoices/invoices-list-status-tabs.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Invoices list page with status tabs (All, Draft, Sent, In dunning, Overdue, Paid, Uncollectible, Void) and a table row showing invoice number, customer, status badge, issued date, due date, total, and amount paid.",
+    "manual": true,
+    "note": "The table requires seeded invoice data across multiple statuses so that the tab strip and at least one populated row are both visible. Load the page with at least one non-void invoice present, then capture at desktop width. The tabs (All, Draft, Sent, In dunning, Overdue, Paid, Uncollectible, Void) render as border-bottom links directly in the page component at /(management)/invoices/page.tsx."
+  },
+  {
+    "id": "job-detail-create-invoice-action",
+    "callout": "job detail page showing the \"Create invoice\" action or button.",
+    "route": "/{tenant}/jobs/[id]",
+    "filename": "using-zoop/invoices/job-detail-create-invoice-action.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Job detail page with the Create invoice action visible in the Connections sidebar.",
+    "manual": true,
+    "note": "The job detail page (job-detail-client.tsx) does not expose a standalone 'Create invoice' button in its action bar. Invoice creation from a job is triggered via the API (from_job_id). The Connections sidebar shows existing associated invoices only after at least one has been created. Capture requires: (1) a real job in the app with an associated invoice already created, or (2) a seeded data state where the sidebar renders. Navigate to a specific job ID that has a linked invoice, then capture the Connections sidebar showing the invoice entry."
+  },
+  {
+    "id": "quote-detail-create-invoice-action",
+    "callout": "quote detail page showing the \"Create invoice\" action.",
+    "route": "/{tenant}/quotes/[id]",
+    "filename": "using-zoop/invoices/quote-detail-create-invoice-action.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Quote detail page for an accepted quote, with the 'Create invoice' button visible in the right sidebar.",
+    "manual": true,
+    "note": "The 'Create invoice' button (quote-detail-client.tsx line 639-647) only renders in the sidebar when quote.status === 'accepted'. Navigate to a specific accepted quote's detail page. The sidebar card reads 'What would you like to do next?' and contains both 'Create job' and 'Create invoice' outline buttons. Capture the full page or at least the sidebar section so both buttons are visible alongside the accepted status badge."
+  },
+  {
+    "id": "payments-settings-stripe-states",
+    "callout": "The Settings → Payments page showing the \"Set up payments\" state and the active Stripe card side by side.",
+    "route": "/{tenant}/settings/payments",
+    "filename": "using-zoop/payments/settings-stripe-states.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Settings → Payments page with the \"Set up payments\" empty-state card on the left and an Active Stripe account card on the right.",
+    "manual": true,
+    "note": "This composite requires two distinct Stripe account states visible at the same time, which is impossible in a single live session. Capture two separate screenshots — one tenant with no Stripe connected (showing the \"Set up payments\" CTA) and one tenant with an active Stripe account (showing the Active badge) — then stitch them side by side in an image editor before saving to this path.",
+    "actions": []
+  },
+  {
+    "id": "payments-settings-stripe-active",
+    "callout": "The active Stripe card showing the \"Active\" badge with charges and payouts enabled.",
+    "route": "/{tenant}/settings/payments",
+    "filename": "using-zoop/payments/settings-stripe-active.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Settings → Payments page showing the Stripe account card with an Active badge and both Charges and Payouts rows enabled.",
+    "manual": true,
+    "note": "Requires a tenant that has a fully onboarded Stripe Connect account (charges_enabled and payouts_enabled both true). Log in as such a tenant, navigate to /settings/payments, and crop to the Stripe account StateCard. Cannot be auto-navigated without a seeded active Stripe config.",
+    "actions": []
+  },
+  {
+    "id": "payments-share-invoice-dialog",
+    "callout": "The \"Share invoice\" dialog showing the payment link field, copy button, and QR code.",
+    "route": "/{tenant}/invoices",
+    "filename": "using-zoop/payments/share-invoice-dialog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Share invoice dialog with the payment link URL field, copy button, and QR code displayed.",
+    "manual": true,
+    "note": "Open any sent or overdue invoice (one where canShare is true, meaning public_token is set and Stripe is active). On the invoice detail page, click the \"Share with customer\" button in the action footer to open the ShareInvoiceDialog. Capture the dialog while it is open. Requires a seeded sent invoice with Stripe connected.",
+    "actions": [
+      {
+        "click": "button:has-text('Share with customer')"
+      }
+    ]
+  },
+  {
+    "id": "payments-record-payment-dialog",
+    "callout": "The \"Record payment\" dialog with the method dropdown and reference field visible.",
+    "route": "/{tenant}/invoices",
+    "filename": "using-zoop/payments/record-payment-dialog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Record payment dialog showing the amount field, method dropdown, reference field, date picker, and notes field.",
+    "manual": true,
+    "note": "Open any sent or overdue invoice, then click \"Record payment\" in the action footer to open the inline dialog (DialogTitle text is \"Record payment\"). Capture the dialog before submitting. Requires a seeded sent or overdue invoice.",
+    "actions": [
+      {
+        "click": "button:has-text('Record payment')"
+      }
+    ]
+  },
+  {
+    "id": "payments-issue-refund-dialog",
+    "callout": "The \"Issue a refund\" dialog with the amount, reason, and notify toggle.",
+    "route": "/{tenant}/invoices",
+    "filename": "using-zoop/payments/issue-refund-dialog.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Issue refund dialog showing the refund amount input, reason selector, optional note field, and the Notify customer toggle set to on.",
+    "manual": true,
+    "note": "Open a paid invoice that has a Stripe card payment with refundable balance > 0. Click \"Issue refund\" in the action footer to open the refund dialog. Capture the dialog before confirming. Requires a seeded paid invoice with a Stripe charge.",
+    "actions": [
+      {
+        "click": "button:has-text('Issue refund')"
+      }
+    ]
+  },
+  {
+    "id": "plans-list",
+    "callout": "Plans list page showing the table with title, customer, cadence, next run, lead time, status, and total per run columns.",
+    "route": "/{tenant}/plans",
+    "filename": "using-zoop/recurring-billing/plans-list.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Plans list showing title, customer, cadence, next run, lead time, status, and total per run columns.",
+    "manual": false,
+    "note": "Requires at least one plan to exist so the table renders instead of the empty-state card. Use seeded data for the capture tenant.",
+    "actions": []
+  },
+  {
+    "id": "new-plan-form",
+    "callout": "New plan form showing customer picker, title field, cadence preset selector, lead time field, and line items builder.",
+    "route": "/{tenant}/plans/new",
+    "filename": "using-zoop/recurring-billing/new-plan-form.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "New plan form with customer picker, title field, cadence preset selector, lead time input, and line items builder.",
+    "manual": false,
+    "note": "The form is fully server-rendered on load. Scroll to capture the full form including the line items builder and total per run footer.",
+    "actions": []
+  },
+  {
+    "id": "autopay-status-on",
+    "callout": "Auto-pay status card on the plan detail page showing \"Auto-pay is on\" with card brand and last 4 digits.",
+    "route": "",
+    "filename": "using-zoop/recurring-billing/autopay-status-on.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Auto-pay status card showing \"Auto-pay is on\" with card brand and last four digits.",
+    "manual": true,
+    "note": "Requires a plan that has active auto-pay consent (consent record with a non-null processor_mandate_id and auto_charge_enabled=true). Navigate to /{tenant}/plans/{id} for a plan in that state. The \"Auto-pay is on\" panel with the ShieldCheck icon and card brand/last4 will be visible in the right column of the summary grid."
+  },
+  {
+    "id": "plan-actions-dropdown",
+    "callout": "Plan detail page showing the Actions dropdown with Charge now, Skip next, Pause plan, and Cancel plan options.",
+    "route": "/{tenant}/plans/{id}",
+    "filename": "using-zoop/recurring-billing/plan-actions-dropdown.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Plan detail Actions dropdown open, showing Charge now, Skip next, Pause plan, and Cancel plan options.",
+    "manual": true,
+    "note": "Requires an active plan (status=active) so all four menu items render. Navigate to /{tenant}/plans/{id} for an active plan, then click the 'Actions' button (aria-label=\"Plan actions\", visible text 'Actions') to open the dropdown before capturing. The dropdown is a Catalyst Dropdown component — the menu appears immediately on click with no animation delay."
+  },
+  {
+    "id": "pricebook-list",
+    "callout": "pricebook list view showing the kind filter tabs, category sidebar, and items table with image thumbnails.",
+    "route": "/{tenant}/pricebook",
+    "filename": "using-zoop/pricebook/pricebook-list.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Pricebook list view with kind filter tabs at the top, category sidebar on the left, and items table showing thumbnails on the right.",
+    "manual": false,
+    "note": "Requires seeded catalog items with at least one photo so thumbnails are visible. Capture with a category selected in the sidebar and a kind tab active (e.g. Service) to show all three UI zones simultaneously.",
+    "actions": []
+  },
+  {
+    "id": "pricebook-item-form-pricing",
+    "callout": "item form open on a service item, showing the pricing section with cost, markup, and retail price fields.",
+    "route": "/{tenant}/pricebook/items/new",
+    "filename": "using-zoop/pricebook/item-form-pricing.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New item form with Kind set to Service and the Pricing section expanded, showing Cost, Markup, and Retail price fields side by side.",
+    "manual": false,
+    "note": "Must be captured while signed in as an owner — the Cost and Markup fields are owner-only. The form defaults to kind=service, so no kind change is needed. Scroll to the Pricing section before capture.",
+    "actions": [
+      {
+        "waitFor": "h1:has-text('New item')"
+      }
+    ]
+  },
+  {
+    "id": "pricebook-category-tree",
+    "callout": "category tree showing a two-level hierarchy with the drag handle visible on hover.",
+    "route": "",
+    "filename": "using-zoop/pricebook/category-tree.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Category tree on the Categories page showing a two-level hierarchy with the drag handle icon visible on a hovered row.",
+    "manual": true,
+    "note": "Requires seeded category data with at least one parent and one child category. Navigate to /{tenant}/pricebook/categories, hover over a category row to reveal its drag handle, then capture. The drag handle appears on CSS :hover and cannot be triggered programmatically in a static screenshot tool."
+  },
+  {
+    "id": "pricebook-csv-import-map",
+    "callout": "CSV import wizard at the mapping step, showing the suggested column mapping and the three-row preview table.",
+    "route": "",
+    "filename": "using-zoop/pricebook/csv-import-map.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "CSV import wizard at the Map Headers step, with each CSV column mapped to a Zoop field and a three-row data preview table below.",
+    "manual": true,
+    "note": "Navigate to /{tenant}/pricebook/items/import. The wizard opens at the Upload step; you must drag or browse a sample CSV file and let it parse before the Map step appears. Capture after the wizard advances to Step 2: Map Headers with the column-mapping dropdowns and preview table visible."
+  },
+  {
+    "id": "customer-timeline-mixed-messages",
+    "callout": "customer timeline showing a mix of inbound and outbound SMS and email entries.",
+    "route": "/{tenant}/customers/[id]?tab=timeline",
+    "filename": "using-zoop/communications/customer-timeline-mixed-messages.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Customer timeline tab showing a mix of inbound and outbound SMS and email entries with delivery status badges.",
+    "manual": true,
+    "note": "Requires a customer record seeded with several inbound and outbound SMS and email communications. Navigate to /{tenant}/customers/<seeded-customer-id>?tab=timeline and confirm the timeline shows at least one inbound SMS, one outbound SMS, and one email entry (any direction) before capturing. The filter chips must be visible at the top and the entries list must be populated."
+  },
+  {
+    "id": "customer-timeline-filter-chips",
+    "callout": "customer Timeline tab with the channel filter chips.",
+    "route": "/{tenant}/customers/[id]?tab=timeline",
+    "filename": "using-zoop/communications/customer-timeline-filter-chips.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Customer Timeline tab with All, SMS, Email, Calls, and AI sessions filter chips across the top.",
+    "manual": true,
+    "note": "Navigate to /{tenant}/customers/<any-customer-id>?tab=timeline. The five filter chips (All, SMS, Email, Calls, AI sessions) render regardless of whether there is data. Capture with the default 'All' chip selected (dark/filled). Use a customer with at least some timeline entries so the list is not empty beneath the chips."
+  },
+  {
+    "id": "customer-timeline-failed-delivery",
+    "callout": "timeline entry showing failed delivery with a reason visible.",
+    "route": "/{tenant}/customers/[id]?tab=timeline",
+    "filename": "using-zoop/communications/customer-timeline-failed-delivery.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Customer timeline entry with a red 'failed' status badge and a delivery failure reason visible.",
+    "manual": true,
+    "note": "Requires a customer whose timeline contains at least one outbound SMS or email communication with status 'failed' and a failure reason stored. Trigger a known-bad send via the API (e.g. to an invalid number) or locate an existing failed entry via the Supabase dashboard, then navigate to /{tenant}/customers/<that-customer-id>?tab=timeline and scroll to the failed entry before capturing. The red 'failed' badge and reason text must both be visible in the card."
+  },
+  {
+    "id": "notes-feed-overview",
+    "callout": "the Notes feed showing pinned section at top, day-group headings (Today, Yesterday, This week, Earlier), search bar, and filter chips.",
+    "route": "/{tenant}/notes",
+    "filename": "using-zoop/notes/notes-feed-overview.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Notes feed with a pinned section at the top, day-group headings (Today, Yesterday, This week), search bar, and filter chips (All, Customer, Job, Invoice, Quote, Standalone, Pinned).",
+    "manual": true,
+    "note": "Requires seeded data: at least one pinned note and several non-pinned notes spread across multiple day buckets (today, yesterday, and an older date) so all four heading labels are visible at once. Navigate to /{tenant}/notes after seeding. Capture the full viewport without scrolling so the search bar, filter chips, pinned section header, and at least two day-group headings are all in frame."
+  },
+  {
+    "id": "notes-composer-modal",
+    "callout": "the note composer open in modal mode, showing the toolbar, a subject chip, the pin bookmark button, and the photo strip with one thumbnail.",
+    "route": "/{tenant}/notes",
+    "filename": "using-zoop/notes/notes-composer-modal.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "New note composer dialog open in modal mode, with the markdown toolbar, an attached subject chip (e.g. \"Job: Replace water heater\"), the bookmark pin button, and one photo thumbnail in the photo strip.",
+    "manual": true,
+    "actions": [
+      {
+        "click": "button:has(svg) + button, button:contains('New note')"
+      }
+    ],
+    "note": "The composer is opened via a global JS event bus (openComposer), not a URL — it cannot be auto-navigated. To capture: (1) navigate to /{tenant}/notes, (2) click \"New note\" (top-right button), (3) inside the modal attach a subject by clicking the paperclip icon and selecting any job or customer, (4) upload one photo so the photo strip shows a thumbnail, (5) capture the open modal. The pin bookmark button (BookmarkIcon) sits in the header row alongside the subject chip."
+  },
+  {
+    "id": "notes-version-history-panel",
+    "callout": "the version history panel open on the right side, showing a list of versions with v1, v2, etc., author name, relative time, and a Restore button beside each entry.",
+    "route": "",
+    "filename": "using-zoop/notes/notes-version-history-panel.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Version history side panel open on the right, listing v1, v2, v3 entries each with the author name, relative timestamp, and a Restore button.",
+    "manual": true,
+    "note": "The VersionHistoryPanel component exists at src/components/notes/version-history-panel.tsx but has no UI entry point wired in the notes feed, note card, or composer as of the current codebase (confirmed by the TODO(verify) callout immediately below this one in the doc). To capture: open the panel programmatically (e.g. via browser console or a temporary dev trigger) against a note that has been edited at least twice so multiple version rows (v1, v2, etc.) are visible. Capture the panel in its open/slid-in state with the version list populated."
+  },
+  {
+    "id": "team-settings-overview",
+    "callout": "Settings > Team page showing the members table and \"Invite a new member\" section below it.",
+    "route": "/{tenant}/settings/team",
+    "filename": "using-zoop/team/team-settings-overview.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Settings > Team page with the members table and the invite form below it",
+    "manual": false,
+    "note": "Page renders both the members table and the invite form in a single scroll. Requires at least one member row to exist (the owner is always present). No dialog or tab action needed — capture the full page so both sections are visible.",
+    "actions": []
+  },
+  {
+    "id": "team-pending-invites",
+    "callout": "Pending invites table with resend and revoke icons visible.",
+    "route": "",
+    "filename": "using-zoop/team/team-pending-invites.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Pending invites table showing email, role, expiry, and the resend and revoke icon buttons",
+    "manual": true,
+    "note": "The pending-invites section (aria-labelledby='pending-invites-heading') is hidden entirely when there are no pending invitations — it only renders when invitations.length > 0 (see team-page.tsx line 363). Seed the tenant with at least one outstanding invite before navigating to /{tenant}/settings/team, then crop to the 'Pending invites' section so both the ArrowPathIcon (resend) and NoSymbolIcon (revoke) action buttons are visible in the last column.",
+    "actions": []
+  },
+  {
+    "id": "crews-table",
+    "callout": "Crews page showing the crews table with name, member count, and action icons.",
+    "route": "",
+    "filename": "using-zoop/team/crews-table.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Crews page with the crew table showing name, member count, and manage/rename/archive icons",
+    "manual": true,
+    "note": "The crews table only renders when visibleCrews.length > 0 (see crews-page.tsx line 381); an empty tenant shows an empty-state card instead. Seed at least one active crew, then navigate to /{tenant}/settings/team/crews. Capture the table section so the Name, Members columns and the three icon buttons (UserGroupIcon manage, PencilIcon rename, NoSymbolIcon archive) are all visible in an active row.",
+    "actions": []
+  },
+  {
+    "id": "job-assignee-picker-with-crew",
+    "callout": "Job assignee picker showing a crew name alongside individual team members.",
+    "route": "",
+    "filename": "using-zoop/team/job-assignee-picker-with-crew.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Assigned techs combobox open with a Crews section above individual team members in the dropdown",
+    "manual": true,
+    "note": "The MemberPicker dropdown (component at src/components/jobs/member-picker.tsx) renders a 'Crews' section above individual member rows only when active crews exist and the job is an instance edit (not a series-level edit). Navigate to /{tenant}/jobs/[id]/edit for a real job instance, click the 'Assigned techs' combobox to open the dropdown, then capture it while the dropdown is open showing at least one crew name row and at least one individual member row. Requires seeded crews and team members.",
+    "actions": []
+  },
+  {
+    "id": "storefront-published-page",
+    "callout": "the published storefront page showing the hero section, services grid, booking widget, service area, and contact/hours panel.",
+    "route": "",
+    "filename": "using-zoop/storefront/storefront-published-page.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Published storefront page showing hero, services grid, booking widget, service area map, and contact and hours panel.",
+    "manual": true,
+    "note": "This is the public-facing page at https://app.zoop.pro/{tenant} (the (storefront) route group). It requires the tenant to be published (published_at not null) and ideally has seeded data: logo, tagline, trade types, service area, and business hours. Load the page while not authenticated to capture the true public view. Scroll and capture the full page.",
+    "actions": []
+  },
+  {
+    "id": "settings-business-publish-toggle",
+    "callout": "the publish toggle on the Business settings tab.",
+    "route": "/{tenant}/settings?tab=business",
+    "filename": "using-zoop/storefront/settings-business-publish-toggle.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Business settings tab with the Enable public storefront toggle scrolled into view.",
+    "manual": false,
+    "note": "The publish toggle has id='publish-toggle' and sits at the bottom of the Business tab form. After navigation, scroll the element into view before capture. Crop to show roughly the bottom third of the Business tab so the toggle is the focal point.",
+    "actions": [
+      {
+        "waitFor": "#publish-toggle"
+      },
+      {
+        "click": "#publish-toggle"
+      }
+    ]
+  },
+  {
+    "id": "settings-scheduling-online-booking",
+    "callout": "the Online booking section of the Scheduling settings tab showing the enable toggle, slot length dropdown, and hold expiry dropdown.",
+    "route": "/{tenant}/settings?tab=scheduling",
+    "filename": "using-zoop/storefront/settings-scheduling-online-booking.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Scheduling settings tab with the Online booking section showing the Enable booking widget toggle, slot length selector, and hold expiry selector.",
+    "manual": false,
+    "note": "The Online booking subheading and its three controls (Enable booking widget switch, booking_default_duration_minutes Select, booking_hold_ttl_hours Select) render on the Scheduling tab. Scroll down to bring the 'Online booking' subheading to the top of the viewport before capture. No dialog to open — the controls are inline.",
+    "actions": [
+      {
+        "waitFor": "select[name='booking_default_duration_minutes']"
+      }
+    ]
+  },
+  {
+    "id": "customer-portal-home",
+    "callout": "customer portal home — header with business name/logo, outstanding quotes section, past invoices list, saved payment methods, and auto-pay section.",
+    "route": "",
+    "filename": "using-zoop/customer-portal/portal-home.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "alt": "Customer portal home showing business logo, outstanding quotes, past invoices, saved payment methods, and auto-pay sections.",
+    "manual": true,
+    "note": "The portal lives at /{tenant}/account/[token] (src/app/[tenantId]/(storefront)/account/[token]/page.tsx). The token is a one-way hash that cannot be reconstructed — capture by generating a real portal link for a seeded test customer (owner role required), then opening the link in a browser. Ensure the customer has at least one outstanding quote, one past invoice, one saved card, and one active auto-pay consent so all four sections are visible. Scroll to show the full page or stitch sections."
+  },
+  {
+    "id": "invoice-pay-block",
+    "callout": "invoice page pay block with \"Pay now\" button and \"Or pay offline\" disclosure.",
+    "route": "",
+    "filename": "using-zoop/customer-portal/invoice-pay-block.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Invoice page pay block with Pay now button and collapsed Or pay offline disclosure section.",
+    "manual": true,
+    "note": "The invoice page lives at /{tenant}/invoice/[token] (src/app/[tenantId]/(storefront)/invoice/[token]/page.tsx). Access requires a real invoice token. To show both the Pay now button and the Or pay offline disclosure, the test tenant must have Stripe connected AND payment instructions configured in settings. Open the invoice link for an unpaid invoice, then expand the Or pay offline disclosure before capturing. Crop to the pay block area below the line-items table."
+  },
+  {
+    "id": "customer-portal-access-section",
+    "callout": "portal access section on the customer detail page — \"Active\" badge, created/last seen timestamps, Generate and Revoke buttons.",
+    "route": "/{tenant}/customers/[id]",
+    "filename": "using-zoop/customer-portal/portal-access-section.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Portal access card on the customer detail page showing an Active badge, created and last seen timestamps, and Generate and Revoke buttons.",
+    "manual": true,
+    "note": "Navigate to a customer detail page as an owner-role user who has already generated a portal token for that customer (so the Active badge and both timestamps are populated). The PortalAccessSection component is rendered inside the customer detail page at src/app/[tenantId]/(management)/customers/[id]/page.tsx. Scroll to the Portal access card and crop to it. If automating, use a seeded customer with has_active_token=true and a non-null last_used_at so all metadata rows render.",
+    "actions": []
+  },
+  {
+    "id": "portal-auto-pay-section",
+    "callout": "auto-pay section on the portal — consent row with plan name, card, \"Granted\" date, and \"Turn off\" button.",
+    "route": "",
+    "filename": "using-zoop/customer-portal/portal-auto-pay-section.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Auto-pay section on the customer portal listing an active consent row with plan name, card details, granted date, and a Turn off button.",
+    "manual": true,
+    "note": "The auto-pay section is part of the customer portal at /{tenant}/account/[token] (src/app/[tenantId]/(storefront)/account/[token]/auto-pay-section.tsx). Access requires a real portal token. Ensure the test customer has at least one active auto-pay consent with a plan name and linked card so the consent row is visible. Scroll to the Auto-pay section and crop to it. If the customer has a zooper-attested consent, include that row to show the badge."
+  },
+  {
+    "id": "mobile-app-store-listing",
+    "callout": "App store listing / home screen icon for iOS and Android.",
+    "route": "",
+    "filename": "using-zoop/mobile/app-store-listing.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Zoop app listing on the App Store and Google Play, showing the app icon and name",
+    "manual": true,
+    "note": "Requires capturing the App Store (iOS) and/or Google Play (Android) store listing pages for the Zoop app. These are public storefronts, not reachable via app.zoop.pro. A human must screenshot the store listing or the app icon on a physical device home screen."
+  },
+  {
+    "id": "mobile-login-tenant-picker",
+    "callout": "LoginScreen and TenantPicker on a phone.",
+    "route": "",
+    "filename": "using-zoop/mobile/login-tenant-picker.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Zoop mobile login screen showing email and social sign-in options, followed by the business picker for multi-tenant accounts",
+    "manual": true,
+    "note": "LoginScreen and TenantPicker are native-only Capacitor screens rendered in mobile/src/ui/LoginScreen.tsx and mobile/src/ui/TenantPicker.tsx. They are not served at any app.zoop.pro route. Capture on a physical device or simulator: open the app signed out (or sign out), screenshot the LoginScreen, then sign in with a multi-tenant account to get the TenantPicker. Combine or use two shots."
+  },
+  {
+    "id": "mobile-today-screen",
+    "callout": "TodayScreen with a short list of jobs.",
+    "route": "",
+    "filename": "using-zoop/mobile/today-screen.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Today tab in the Zoop mobile app showing today's jobs sorted by start time with colour-coded status badges",
+    "manual": true,
+    "note": "TodayScreen is a native-only Capacitor screen in mobile/src/ui/TodayScreen.tsx. Not accessible via app.zoop.pro. Capture on device or simulator with a test account that has at least two or three jobs scheduled for today so the list is visible. Ensure status badges (Scheduled, Done, etc.) are visible."
+  },
+  {
+    "id": "mobile-jobs-screen",
+    "callout": "JobsScreen with status filter chips visible.",
+    "route": "",
+    "filename": "using-zoop/mobile/jobs-screen.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Jobs tab in the Zoop mobile app with All, Scheduled, Unscheduled, Done, and Cancelled filter chips shown above the job list",
+    "manual": true,
+    "note": "JobsScreen is a native-only Capacitor screen in mobile/src/ui/JobsScreen.tsx. Not accessible via app.zoop.pro. Capture on device or simulator. Ensure the status chips (All, Scheduled, Unscheduled, Done, Cancelled) are visible without any chip active, or with one chip tapped to show filter in use."
+  },
+  {
+    "id": "mobile-customers-screen",
+    "callout": "CustomersScreen showing the Active badge on a customer.",
+    "route": "",
+    "filename": "using-zoop/mobile/customers-screen.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Customers tab in the Zoop mobile app showing a customer row with the Active badge indicating a currently scheduled job",
+    "manual": true,
+    "note": "CustomersScreen is a native-only Capacitor screen in mobile/src/ui/CustomersScreen.tsx. Not accessible via app.zoop.pro. Requires an owner or office-manager account. Capture on device or simulator with a test customer who has at least one scheduled job so the Active badge appears on their row."
+  },
+  {
+    "id": "mobile-invoices-screen",
+    "callout": "InvoicesScreen with the outstanding / paid-this-month summary cards.",
+    "route": "",
+    "filename": "using-zoop/mobile/invoices-screen.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Invoices tab in the Zoop mobile app showing outstanding balance and paid-this-month summary cards above the invoice list",
+    "manual": true,
+    "note": "InvoicesScreen is a native-only Capacitor screen in mobile/src/ui/InvoicesScreen.tsx. Not accessible via app.zoop.pro. Capture on device or simulator with a test account that has an outstanding invoice balance and at least one payment collected this month so both summary cards render at the top."
+  },
+  {
+    "id": "mobile-quotes-screen",
+    "callout": "QuotesScreen with the accepted-quotes banner.",
+    "route": "",
+    "filename": "using-zoop/mobile/quotes-screen.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Quotes tab in the Zoop mobile app showing the accepted-quotes banner indicating quotes ready to convert to invoices",
+    "manual": true,
+    "note": "QuotesScreen is a native-only Capacitor screen in mobile/src/ui/QuotesScreen.tsx. Not accessible via app.zoop.pro. Capture on device or simulator with a test account that has at least one quote in Accepted status so the banner appears at the top of the screen."
+  },
+  {
+    "id": "mobile-note-composer-recording",
+    "callout": "NoteComposer with recording in progress.",
+    "route": "",
+    "filename": "using-zoop/mobile/note-composer-recording.png",
+    "viewport": "mobile",
+    "fullPage": false,
+    "alt": "Zoop mobile note composer with a voice recording in progress, showing the elapsed-time timer on the Stop button",
+    "manual": true,
+    "note": "NoteComposer is a native-only Capacitor screen in mobile/src/ui/NoteComposer.tsx, opened via the + button above the tab bar. Not accessible via app.zoop.pro. Capture on a physical device (microphone permission required): tap +, tap Record note, speak briefly, then screenshot while recording is active so the elapsed-time timer is visible on the Stop button."
+  },
+  {
+    "id": "ai-automation-settings-tab",
+    "callout": "the AI & automation settings tab showing the AI receptionist toggle, knowledge base fields, and maintenance reminders toggle.",
+    "route": "/{tenant}/settings?tab=ai-automation",
+    "filename": "using-zoop/ai-features/ai-automation-settings-tab.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "AI & automation settings tab with the Enable AI Receptionist toggle, knowledge base fields (dispatch fee, services offered, services not offered, service area description), and the Enable Maintenance Reminders toggle.",
+    "manual": false,
+    "note": "The knowledge base fields (dispatch fee, services, service area) only render when the Enable AI Receptionist toggle is on. Before capturing, click the Switch for 'Enable AI Receptionist' so the full knowledge base section is visible alongside the Maintenance Reminders section below.",
+    "actions": [
+      {
+        "click": "button[role='switch'][aria-label*='Receptionist'], label:has(+ button[role='switch'])"
+      }
+    ]
+  },
+  {
+    "id": "ai-receptionist-sms-preview",
+    "callout": "the intro message field with the SMS preview bubble below it.",
+    "route": "/{tenant}/settings?tab=ai-automation",
+    "filename": "using-zoop/ai-features/ai-receptionist-sms-preview.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Intro message textarea on the AI & automation tab with the SMS preview bubble showing the message text below the field.",
+    "manual": false,
+    "note": "The SMS preview bubble only renders when the intro message textarea has content (the `introMessage` watch value is truthy). The Enable AI Receptionist toggle does NOT need to be on for the intro field and preview to appear — they are always visible. Type or confirm there is text in the Intro Message field before capturing. Crop to the Intro Message field + SMS preview section; no need to show the full page.",
+    "actions": []
+  },
+  {
+    "id": "missed-jobs-needs-rescheduling-tray",
+    "callout": "the \"Needs rescheduling\" tray on the dispatch board showing a missed job row with the Reschedule button.",
+    "route": "",
+    "filename": "using-zoop/ai-features/missed-jobs-needs-rescheduling-tray.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Needs rescheduling tray above the dispatch board listing a missed job row with the customer name, original scheduled date, and the Reschedule button.",
+    "manual": true,
+    "note": "The MissedJobsTray component only renders when there are jobs in the `scheduled` state whose scheduled date has already passed. Seed at least one such job in the david-company tenant (set its scheduled date to a past date and leave it in `scheduled` status), then navigate to /{tenant}/route/dispatch. The tray appears above the dispatch board — capture it with the board visible below for context."
+  },
+  {
+    "id": "settings-sidebar-nav",
+    "callout": "settings page with sidebar nav showing all tabs — Business info, Service area & hours, Scheduling, Payment methods, Notifications, AI & automation, API & MCP, plus the Card payments and Tax rates sub-pages.",
+    "route": "/{tenant}/settings",
+    "filename": "using-zoop/settings/settings-sidebar-nav.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Settings page with sidebar nav listing Business info, Service area & hours, Scheduling, Payment methods, Notifications, AI & automation, API & MCP, Card payments, and Tax rates.",
+    "manual": false,
+    "note": "Capture at desktop width (≥1024 px) so the lg:flex-row layout renders the left sidebar alongside the Business info form. No actions needed — the nav is visible on the root settings route without any interaction. Ensure the tenant has at least a company name set so the page is not empty."
+  },
+  {
+    "id": "settings-external-access-new-key-button",
+    "callout": "Settings → API & MCP page showing the \"New API key\" button.",
+    "route": "/{tenant}/settings/external-access",
+    "filename": "developers/quickstart/settings-external-access-new-key-button.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Settings API access page with the New API key button visible in the top-right of the API keys section.",
+    "manual": false,
+    "note": "Navigate to /{tenant}/settings/external-access as an owner-role user. The page renders the ExternalAccessClient component with the New API key button in the top-right of the API keys section header. No extra actions needed — capture the page in its default loaded state so the button is clearly visible alongside any existing key rows (or the empty-state dashed border if no keys exist).",
+    "actions": []
+  },
+  {
+    "id": "settings-external-access-key-list",
+    "callout": "Settings → API & MCP page showing the key list and New API key button.",
+    "route": "/{tenant}/settings/external-access",
+    "filename": "developers/authentication/api-keys/settings-external-access-key-list.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "alt": "Settings API access page listing active API keys with the New API key button visible in the top-right corner",
+    "manual": false,
+    "note": "Navigate to /{tenant}/settings/external-access. The page renders the key list table (name, actor badge, prefix, scopes, created date) alongside the New API key button. No dialog action needed — capture the list view at rest. Requires an owner-role session; the page returns a NoAccessNotice for non-owners. At least one seeded key in the tenant makes the list state more useful than the empty-state dashed border — seed one beforehand if the tenant has none.",
+    "actions": []
+  }
+]
