@@ -4,11 +4,15 @@ description: Create, schedule, and update jobs using the Zoop MCP tool catalog.
 audience: developer
 ---
 
-A job is the core unit of work in Zoop — a visit, task, or project you perform for a customer. Jobs have a simple status machine: `unscheduled` → `scheduled` → `done` (or `cancelled` at any point). The five tools below let you list, fetch, create, update, and cancel jobs.
+A job is the core unit of work in Zoop — a visit, task, or project you perform for a customer. This page covers the five API tools that let you list, fetch, create, update, and cancel jobs.
+
+Jobs move through four statuses: `unscheduled` → `scheduled` → `done` (or `cancelled` at any point). See the [status machine](#status-machine) section for the full rules.
 
 ## Required scopes
 
-| Operation | Scope |
+Every API call in Zoop needs a **scope** — a permission that says what the token is allowed to do. You set scopes when you create an API key or start an OAuth flow.
+
+| Operation | Scope needed |
 |---|---|
 | Read jobs | `read:jobs` |
 | Create, update, or cancel jobs | `write:jobs` |
@@ -17,7 +21,9 @@ A job is the core unit of work in Zoop — a visit, task, or project you perform
 
 ## User actor requirement
 
-`jobs.create`, `jobs.update`, and `jobs.cancel` require a **user actor** — an OAuth access token or user-bound API key. Tenant-key tokens (those with a `zoop_tk_` prefix) have no `userId` and cannot call these tools. They will receive an `invalid_input` error. See [API keys](/developers/authentication/api-keys).
+Some tools require a **user actor** — a token that is tied to a specific Zoop user (either an OAuth access token or a user-bound API key). This is different from a **tenant key** (prefix `zoop_tk_`), which belongs to the account as a whole and has no user identity attached.
+
+`jobs.create`, `jobs.update`, and `jobs.cancel` require a user actor. If you call them with a tenant key, you will get an `invalid_input` error. See [API keys](/developers/authentication/api-keys) to understand the difference and pick the right token type.
 
 ---
 
@@ -25,7 +31,7 @@ A job is the core unit of work in Zoop — a visit, task, or project you perform
 
 ### `jobs.list`
 
-Returns a page of jobs for the tenant. Results are ordered by `scheduled_start` ascending (nulls last), then by `created_at` descending. Page size is 20.
+Returns one page of jobs for the tenant. Results are sorted by `scheduled_start` ascending (jobs with no start time come last), then by `created_at` descending. Each page holds up to 20 jobs.
 
 **Scope:** `read:jobs`
 
@@ -79,7 +85,7 @@ Returns a page of jobs for the tenant. Results are ordered by `scheduled_start` 
 
 ### `jobs.get`
 
-Fetches one job's full record by ID, including line items, assignments, and a media preview (up to 50 items).
+Fetches the full record for a single job by its ID. The response includes line items, team assignments, and up to 50 media previews (photos and videos attached to the job).
 
 **Scope:** `read:jobs`
 
@@ -87,7 +93,7 @@ Fetches one job's full record by ID, including line items, assignments, and a me
   The job ID.
 </ParamField>
 
-Returns a `not_found` error if the job does not exist in the tenant.
+Returns a `not_found` error if the job ID does not exist in this tenant.
 
 **Response fields:**
 
@@ -98,7 +104,7 @@ Returns a `not_found` error if the job does not exist in the tenant.
 <ResponseField name="quote_id" type="string | null">The source quote, if the job was created from one.</ResponseField>
 <ResponseField name="title" type="string">Job title.</ResponseField>
 <ResponseField name="description" type="string | null">Optional long-form description.</ResponseField>
-<ResponseField name="flat_price" type="number | null">A fixed override price. When set, this replaces the sum of line items for billing purposes.</ResponseField>
+<ResponseField name="flat_price" type="number | null">A fixed price override. When set, this amount replaces the sum of line items for billing — useful when you want to charge a flat rate regardless of what's on the job.</ResponseField>
 <ResponseField name="status" type="string">One of `unscheduled`, `scheduled`, `done`, `cancelled`.</ResponseField>
 <ResponseField name="scheduled_start" type="string | null">ISO 8601 datetime. Null for unscheduled jobs.</ResponseField>
 <ResponseField name="scheduled_end" type="string | null">ISO 8601 datetime. Optional end time.</ResponseField>
@@ -123,7 +129,7 @@ Returns a `not_found` error if the job does not exist in the tenant.
 
 ### `jobs.create`
 
-Creates a new job. Requires a user actor.
+Creates a new job. Requires a user actor (see [user actor requirement](#user-actor-requirement) above).
 
 **Scope:** `write:jobs`
 
@@ -140,11 +146,11 @@ Creates a new job. Requires a user actor.
 </ParamField>
 
 <ParamField body="flat_price" type="number">
-  Optional fixed price override. Must be non-negative.
+  Optional flat price override. Must be zero or greater. When set, this replaces the sum of line items for billing.
 </ParamField>
 
 <ParamField body="scheduled_start" type="string (ISO 8601 datetime)">
-  When the job is scheduled to start. Providing this sets `status` to `scheduled` automatically. Omitting it leaves the job `unscheduled`.
+  When the job starts. Providing this automatically sets `status` to `scheduled`. Omitting it leaves the job `unscheduled`. Use ISO 8601 format, for example `2026-06-16T09:00:00Z`.
 </ParamField>
 
 <ParamField body="scheduled_end" type="string (ISO 8601 datetime)">
@@ -161,16 +167,16 @@ Creates a new job. Requires a user actor.
 </ParamField>
 
 <ParamField body="assigned_user_ids" type="array of UUIDs">
-  Team members to assign to this job. Each ID must be a member of the tenant, or the whole request fails with `invalid_input`.
+  Team members to assign to this job. Every ID must belong to your tenant — if even one ID is invalid, the entire request fails with `invalid_input`.
 </ParamField>
 
-Returns the newly created job row (same shape as `jobs.get`, without the join arrays).
+Returns the newly created job row. The shape matches `jobs.get`, except the nested `job_line_items`, `job_assignments`, and `job_media` arrays are not included.
 
 ---
 
 ### `jobs.update`
 
-Partially updates a job. Only the fields you supply are changed. Requires a user actor.
+Partially updates a job. Only the fields you send are changed — you do not need to resend the whole record. Requires a user actor (see [user actor requirement](#user-actor-requirement) above).
 
 **Scope:** `write:jobs`
 
@@ -195,11 +201,11 @@ Partially updates a job. Only the fields you supply are changed. Requires a user
 </ParamField>
 
 <ParamField body="status" type="string">
-  Explicit status transition. One of `unscheduled`, `scheduled`, `done`, or `cancelled`. Setting `done` stamps `completed_at` with the current time; setting anything else clears `completed_at`.
+  Explicit status change. One of `unscheduled`, `scheduled`, `done`, or `cancelled`. Setting `done` stamps `completed_at` with the current time. Setting any other status clears `completed_at`.
 </ParamField>
 
 <ParamField body="scheduled_start" type="string (ISO 8601 datetime) | null">
-  Update or clear the start time. If you change `scheduled_start` without also setting `status`, Zoop derives the status for you: an `unscheduled` job with a date set becomes `scheduled`; a `scheduled` job with its date cleared becomes `unscheduled`. Already-`done` or `cancelled` jobs are not affected by this auto-derive.
+  Update or clear the start time. You do not need to set `status` separately — Zoop derives it for you: an `unscheduled` job that gets a start time becomes `scheduled`; a `scheduled` job whose start time is cleared becomes `unscheduled`. Jobs already in `done` or `cancelled` are not affected by this auto-derive.
 </ParamField>
 
 <ParamField body="scheduled_end" type="string (ISO 8601 datetime) | null">
@@ -207,11 +213,11 @@ Partially updates a job. Only the fields you supply are changed. Requires a user
 </ParamField>
 
 <ParamField body="line_items" type="array">
-  When supplied, **replaces** the entire line-item list atomically. Same shape as `jobs.create`. Omit the field to leave existing line items untouched.
+  When supplied, **replaces** the entire line-item list. Same shape as `jobs.create`. Omit this field to leave existing line items untouched — there is no way to edit a single line item in isolation.
 </ParamField>
 
 <ParamField body="assigned_user_ids" type="array of UUIDs">
-  When supplied, **replaces** the entire assignment list atomically. Omit to leave existing assignments untouched.
+  When supplied, **replaces** the entire assignment list. Omit this field to leave existing assignments untouched.
 </ParamField>
 
 Returns the updated job row.
@@ -220,7 +226,7 @@ Returns the updated job row.
 
 ### `jobs.cancel`
 
-Cancels a job by setting its status to `cancelled`. Cancelled jobs are preserved in full — their history, line items, and assignments stay intact. Requires a user actor.
+Cancels a job by setting its status to `cancelled`. The job record is preserved in full — history, line items, and assignments all stay intact. Requires a user actor (see [user actor requirement](#user-actor-requirement) above).
 
 **Scope:** `write:jobs`
 
@@ -229,7 +235,7 @@ Cancels a job by setting its status to `cancelled`. Cancelled jobs are preserved
 </ParamField>
 
 <Callout type="warning">
-Cancellation is one-way via this tool. To restore a cancelled job, call `jobs.update` with `status="unscheduled"` or `status="scheduled"`.
+Cancellation is not permanent — but it is one-way via this tool. To reopen a cancelled job, call `jobs.update` with `status="unscheduled"` or `status="scheduled"`.
 </Callout>
 
 Returns the updated job row with `status: "cancelled"`.
@@ -238,7 +244,7 @@ Returns the updated job row with `status: "cancelled"`.
 
 ## Example: create a scheduled job
 
-This example creates a job for a customer and assigns it to a team member, starting Monday morning.
+This example creates a job for a customer and assigns it to a team member. Replace the UUIDs with real IDs from your tenant — you can get a customer ID from `customers.list` and a user ID from your Zoop account settings.
 
 <Tabs>
   <Tab title="cURL">
@@ -338,26 +344,26 @@ const result = await response.json()
 
 ## Status machine
 
-Jobs move through four statuses:
+Jobs move through four statuses. Zoop sets `status` for you in many cases — you rarely need to set it explicitly.
 
 | Status | Meaning |
 |---|---|
-| `unscheduled` | Created without a start time, or start time was cleared. |
+| `unscheduled` | Created without a start time, or the start time was cleared. |
 | `scheduled` | Has a `scheduled_start`. Set automatically when you provide a start time. |
-| `done` | Work complete. `completed_at` is stamped at the moment you set this status. |
-| `cancelled` | Cancelled via `jobs.cancel` or by passing `status="cancelled"` to `jobs.update`. |
+| `done` | Work complete. `completed_at` is stamped the moment you set this status. |
+| `cancelled` | Set via `jobs.cancel` or by passing `status="cancelled"` to `jobs.update`. |
 
-The `done` and `cancelled` statuses do not prevent further updates — you can re-open a done job by patching `status` back to `scheduled`.
+Neither `done` nor `cancelled` locks the job permanently. You can reopen a done or cancelled job by patching `status` back to `scheduled` or `unscheduled`.
 
 ---
 
 ## Error reference
 
-| Error kind | Common cause |
-|---|---|
-| `invalid_input` | Missing `title`, non-UUID in `assigned_user_ids`, assigned user not a tenant member, or tenant-actor token used on a write tool. |
-| `not_found` | The job ID does not exist in this tenant. |
-| `insufficient_scope` | Token is missing `read:jobs` or `write:jobs`. |
+| Error kind | Common cause | What to do |
+|---|---|---|
+| `invalid_input` | Missing `title`, a non-UUID value in `assigned_user_ids`, an assigned user who is not a member of your tenant, or a tenant-key token used on a write tool. | Check the fields in the error message. Confirm user IDs belong to your tenant. If you are using a `zoop_tk_` token, switch to a user-bound token. |
+| `not_found` | The job ID does not exist in this tenant. | Verify the ID with `jobs.list` or check that you are using the right tenant's credentials. |
+| `insufficient_scope` | The token is missing `read:jobs` or `write:jobs`. | Re-issue the token with the required scopes. See [Scopes](/developers/authentication/scopes). |
 
 See [Errors](/developers/errors) for the full error shape and HTTP status codes.
 

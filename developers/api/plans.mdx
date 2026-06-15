@@ -4,9 +4,11 @@ description: Define recurring billing plans — cadence, line items, and custome
 audience: developer
 ---
 
-A **plan** is a recurring billing template. It holds a cadence (expressed as an RFC 5545 rrule), one or more line items, and a customer. The recurring engine reads active plans and generates draft invoices on schedule. The plan tools create and maintain those templates — they are definition-only and do not charge anything.
+A **plan** is a recurring billing template. It stores three things: a billing cadence (how often to invoice), one or more line items (what to charge for), and a customer to invoice. Zoop's recurring engine reads your active plans and automatically creates draft invoices on schedule.
 
-Plans use their own scope pair: `read:plans` and `write:plans`. Unlike catalog or estimates, there is no umbrella alias; you must request these scopes explicitly. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+The plan tools let you create and manage those templates. They are definition-only — none of them charges a card or triggers a payment.
+
+Plans require their own permission scopes: `read:plans` and `write:plans`. There is no shortcut alias that covers both; you must request them explicitly when setting up your token. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
 
 <Callout type="info">
 If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to understand how to connect and authenticate before calling tools.
@@ -21,21 +23,21 @@ If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to und
 | `read:plans` | `plans.list`, `plans.get` |
 | `write:plans` | `plans.create`, `plans.update`, `plans.cancel` |
 
-`write:plans` does **not** imply `read:plans`. Grant both if your integration needs to read and write.
+`write:plans` does **not** include `read:plans`. If your integration needs to both read and write plans, request both scopes.
 
 ---
 
 ## Key concepts
 
-**Definition-only.** `plans.create`, `plans.update`, and `plans.cancel` are pure database operations. None of them charges a card, creates a Stripe subscription, or triggers the recurring engine immediately. Charging happens separately outside the MCP v1 scope.
+**These tools only define plans — they do not charge anyone.** `plans.create`, `plans.update`, and `plans.cancel` are database operations. None of them charges a card, creates a Stripe subscription, or triggers the recurring engine. Charging happens separately, outside MCP v1.
 
-**Customer is immutable.** Once a plan is created, its `customer_id` cannot change. Pass `customer_id` in the patch — or attempt to patch `status` — and the call fails with an `invalid_input` error at the input boundary.
+**The customer cannot change after creation.** Once a plan is created, its `customer_id` is locked. If you try to pass `customer_id` in an update — or try to set `status` directly — the call returns an `invalid_input` error. To cancel a plan, use `plans.cancel` instead.
 
-**Line items replace wholesale.** When you include `items` in `plans.update`, the entire item list is replaced. To add one line item you must re-send all existing items plus the new one.
+**Updating line items replaces the whole list.** When you include `items` in `plans.update`, Zoop replaces the entire item list. To add one line item, re-send all the existing items plus the new one.
 
-**Cancel is terminal.** `plans.cancel` sets the plan's status to `cancelled`. There is no resume. No refund is issued.
+**Cancelling is permanent.** `plans.cancel` sets the plan's status to `cancelled`. There is no way to resume a cancelled plan, and no refund is issued. If you might want to pause instead of cancel, see the plan lifecycle section below.
 
-**User actor required for writes.** `plans.create`, `plans.update`, and `plans.cancel` require a user actor for `created_by` attribution. Tokens issued from tenant-bound API keys (no user ID) cannot call these tools. Use a user-bound API key or an OAuth token instead.
+**Write tools need a user token.** `plans.create`, `plans.update`, and `plans.cancel` all require a user actor — Zoop needs a user ID to record who made the change. Tokens from tenant-bound API keys (which have no user ID attached) cannot call these tools. Use a user-bound API key or an OAuth token instead.
 
 ---
 
@@ -46,8 +48,8 @@ A plan moves through three statuses:
 | Status | Meaning |
 |---|---|
 | `active` | The recurring engine generates invoices on schedule. |
-| `paused` | Invoice generation is suspended. The plan still exists and can be resumed. Pause/resume are action routes, not MCP tools in v1. |
-| `cancelled` | Terminal. The engine stops generating invoices. Cannot be undone. |
+| `paused` | Invoice generation is suspended. The plan still exists and can be resumed later. |
+| `cancelled` | Permanent. The engine stops generating invoices and the plan cannot be reactivated. |
 
 <Callout type="warning">
 Pause and resume are **not available as MCP tools** in v1. They live on separate action routes. See [MCP overview — limitations](/developers/mcp) for the full list of what is out of scope.
@@ -59,7 +61,7 @@ Pause and resume are **not available as MCP tools** in v1. They live on separate
 
 ### `plans.list`
 
-List recurring plans for the tenant, most recent first. Returns id-bearing rows and pagination metadata.
+List recurring plans for the tenant, most recent first. Returns a page of plan records (each with its `id` and summary fields) and pagination metadata.
 
 <ParamField body="status" type="string" optional>
   Filter to one lifecycle state. One of `active`, `paused`, or `cancelled`.
@@ -105,10 +107,10 @@ List recurring plans for the tenant, most recent first. Returns id-bearing rows 
 
 ### `plans.get`
 
-Fetch a single recurring plan by `id`, including its line items in sort order.
+Fetch a single recurring plan by `id`. The response includes the plan's line items in sort order.
 
 <ParamField body="id" type="string (UUID)" required>
-  The plan's `id`. Get this from `plans.list`.
+  The plan's `id`. You can get this from `plans.list`.
 </ParamField>
 
 Returns a `not_found` error if the plan does not exist in this tenant.
@@ -117,10 +119,10 @@ Returns a `not_found` error if the plan does not exist in this tenant.
 
 ### `plans.create`
 
-Create a recurring plan template. The plan starts in `active` status and `next_invoice_at` is computed from the cadence. No charge is made.
+Create a recurring plan template. The plan starts in `active` status and Zoop calculates `next_invoice_at` from the cadence you provide. No charge is made at creation time.
 
 <Callout type="info">
-`plans.create` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+`plans.create` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool. Use a user-bound API key or an OAuth token.
 </Callout>
 
 <ParamField body="customer_id" type="string (UUID)" required>
@@ -132,7 +134,7 @@ Create a recurring plan template. The plan starts in `active` status and `next_i
 </ParamField>
 
 <ParamField body="cadence_rrule" type="string" required>
-  The billing cadence as an RFC 5545 rrule string (e.g. `FREQ=MONTHLY;INTERVAL=1`). Max 500 characters. Zoop uses this string to compute `next_invoice_at` and to generate future invoices.
+  The billing cadence as an RFC 5545 rrule string (e.g. `FREQ=MONTHLY;INTERVAL=1` for monthly billing). Max 500 characters. Zoop uses this string to calculate `next_invoice_at` and to schedule future invoices.
 </ParamField>
 
 <ParamField body="items" type="array of objects" required>
@@ -228,14 +230,14 @@ Create a recurring plan template. The plan starts in `active` status and `next_i
 
 ### `plans.update`
 
-Update a recurring plan's template fields. This is a partial patch — only the fields you send change. No charge is made.
+Update a recurring plan's template fields. This is a partial update — only the fields you send change. No charge is made.
 
 <Callout type="info">
-`plans.update` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+`plans.update` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool. Use a user-bound API key or an OAuth token.
 </Callout>
 
 <Callout type="warning">
-Passing `customer_id` or `status` in the patch body returns an `invalid_input` error — the input schema rejects unknown keys. To cancel a plan, use `plans.cancel`.
+Do not pass `customer_id` or `status` in the update body — the schema rejects them and returns an `invalid_input` error. To cancel a plan, use `plans.cancel`.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
@@ -271,7 +273,7 @@ Passing `customer_id` or `status` in the patch body returns an `invalid_input` e
 </ParamField>
 
 <ParamField body="items" type="array of objects" optional>
-  Replacement line items. When present, **replaces the full item list wholesale** — re-send all existing items plus any additions. Must contain at least one entry. See `plans.create` for the item field reference.
+  Replacement line items. When present, **replaces the entire existing item list** — re-send all existing items plus any additions or removals. Must contain at least one entry. See `plans.create` for the item field reference.
 </ParamField>
 
 #### Example — rename a plan and update its cadence
@@ -296,12 +298,16 @@ Passing `customer_id` or `status` in the patch body returns an `invalid_input` e
 
 ### `plans.cancel`
 
-Cancel a recurring plan. This is terminal — there is no resume from `cancelled`. The recurring engine stops generating invoices for the plan. No refund is issued.
+Cancel a recurring plan. Once cancelled, the recurring engine stops generating invoices for the plan. No refund is issued. If you only want to pause invoice generation temporarily, use the pause action route instead (see the lifecycle callout above).
 
-Cancelling a plan that is already cancelled returns a `conflict` error.
+<Callout type="warning">
+Cancelling is permanent. There is no way to resume a `cancelled` plan. If you cancel by mistake, you will need to create a new plan.
+</Callout>
+
+Calling `plans.cancel` on a plan that is already cancelled returns a `conflict` error.
 
 <Callout type="info">
-`plans.cancel` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+`plans.cancel` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool. Use a user-bound API key or an OAuth token.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
@@ -343,12 +349,12 @@ Cancelling a plan that is already cancelled returns a `conflict` error.
 
 ## Error reference
 
-| Kind | What it means | Common cause |
+| Error | What it means | Common cause |
 |---|---|---|
-| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing required field, `items` array is empty, passing `customer_id` or `status` in `plans.update`, calling a write tool with a tenant-key token |
-| `not_found` | The plan does not exist in this tenant | Stale or wrong `id` |
-| `conflict` | The request collides with current state | Calling `plans.cancel` on a plan that is already cancelled |
-| `insufficient_scope` | The token does not hold the required scope | Missing `read:plans` or `write:plans` |
+| `invalid_input` | A field failed validation, or the token type is not allowed | Missing a required field; empty `items` array; passing `customer_id` or `status` in `plans.update`; calling a write tool with a tenant-key token |
+| `not_found` | The plan does not exist in this tenant | Wrong or outdated `id` |
+| `conflict` | The request conflicts with the plan's current state | Calling `plans.cancel` on a plan that is already cancelled |
+| `insufficient_scope` | The token does not have the required scope | Missing `read:plans` or `write:plans` on the token |
 
 For the full error shape and HTTP status codes, see [Errors](/developers/errors).
 

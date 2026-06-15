@@ -4,7 +4,9 @@ description: Manage pricebook items — services, products, labor, fees, bundles
 audience: developer
 ---
 
-Catalog items are your pricebook: the reusable line-item definitions you pull into quotes, jobs, and invoices. Each item has a `kind` that controls which fields apply. The six kinds are:
+This page documents the five MCP tools that manage catalog items (your pricebook) in Zoop. You will use these tools to create, read, update, and archive the line-item definitions that get pulled into quotes, jobs, and invoices.
+
+Each item has a `kind` that controls which fields apply. The six kinds are:
 
 | Kind | What it is |
 |---|---|
@@ -15,7 +17,7 @@ Catalog items are your pricebook: the reusable line-item definitions you pull in
 | `bundle` | A package that contains other catalog items. |
 | `discount` | A percentage or flat-amount discount applied to a line. |
 
-All tools in this group require the `read:catalog_items` or `write:catalog_items` scope. The coarser `read:catalog` and `write:catalog` umbrella scopes expand to include these — see [Scopes](/developers/authentication/scopes).
+All tools in this group require the `read:catalog_items` or `write:catalog_items` scope. Scopes are permissions that control what an API token can do. The broader `read:catalog` and `write:catalog` umbrella scopes automatically include these — see [Scopes](/developers/authentication/scopes).
 
 <Callout type="info">
 If you are new to the MCP layer, read [MCP overview](/developers/mcp) first to learn how to connect and authenticate.
@@ -30,7 +32,7 @@ If you are new to the MCP layer, read [MCP overview](/developers/mcp) first to l
 | `read:catalog_items` | `catalog_items.list`, `catalog_items.get` |
 | `write:catalog_items` | `catalog_items.create`, `catalog_items.update`, `catalog_items.archive` |
 
-`write:catalog_items` does **not** imply `read:catalog_items`. Grant both if your integration needs to read and write.
+`write:catalog_items` does **not** include `read:catalog_items`. Request both scopes if your integration needs to read and write.
 
 The umbrella scopes `read:catalog` and `write:catalog` expand to the item and category child scopes at verification time — you can use either the umbrella or the specific child scope.
 
@@ -38,7 +40,7 @@ The umbrella scopes `read:catalog` and `write:catalog` expand to the item and ca
 
 ## Owner-only fields
 
-Some fields are visible only to callers whose token represents a tenant **owner**. Non-owner roles (`office`, `tech`) and tenant-key tokens (API keys not bound to a user) receive the same response shape but with those fields omitted:
+Some fields are only visible when the API token belongs to a user with the **owner** role. If you are using a token for an `office` or `tech` user, or a tenant-key token (an API key that is not tied to any specific user), you get the same response shape but those fields are omitted:
 
 | Field | Applies to kinds | What it tracks |
 |---|---|---|
@@ -51,13 +53,13 @@ Some fields are visible only to callers whose token represents a tenant **owner*
 
 `discount` items have no owner-only fields — the response shape is the same for every role.
 
-These fields appear in the response only when the token resolves to a user with the `owner` role. A tenant-key token always receives the non-owner (public) shape regardless of what scopes it carries.
+A tenant-key token always receives the non-owner (public) shape, regardless of which scopes it carries.
 
 ---
 
 ## `catalog_items.list`
 
-List catalog items for the tenant. Results are newest first. Returns id-bearing rows; call `catalog_items.get` for bundle components and the full record.
+List catalog items for the tenant. Results are newest first. Each row includes the item's `id` and summary fields. To get bundle components or the full record, call `catalog_items.get`.
 
 <ParamField body="kind" type="string" optional>
   Filter by item kind. One of `service`, `product`, `labor`, `fee`, `bundle`, or `discount`. Omit to return all kinds.
@@ -112,7 +114,7 @@ List catalog items for the tenant. Results are newest first. Returns id-bearing 
 
 ## `catalog_items.get`
 
-Fetch one catalog item by `id`. Bundle items include a `components` array listing the items in the bundle. Archived items are not returned — the call returns a `not_found` error instead.
+Fetch one catalog item by `id`. Bundle items include a `components` array listing the items in the bundle. If the item has been archived or the `id` does not exist, the call returns a `not_found` error.
 
 <ParamField body="id" type="string (UUID)" required>
   The catalog item's `id`.
@@ -156,7 +158,7 @@ Fetch one catalog item by `id`. Bundle items include a `components` array listin
 Create a new catalog item. The `kind` field is required and determines which other fields are allowed or required.
 
 <Callout type="info">
-`catalog_items.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or an OAuth token instead.
+`catalog_items.create` requires a token that identifies a specific user — either a user-bound API key or an OAuth token. A tenant-key API key (one that is not tied to a user) cannot call this tool.
 </Callout>
 
 <ParamField body="kind" type="string" required>
@@ -309,12 +311,14 @@ Create a new catalog item. The `kind` field is required and determines which oth
 
 ## `catalog_items.update`
 
-Update a catalog item's mutable fields. This is a partial patch — only the fields you send are changed.
+Update a catalog item's mutable fields. This is a partial update — only the fields you send are changed. Fields you omit are left as-is.
 
-For bundle items, passing `components` **atomically replaces** the entire component list. If you want to add one component to an existing bundle, you must send the full new list including all components you want to keep. Omitting `components` leaves the existing list unchanged.
+<Callout type="warning">
+For bundle items, passing `components` **replaces the entire component list** in one operation. If you want to add one component to an existing bundle, fetch the current list first, add your new item, then send the full updated list. Omitting `components` leaves the existing list unchanged.
+</Callout>
 
 <Callout type="info">
-`catalog_items.update` requires a **user actor**. Tenant-key tokens cannot call this tool.
+`catalog_items.update` requires a token that identifies a specific user. A tenant-key API key cannot call this tool.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
@@ -435,16 +439,14 @@ For bundle items, passing `components` **atomically replaces** the entire compon
 
 ## `catalog_items.archive`
 
-Soft-archive a catalog item. Archived items are hidden from default list results and from `catalog_items.get`, but the record and all referencing history (quotes, invoices, jobs) is preserved.
-
-Use this instead of deleting. There is no hard-delete for catalog items.
+Archive a catalog item. Archiving hides the item from default list results and from `catalog_items.get`, but the record and all history (quotes, invoices, jobs that already used it) is preserved. This is the only way to retire an item — there is no permanent delete.
 
 <Callout type="warning">
-You cannot archive a catalog item that is still referenced as an active component in a bundle. Remove it from all bundles first, then archive it.
+You cannot archive a catalog item that is still a component in an active bundle. Remove it from all bundles first, then archive it.
 </Callout>
 
 <Callout type="info">
-`catalog_items.archive` requires a **user actor**. Tenant-key tokens cannot call this tool.
+`catalog_items.archive` requires a token that identifies a specific user. A tenant-key API key cannot call this tool.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
@@ -486,7 +488,7 @@ You cannot archive a catalog item that is still referenced as an active componen
 
 ## Error reference
 
-| Kind | What it means | Common cause |
+| Error type | What it means | Common cause |
 |---|---|---|
 | `invalid_input` | A field failed validation, or a required actor condition was not met | Missing `kind`, missing `discount_type` on a discount item, missing `components` on a bundle, calling a write tool with a tenant-key token |
 | `not_found` | The referenced item does not exist in this tenant or is already archived | Stale or wrong `id` |

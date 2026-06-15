@@ -4,11 +4,11 @@ description: Read/write scopes per domain, umbrella aliases, admin scopes, and h
 audience: developer
 ---
 
-Scopes tell Zoop what your integration is allowed to do. When you create an API key or register an OAuth client, you request a set of scopes, and every API call you make is checked against those scopes.
+Scopes are strings that declare exactly what your integration is allowed to do — think of them as a checklist of permissions. When you create an API key or register an OAuth client, you pick the scopes you need. Every API call Zoop receives is checked against those scopes, and calls that need a scope you didn't request are rejected.
 
 ## How scopes work
 
-A scope is a string in the format `verb:resource`. There are two verbs:
+Each scope is a string in the format `verb:resource`. There are two verbs:
 
 - `read:*` — fetch or list data
 - `write:*` — create, update, or delete data
@@ -19,7 +19,7 @@ Admin scopes follow a different pattern (`admin:*`) and are covered [below](#adm
 
 ## Scope list
 
-The table below lists every public scope. The "consent screen label" is the exact text a Zoop user sees when approving an OAuth connection.
+The table below lists every public scope. The "consent screen label" column shows the exact text a Zoop user sees on the authorization screen when they approve your OAuth connection — keep these labels in mind when deciding which scopes to request, because users see them.
 
 | Scope | Consent screen label |
 |---|---|
@@ -58,7 +58,7 @@ The table below lists every public scope. The "consent screen label" is the exac
 
 ## Umbrella scopes
 
-Two scopes expand into multiple child scopes automatically. You can request either the umbrella or the specific children — the result is the same.
+Two scopes are shortcuts that expand into multiple child scopes automatically. You can request either the umbrella scope or the individual child scopes — the effect on your token is identical.
 
 ### Catalog umbrella
 
@@ -88,19 +88,18 @@ Zoop renamed "estimates" to "quotes" in May 2026. The `read:estimates` and `writ
 
 ## Sub-resources under customers
 
-Contacts, locations, and tags are sub-resources of a customer. They do not have their own scopes — they are governed by `read:customers` and `write:customers`.
+Contacts, locations, and tags are sub-resources of a customer. They share the customer scopes rather than having their own:
 
-For example, to list or create contacts for a customer, your token must hold `read:customers` or `write:customers`. The same applies to service locations and customer tags.
+- To list or create **contacts** for a customer, your token needs `read:customers` or `write:customers`.
+- The same applies to **service locations** and **customer tags**.
 
-Notes are different: they have their own scope pair (`read:notes` / `write:notes`) and are independent of `read:customers`.
+**Notes are different.** Notes have their own scope pair (`read:notes` / `write:notes`) and are independent of `read:customers`. Either an API key or an OAuth token that holds these scopes can use the notes endpoints.
 
-Both scopes are available to external callers. The notes tools require `read:notes` to list or fetch and `write:notes` to create, update, or archive, and an API key or OAuth token that holds them can use them.
-
-One difference applies to writes: creating, updating, or archiving a note requires a user-actor token, because every note change is attributed to the user who made it. A tenant-actor API key can read notes but cannot author or change them — for that you need an OAuth token (or a user-actor API key) carrying `write:notes`.
+There is one important restriction on note writes: creating, updating, or archiving a note requires a user-actor token (that is, an OAuth token or a user-actor API key), because every note change is attributed to the specific user who made it. A standard tenant-actor API key can read notes but cannot create or change them.
 
 ## Admin scopes
 
-Admin scopes grant elevated access. They can only be requested by integrations authorized by the tenant owner — office and technician roles cannot mint tokens that include admin scopes.
+Admin scopes grant elevated access to sensitive account-level operations. They can only be requested by integrations authorized by the tenant owner — office and technician roles cannot create tokens that include admin scopes.
 
 <Callout type="warning">
 Request admin scopes only when strictly necessary. Most integrations do not need them.
@@ -116,18 +115,18 @@ Request admin scopes only when strictly necessary. Most integrations do not need
 
 ## User-actor vs tenant-actor
 
-Zoop has two kinds of authenticated actors:
+Every authenticated request in Zoop runs as one of two "actor" types. This affects which scopes you can actually receive.
 
-- **User-actor** — a human user (owner, office staff, or technician) who authorized your OAuth client. Scopes are further constrained by the user's role. For example, a technician-role user cannot authorize `admin:tenant` even if your client requests it.
-- **Tenant-actor** — an API key that acts on behalf of the business as a whole, not on behalf of any individual user. API keys are scoped at the time of creation and are not bound to a user's role.
+- **User-actor** — the token represents a specific human user (owner, office staff, or technician) who clicked "Authorize" in your OAuth flow. The scopes your token receives are capped by that user's role. For example, a technician-role user cannot authorize `admin:tenant` even if your client requests it — Zoop silently drops scopes the user's role doesn't allow.
+- **Tenant-actor** — an API key that acts on behalf of the business as a whole, not tied to any individual user. The scopes are exactly what you set when creating the key.
 
-When using OAuth (user-actor), the scopes your token receives are the intersection of what you requested and what the authorizing user's role allows. When using an API key (tenant-actor), the scopes are exactly what was set on the key.
+In short: OAuth gives you user-actor tokens, and API keys give you tenant-actor tokens.
 
 See [OAuth](/developers/authentication/oauth) and [API keys](/developers/authentication/api-keys) for setup details.
 
 ## Requesting scopes
 
-Pass scopes as a space-delimited string in the `scope` parameter.
+Pass your chosen scopes as a space-separated list in the `scope` parameter. The two tabs below show where that parameter goes for each auth method.
 
 <Tabs>
   <Tab title="OAuth authorization request">
@@ -155,7 +154,7 @@ Pass scopes as a space-delimited string in the `scope` parameter.
 
 ## Choosing the right scopes
 
-Request only the scopes your integration actually uses. This limits the blast radius if a token is leaked and makes the OAuth consent screen easier for users to trust.
+Request only the scopes your integration actually uses. Fewer scopes means less damage if a token is ever leaked, and users are more likely to approve a short, focused consent screen than a long one.
 
 A typical read-only reporting integration needs:
 

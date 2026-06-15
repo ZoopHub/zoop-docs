@@ -4,14 +4,16 @@ description: Organize the pricebook into categories.
 audience: developer
 ---
 
-Catalog categories let you group items in your [pricebook](/using-zoop/pricebook) — for example, separating plumbing labor from HVAC parts. Categories form an optional tree: each category can have a `parent_id` that points to another category. If you do not need hierarchy, leave `parent_id` null and all categories sit at the root.
+This page covers the five API tools for managing catalog categories in Zoop's [pricebook](/using-zoop/pricebook). Categories let you group pricebook items — for example, separating plumbing labor from HVAC parts.
 
-The list tool returns **flat rows** — you get every category with its `parent_id` and assemble the tree on your side. This keeps the server call simple regardless of how deep your hierarchy is.
+Categories can be nested: each category has an optional `parent_id` field that points to another category. If you do not need nesting, leave `parent_id` as `null` and every category sits at the top level.
 
-All five tools (`list`, `get`, `create`, `update`, `delete`) live under the `catalog_categories` entity and require either `read:catalog_categories` or `write:catalog_categories`. The umbrella scopes `read:catalog` and `write:catalog` expand to cover these too — see [Scopes](/developers/authentication/scopes).
+When you call `catalog_categories.list`, Zoop returns every category as a flat array (one row per category, no nesting). Each row includes a `parent_id` so you can build the nested tree yourself in code. The [tree-building example](#building-a-tree-from-flat-rows) below shows how.
+
+The five tools are `list`, `get`, `create`, `update`, and `delete`. All require a scope of either `read:catalog_categories` or `write:catalog_categories` — see [Scopes](#scopes) below.
 
 <Callout type="info">
-If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
+New to the Zoop API? Start at [MCP overview](/developers/mcp) to learn how to connect and authenticate before calling any tools.
 </Callout>
 
 ---
@@ -23,19 +25,19 @@ If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to lea
 | `read:catalog_categories` | `catalog_categories.list`, `catalog_categories.get` |
 | `write:catalog_categories` | `catalog_categories.create`, `catalog_categories.update`, `catalog_categories.delete` |
 
-`write:catalog_categories` does **not** imply `read:catalog_categories`. Grant both if your integration needs to read and write.
+`write:catalog_categories` does **not** include `read:catalog_categories`. If your integration needs to read and write, grant both scopes.
 
-The umbrella scope `read:catalog` satisfies `read:catalog_categories`, and `write:catalog` satisfies `write:catalog_categories`. Prefer the specific child scopes for new integrations.
+The umbrella scopes `read:catalog` and `write:catalog` cover these child scopes too. For new integrations, use the specific child scopes (`read:catalog_categories` / `write:catalog_categories`) rather than the broader umbrella.
 
 ---
 
 ## `catalog_categories.list`
 
-List all catalog categories for the tenant. Returns flat rows ordered by `sort_order` ascending, then `name` ascending. Use the `parent_id` on each row to build a tree client-side.
+Returns every category for your account as a flat array, ordered by `sort_order` ascending, then `name` ascending. Use the `parent_id` on each row to build a nested tree in your code — see [Building a tree from flat rows](#building-a-tree-from-flat-rows).
 
-No input parameters.
+This tool takes no input parameters.
 
-#### Example
+### Example
 
 ```json
 {
@@ -68,13 +70,13 @@ No input parameters.
 
 ## `catalog_categories.get`
 
-Fetch one catalog category by `id`. Returns `not_found` if the ID does not exist in this tenant.
+Fetch a single category by its `id`. Returns a `not_found` error if the ID does not exist in your account.
 
 <ParamField body="id" type="string (UUID)" required>
-  The category's `id`.
+  The `id` of the category to fetch.
 </ParamField>
 
-#### Example
+### Example
 
 ```json
 {
@@ -94,10 +96,10 @@ Fetch one catalog category by `id`. Returns `not_found` if the ID does not exist
 
 ## `catalog_categories.create`
 
-Create a catalog category. The name must be unique within its parent (two categories under the same parent cannot share a name; duplicate names at different levels are fine).
+Create a new catalog category. The name must be unique among categories that share the same parent — two sibling categories cannot have the same name. Duplicate names at different levels of the tree are fine.
 
 <Callout type="info">
-`catalog_categories.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or an OAuth token instead.
+This tool requires a token linked to a specific user. API keys generated without a user (tenant-level keys) cannot call `catalog_categories.create`. Use a user-bound API key or an OAuth token instead. See [Authentication](/developers/mcp#authentication) for details.
 </Callout>
 
 <ParamField body="name" type="string" required>
@@ -120,7 +122,7 @@ Create a catalog category. The name must be unique within its parent (two catego
   Arbitrary key-value pairs you can attach for your own use. Values can be any JSON-serializable type.
 </ParamField>
 
-#### Example — root category
+### Example — root category
 
 ```json
 {
@@ -138,7 +140,7 @@ Create a catalog category. The name must be unique within its parent (two catego
 }
 ```
 
-#### Example — child category
+### Example — child category
 
 ```json
 {
@@ -175,14 +177,14 @@ Create a catalog category. The name must be unique within its parent (two catego
 
 ## `catalog_categories.update`
 
-Update a category's fields. This is a **partial patch** — only the fields you send are changed. Fields you omit stay as they are.
+Update one or more fields on a category. This is a partial update — only the fields you include in the request are changed. Fields you omit stay as they are.
 
 <Callout type="info">
-`catalog_categories.update` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool.
+This tool requires a token linked to a specific user. API keys generated without a user (tenant-level keys) cannot call `catalog_categories.update`. Use a user-bound API key or an OAuth token instead.
 </Callout>
 
 <Callout type="warning">
-Re-parenting a category under one of its own descendants creates a cycle and is rejected with a `conflict` error. For example, if **Plumbing** is the parent of **Drain & sewer**, you cannot set `Plumbing`'s `parent_id` to `Drain & sewer`'s ID.
+You cannot move a category under one of its own descendants — that would create a loop. For example, if **Plumbing** is the parent of **Drain & sewer**, setting `Plumbing`'s `parent_id` to `Drain & sewer`'s ID is rejected with a `conflict` error.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
@@ -209,7 +211,7 @@ Re-parenting a category under one of its own descendants creates a cycle and is 
   Replaces the stored metadata object wholesale. Pass an empty object (`{}`) to clear all keys.
 </ParamField>
 
-#### Example
+### Example
 
 ```json
 {
@@ -231,24 +233,24 @@ Re-parenting a category under one of its own descendants creates a cycle and is 
 
 ## `catalog_categories.delete`
 
-Permanently delete a category. This is a **hard delete** — the category row is removed and cannot be recovered.
+Permanently delete a category. This cannot be undone.
 
-Before deleting, Zoop:
+Before removing the row, Zoop automatically:
 
-1. Re-parents the category's **direct children** to the deleted category's own parent (one level up). If the deleted category was a root, its children become new roots.
-2. Clears `category_id` on any **catalog items** that belonged to this category.
+1. Moves the deleted category's **direct children** up one level to its parent. If the category was at the root, its children become new root categories.
+2. Clears the `category_id` field on any **catalog items** that were assigned to this category.
 
-The operation runs as a single atomic transaction, so you will never see a partial state.
+Both changes happen together in a single database transaction — you will never see a half-deleted state.
 
 <Callout type="warning">
-`catalog_categories.delete` is a **hard delete**. There is no soft-archive for categories. The row, its position in the tree, and all item assignments to it are permanently gone. Use deliberately.
+This is a permanent delete. There is no archive or recycle bin for categories. The category, its place in the tree, and all item assignments to it are gone for good. Double-check the `id` before calling this.
 </Callout>
 
 <ParamField body="id" type="string (UUID)" required>
-  The category to delete. Returns `not_found` if the ID does not exist in this tenant.
+  The `id` of the category to delete. Returns a `not_found` error if the ID does not exist in your account.
 </ParamField>
 
-#### Example
+### Example
 
 ```json
 {
@@ -283,7 +285,7 @@ The operation runs as a single atomic transaction, so you will never see a parti
 
 ## Response fields
 
-Every category object (returned by `list`, `get`, `create`, and `update`) has the same shape.
+The `list`, `get`, `create`, and `update` tools all return category objects with the same fields.
 
 <ResponseField name="id" type="string (UUID)">
   Unique ID for the category.
@@ -325,7 +327,7 @@ Every category object (returned by `list`, `get`, `create`, and `update`) has th
 
 ## Building a tree from flat rows
 
-`catalog_categories.list` returns every category as a flat array. Each row has `id` and `parent_id`. To build a display tree:
+`catalog_categories.list` returns a flat array — every category in one list, not nested. Each row has an `id` and a `parent_id`. The snippet below groups them into a nested tree you can render in a UI or traverse in code:
 
 ```ts
 type Category = {
@@ -364,12 +366,12 @@ function buildTree(rows: Category[]): Category[] {
 
 ## Error reference
 
-| Kind | What it means | Common cause |
+| Error | What it means | What to check |
 |---|---|---|
-| `invalid_input` | A field failed validation, or a required actor condition was not met | Missing `name`, invalid UUID for `parent_id`, calling `create`/`update` with a tenant-key token |
-| `not_found` | The category ID does not exist in this tenant | Stale or wrong ID |
-| `conflict` | The request collides with existing state | Duplicate name under the same parent, or re-parenting that would create a cycle |
-| `insufficient_scope` | The token does not hold the required scope | Missing `read:catalog_categories` or `write:catalog_categories` |
+| `invalid_input` | A field failed validation, or the token is not user-linked | Is `name` present? Is `parent_id` a valid UUID? Are you using a user-bound token for `create`/`update`? |
+| `not_found` | The category ID does not exist in your account | Is the `id` correct and still current? |
+| `conflict` | The request would break a uniqueness or tree rule | Duplicate name under the same parent, or moving a category under one of its own descendants |
+| `insufficient_scope` | The token lacks the required scope | Add `read:catalog_categories` or `write:catalog_categories` to the token's scopes |
 
 For the full error shape and HTTP status codes, see [Errors](/developers/errors).
 

@@ -4,7 +4,9 @@ description: Take card payments, send payment links, and record cash or checks.
 audience: end-user
 ---
 
-Zoop handles two kinds of payments: **online card payments** through Stripe, and **manual payments** (cash, check, Zelle, Venmo, wire, or anything else) that you record yourself. You can use either or both. Zoop is your record of truth — every payment, regardless of how it was collected, lives on the invoice.
+This page explains how to collect money through Zoop — whether that is a card payment online or cash in hand.
+
+Zoop handles two kinds of payments: **online card payments** through Stripe, and **manual payments** (cash, check, Zelle, Venmo, wire, or anything else) that you record yourself. You can use either or both. Every payment, no matter how it was collected, is recorded on the invoice so you always know what is owed and what has been paid.
 
 <Callout type="info">
 TODO(screenshot): The Settings → Payments page showing the "Set up payments" state and the active Stripe card side by side.
@@ -12,7 +14,7 @@ TODO(screenshot): The Settings → Payments page showing the "Set up payments" s
 
 ## Connect Stripe to accept card payments
 
-Card payments require a Stripe account. Stripe handles the actual money movement; Zoop stores the record.
+To accept credit and debit cards, you need to connect a Stripe account. Stripe moves the money; Zoop keeps the record. If you only take cash or checks, you can skip this section.
 
 <Callout type="warning">
 Only the account owner can connect or disconnect Stripe. Other team roles do not see Settings → Payments.
@@ -23,12 +25,12 @@ Only the account owner can connect or disconnect Stripe. Other team roles do not
     Go to **Settings** in the sidebar, then select **Payments**.
   </Step>
   <Step title="Start the setup">
-    Select **Set up payments**. Zoop opens Stripe's onboarding flow in the same window. The process takes about 5 minutes.
+    Select **Set up payments**. Zoop opens Stripe's onboarding flow in the same window.
   </Step>
   <Step title="Complete the Stripe checklist">
-    Stripe asks for four things: your identity, your business details, your bank account (where payouts land), and acceptance of Stripe's terms. A checklist on the settings page shows what is still needed.
+    Stripe asks for four things: your identity, your business details, your bank account (where your payouts land), and acceptance of Stripe's terms. Take about 5 minutes to work through each item. A checklist on the Settings → Payments page shows what is still outstanding.
 
-    If Stripe is reviewing your information, the checklist shows "In review" — nothing more is needed from you at that point.
+    If Stripe is reviewing your information, the checklist shows "In review" — nothing more is needed from you at that point. Just wait.
   </Step>
   <Step title="Return to Zoop">
     After you finish on Stripe, you are redirected back to Zoop. The settings page shows **Active** with charges and payouts both enabled when setup is complete.
@@ -39,9 +41,9 @@ Only the account owner can connect or disconnect Stripe. Other team roles do not
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/payments/settings-stripe-active.png" alt="Settings → Card payments showing Stripe account active, with charges and payouts both enabled" />
 
-### When your account needs attention
+### If your account needs attention
 
-If Stripe pauses your account, the settings page shows an **Action needed** banner. Select **Finish on Stripe** to resolve the outstanding items. The page updates automatically once Stripe processes the change.
+If Stripe pauses your account, Settings → Payments shows an **Action needed** banner. Select **Finish on Stripe** to resolve the outstanding items. The page updates automatically once Stripe processes the change.
 
 ### Open your Stripe dashboard
 
@@ -49,13 +51,13 @@ From Settings → Payments, select **Open Stripe dashboard** to view payouts, di
 
 ### Disconnect Stripe
 
-Select **Disconnect** on the settings page to remove the Stripe connection. New card payments stop immediately. Past invoices, payments, and customer records are preserved in Zoop.
+Select **Disconnect** on the Settings → Payments page to remove the Stripe connection. New card payments stop immediately. Past invoices, payments, and customer records are preserved in Zoop — nothing is deleted.
 
 ---
 
-## Send a payment link
+## Send a payment link to your customer
 
-Once Stripe is connected and an invoice has been sent, you can share a payment link with your customer.
+Once Stripe is connected and you have sent an invoice, you can share a link so your customer can pay by card online. They do not need a Zoop account.
 
 <Steps>
   <Step title="Open the invoice">
@@ -75,9 +77,9 @@ TODO(screenshot): The "Share invoice" dialog showing the payment link field, cop
 
 ---
 
-## Record a manual payment
+## Record a cash, check, or other manual payment
 
-Use this when you collect cash, a check, a Zelle transfer, or any other payment outside Stripe. You do not need Stripe connected to record manual payments.
+Use this when you collect payment outside of Stripe — cash on the job, a check in the mail, a Zelle transfer, anything. You do not need Stripe connected to record manual payments.
 
 <Steps>
   <Step title="Open the invoice">
@@ -87,7 +89,7 @@ Use this when you collect cash, a check, a Zelle transfer, or any other payment 
     Select **Record payment** in the action footer.
   </Step>
   <Step title="Fill in the details">
-    Enter the amount, the payment method, an optional reference (such as a check number), the date the payment was received, and any notes. The amount defaults to the outstanding balance.
+    Enter the amount, the payment method, and the date you received it. You can also add an optional reference number (such as a check number) and any notes. The amount field defaults to whatever is still owed on the invoice.
 
     Supported methods: cash, check, Zelle, Venmo, wire, other.
   </Step>
@@ -96,7 +98,7 @@ Use this when you collect cash, a check, a Zelle transfer, or any other payment 
   </Step>
 </Steps>
 
-You can record more than one manual payment against the same invoice — for example, a partial cash payment followed by a check for the remainder.
+You can record more than one manual payment on the same invoice. For example, record a partial cash payment now, then record a check for the rest when it arrives.
 
 <Callout type="info">
 TODO(screenshot): The "Record payment" dialog with the method dropdown and reference field visible.
@@ -104,19 +106,19 @@ TODO(screenshot): The "Record payment" dialog with the method dropdown and refer
 
 ---
 
-## Add offline payment instructions
+## Add check or bank transfer instructions to invoices
 
-If your customers sometimes pay by check or bank transfer, you can add instructions that appear on every invoice alongside the online payment option.
+If some customers pay by check or bank transfer, you can add written instructions that appear on every invoice. Your customer sees them when they open the invoice, next to the online payment option.
 
 <Steps>
   <Step title="Open Settings → Payments">
-    Go to **Settings → Payments**. The offline payment instructions section is visible regardless of whether Stripe is connected.
+    Go to **Settings** in the sidebar, then select **Payments**. The offline payment instructions section appears whether or not Stripe is connected.
   </Step>
   <Step title="Enter your instructions">
-    Type what your customers should do — for example, a mailing address for checks or a Zelle phone number. The field holds up to 4,000 characters.
+    Type what your customers should do — for example, a mailing address for checks, or a Zelle phone number.
   </Step>
   <Step title="Save">
-    Select **Save**. The instructions appear on the customer-facing invoice view when the customer does not pay online.
+    Select **Save**. The instructions appear on the customer-facing invoice view when they do not pay online.
   </Step>
 </Steps>
 
@@ -124,7 +126,7 @@ If your customers sometimes pay by check or bank transfer, you can add instructi
 
 ## Issue a refund
 
-Refunds apply to Stripe card payments. You can refund the full amount or a partial amount up to the refundable balance.
+Refunds apply to Stripe card payments only. You can refund the full amount or a partial amount, up to what was originally charged. The money goes back to the card your customer used — you do not handle it directly.
 
 <Steps>
   <Step title="Open the paid invoice">
@@ -134,18 +136,18 @@ Refunds apply to Stripe card payments. You can refund the full amount or a parti
     Select **Issue refund** in the action footer.
   </Step>
   <Step title="Set the amount and reason">
-    Enter the refund amount (up to the refundable balance), pick a reason (customer requested, duplicate charge, or fraudulent), and add an optional note.
+    Enter the refund amount (up to the refundable balance). Pick a reason from the dropdown: customer requested, duplicate charge, or fraudulent. Add an optional note if you need one.
   </Step>
   <Step title="Notify the customer (optional)">
-    The **Notify customer** toggle is on by default. This emails a refund confirmation and an updated receipt link. Turn it off if you handle the communication another way.
+    The **Notify customer** toggle is on by default. Zoop emails your customer a refund confirmation and an updated receipt. Turn the toggle off if you want to handle the communication yourself.
   </Step>
   <Step title="Confirm">
-    Select **Issue refund**. The refund goes back through the original card. The customer's bank typically posts it within a few business days.
+    Select **Issue refund**. The refund goes back to the original card. Most banks post it within a few business days, though timing varies.
   </Step>
 </Steps>
 
 <Callout type="warning">
-Refunds only apply to Stripe card payments. If you need to reverse a manually recorded payment (cash, check, etc.), void the payment record and adjust the invoice manually.
+Refunds only apply to Stripe card payments. If you need to undo a manually recorded payment (cash, check, etc.), open the invoice, find the payment in the Payments section, and delete it there. Then update the invoice amount as needed.
 </Callout>
 
 <Callout type="info">
@@ -154,19 +156,19 @@ TODO(screenshot): The "Issue a refund" dialog with the amount, reason, and notif
 
 ---
 
-## Card on file and automatic retries
+## Retry a failed charge using a saved card
 
-When a customer saves a card through the customer portal or storefront, Zoop stores it for future use. If an invoice enters dunning (a failed recurring charge), you can retry the charge manually from the invoice detail page using the customer's saved card.
+When a customer saves a card through the customer portal or storefront, Zoop stores it so you can charge it again later. If a recurring charge fails, the invoice status changes to **dunning** — that means Zoop is waiting to retry the charge automatically, but you can also trigger a retry right now.
 
 <Steps>
   <Step title="Open the dunning invoice">
-    Open an invoice with status **dunning**. This status appears when an automatic charge has failed and the retry engine is active.
+    Go to **Invoices** and open an invoice with the status **dunning**.
   </Step>
   <Step title="Select Retry charge now">
-    Select **Retry charge now** in the action footer. This option appears only when the customer has a saved card and Stripe is active.
+    Select **Retry charge now** in the action footer. This button only appears when the customer has a saved card and Stripe is connected.
   </Step>
   <Step title="Pick the card and confirm">
-    Choose which saved card to charge. Select **Retry charge** to attempt the charge immediately.
+    Choose which saved card to charge. Select **Retry charge** to attempt the payment immediately.
   </Step>
 </Steps>
 

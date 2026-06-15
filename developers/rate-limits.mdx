@@ -4,11 +4,15 @@ description: Per-credential and per-tenant request limits, how sliding windows w
 audience: developer
 ---
 
-Zoop enforces rate limits on all external API requests to protect the service. Limits are implemented as sliding windows backed by Redis, keyed on either your API credential or your tenant.
+Rate limits cap how many API requests you can make in a given time period. This page explains how Zoop's limits work, what the API returns when you exceed them, and how to write code that recovers gracefully.
+
+Zoop enforces rate limits on all external API requests. Limits use a **sliding window** algorithm: instead of resetting a counter at a fixed clock boundary (say, the top of every minute), the counter looks back over a rolling period.
 
 ## How sliding windows work
 
-A sliding window limit means the counter looks back a rolling period (for example, the last 60 seconds) rather than resetting at a fixed clock boundary. If you send 120 requests in one burst, you must wait for the oldest requests to fall outside the window before you can send more.
+With a fixed window, you could send 120 requests at 12:00:59 and another 120 at 12:01:00 — 240 requests in two seconds — without triggering a limit. A sliding window closes that gap by always counting the last 60 seconds, no matter when the clock ticks.
+
+In practice: if you send 120 requests in one burst, you must wait for the oldest requests to fall outside the 60-second window before you can send more.
 
 ## Primary API limits
 
@@ -27,7 +31,7 @@ The per-tenant limit means that if you run multiple integrations (for example, a
 
 ## Handling 429 responses
 
-When a limit is exceeded, Zoop returns HTTP `429 Too Many Requests`. The response includes a `Retry-After` header with the number of seconds to wait before retrying. The body is a JSON-RPC error envelope with code `-32003`:
+When you exceed a limit, Zoop returns HTTP `429 Too Many Requests`. The response includes a `Retry-After` header that tells you how many seconds to wait before retrying. The response body is a JSON object with error code `-32003`:
 
 ```http
 HTTP/1.1 429 Too Many Requests
@@ -37,9 +41,9 @@ Content-Type: application/json
 { "jsonrpc": "2.0", "error": { "code": -32003, "message": "Rate limited" }, "id": null }
 ```
 
-Always read the `Retry-After` header rather than parsing the body — the header carries the wait time, and the `id` is always `null` on a rate-limit rejection because the request never reaches your tool call.
+Always read `Retry-After` rather than parsing the body — the header is the reliable source of the wait time. The `"id": null` in the body is expected: a rate-limited request is rejected before it reaches any processing, so there is no request ID to echo back.
 
-The `Retry-After` value is the ceiling of the milliseconds remaining until the oldest request in your window expires, converted to whole seconds (minimum 1).
+The `Retry-After` value is rounded up to the nearest whole second (minimum 1). It represents how long until the oldest request in your window expires and frees up capacity.
 
 ### Retry with backoff
 
@@ -100,24 +104,24 @@ def zoop_fetch(url: str, **kwargs) -> httpx.Response:
 
 ## Other limiters
 
-Beyond the primary API limits, several other rate limiters protect specific endpoints. You are unlikely to hit these during normal integration work, but they can produce 429 responses.
+A few specific endpoints have their own tighter limits. You are unlikely to hit these during normal integration work, but they do return 429 responses.
 
 | Endpoint / action | Algorithm | Limit |
 |---|---|---|
 | OAuth token endpoint | Sliding window | 20 requests per minute per IP |
-| Dynamic client registration (DCR) | Fixed window | 10 registrations per hour per IP |
+| Dynamic client registration (DCR) — registering a new OAuth app | Fixed window | 10 registrations per hour per IP |
 
 See [Authentication — OAuth](/developers/authentication/oauth) for background on the OAuth and DCR flows.
 
-## Fail-open vs fail-closed behavior
+## Behavior when the rate limiter is unavailable
 
-When the Redis instance that backs the rate limiter is unreachable, Zoop applies one of two policies depending on the risk of the endpoint:
+Zoop's rate limiter runs on Redis (an in-memory data store). On the rare occasion Redis is unreachable, Zoop chooses between two behaviors depending on how sensitive the endpoint is:
 
-**Fail-closed** — the request is rejected with `429` even though Redis is down. This policy applies to unauthenticated or credential-issuance endpoints where unlimited retries could enable abuse (OAuth token endpoint, DCR registration, public PDF rendering). The `Retry-After` returned in this case is 60 seconds.
+**Fail-closed** — the request is rejected with `429` even though the limiter is down. Zoop uses this for unauthenticated or credential-issuance endpoints (the OAuth token endpoint, DCR registration, public PDF rendering) where allowing unlimited requests could enable abuse. The `Retry-After` in this case is 60 seconds.
 
-**Fail-open** — the request is allowed through. This policy applies to the primary per-credential and per-tenant limiters, because your requests are already authenticated and a Redis outage should not break a working integration.
+**Fail-open** — the request is allowed through. Zoop uses this for the primary per-credential and per-tenant limiters. Because your requests are already authenticated, blocking them during a Redis outage would break a working integration for no safety benefit.
 
-In practice, fail-open means that during a brief Redis outage, your integration continues to work without hitting artificial 429 errors.
+In short: if Redis goes down briefly, your authenticated API calls continue uninterrupted. You only see 429 errors on the more sensitive endpoints listed above.
 
 ## Tips for staying within limits
 

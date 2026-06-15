@@ -4,9 +4,9 @@ description: Give customers a public page to learn about you and book online.
 audience: end-user
 ---
 
-Your storefront is a public web page Zoop hosts for your business. Customers can find your contact info, see what trades you cover, check your hours, and — if you turn it on — request a booking without calling you first.
+Your storefront is a public web page Zoop hosts for your business. Think of it as your business's front door on the web — customers can find your contact info, see what trades you cover, check your hours, and — if you turn it on — request a booking without calling you first.
 
-The page is only visible to the public after you publish it. Until then, only you (the account owner) can preview it.
+You control when it goes live. The page stays private until you choose to publish it, so you can set everything up first and go live when you're ready.
 
 <Callout type="info">TODO(screenshot): the published storefront page showing the hero section, services grid, booking widget, service area, and contact/hours panel.</Callout>
 
@@ -44,11 +44,11 @@ Every section is driven by what you fill in under [Settings](/using-zoop/setting
   </Step>
 
   <Step title="Add your business hours">
-    Still on the **Service area** tab. Enter your open and close times for each day of the week, and mark any days you're closed. The storefront displays these hours and automatically shows an "Open now" or "Closed" badge based on your time zone.
+    Still on the **Service area** tab — scroll down to the hours section. Enter your open and close times for each day of the week, and mark any days you're closed. The storefront shows these hours and automatically displays an "Open now" or "Closed" badge based on your time zone.
   </Step>
 
   <Step title="Publish">
-    Back on the **Business** tab, scroll to the publish toggle and turn it on. Until you do this, the page returns a 404 to anyone who visits it — only you see a preview.
+    Back on the **Business** tab, scroll down to the publish toggle and turn it on. Until you do this, the page shows an error to anyone else who visits it — only you can see a preview.
 
     <Image src="https://doc-assets.zoop.pro/images/using-zoop/storefront/settings-business-publish-toggle.png" alt="Business info tab showing the Storefront URL field with a custom slug and the Enable public storefront toggle" />
   </Step>
@@ -56,7 +56,7 @@ Every section is driven by what you fill in under [Settings](/using-zoop/setting
 
 ## Online booking widget
 
-The booking widget lets customers pick a time slot and leave their contact details without calling you. You review the request and confirm — or decline — from your Zoop dashboard.
+The booking widget lets customers pick a time slot and leave their contact details without calling you. Nothing is booked automatically — you review every request and confirm or decline it from your Zoop dashboard.
 
 <Callout type="warning">
 The widget shows available slots for the next 14 days only. Slots outside your business hours are hidden. Slots that overlap with existing jobs or other holds are shown but marked unavailable.
@@ -74,14 +74,14 @@ The widget shows available slots for the next 14 days only. Slots outside your b
   <Step title="Enter contact info">
     The customer fills in their name, email or phone (at least one is required), an optional service address, and any notes. They tap "Request this time."
   </Step>
-  <Step title="Hold is placed">
-    Zoop places a booking hold on that slot and shows the customer a confirmation: "We'll confirm within [your hold expiry]." The slot is reserved for that window while you review.
+  <Step title="Slot is held">
+    Zoop temporarily holds that slot and shows the customer a confirmation: "We'll confirm within [your hold expiry]." The slot stays reserved while you review — once you confirm or the hold expires, it's released.
   </Step>
 </Steps>
 
 ### Turn on the widget
 
-Go to [Settings](/using-zoop/settings) → **Scheduling** → **Online booking** and flip the "Enable booking widget" switch.
+Go to [Settings](/using-zoop/settings), open the **Scheduling** tab, scroll to the **Online booking** section, and flip the "Enable booking widget" switch.
 
 <Callout type="info">TODO(screenshot): the Online booking section of the Scheduling settings tab showing the enable toggle, slot length dropdown, and hold expiry dropdown.</Callout>
 
@@ -97,18 +97,18 @@ Both settings are on the **Scheduling** tab under **Online booking**.
 
 ## Your storefront URL
 
-Your storefront lives at your Zoop URL. By default it uses your account ID, but you can set a custom slug (for example, `/acme-plumbing`) on the **Business** settings tab. The slug field is labeled **Storefront URL**. Once you save a slug, your old UUID-based URL redirects permanently to the new one.
+Your storefront lives at a Zoop web address. By default it includes a random ID, but you can set a custom name (for example, `/acme-plumbing`) on the **Business** settings tab. The field is labeled **Storefront URL**. Once you save a custom name, anyone visiting your old address is automatically sent to the new one.
 
-## SEO and structured data
+## Search engines and link previews
 
-Zoop automatically generates:
+Zoop automatically handles the behind-the-scenes tags that help customers find you:
 
-- A page title composed from your company name, trade types, and city/state (up to 70 characters).
-- A meta description from your tagline, or — if you haven't set one — auto-composed from your trades, location, and phone number (up to 160 characters).
-- Open Graph and Twitter card tags so your page previews correctly when shared.
-- A Schema.org JSON-LD block that tells Google about your business. Trade-based businesses (plumbing, HVAC, electrical, landscaping, roofing, general contractor, garage door) are typed as `HomeAndConstructionBusiness`; others use `LocalBusiness`. The block includes your phone, email, address, business hours, service area, and accepted payment methods.
+- A page title built from your company name, trade types, and city/state.
+- A short description for search results — pulled from your tagline, or auto-built from your trades, location, and phone number if you haven't set one.
+- Preview tags so your link shows a proper image and summary when someone shares it in a text or on social media.
+- A structured data block that tells Google what kind of business you are, your hours, service area, and contact details — which can improve how you appear in local search results.
 
-None of this requires any action from you — it's built from the same business info and settings you've already filled in.
+None of this requires any action from you. It's all built from the business info and settings you've already filled in.
 
 ## Related
 

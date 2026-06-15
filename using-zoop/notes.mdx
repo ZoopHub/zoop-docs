@@ -4,17 +4,17 @@ description: Capture context on any job, customer, invoice, or quote — by text
 audience: end-user
 ---
 
-Notes let you capture anything that doesn't fit a structured field: what the customer said on the phone, the part number you wrote on the wall, a photo of the breaker panel before you touched it. Every note is timestamped, attributed to the author who wrote it, and permanently attached to the record it belongs to.
+Notes are a place to write down anything that doesn't fit a form field: what the customer said on the phone, the part number you scrawled on the wall, a photo of the breaker panel before you touched it. Every note shows who wrote it and when, and it stays attached to the job, customer, invoice, or quote it belongs to.
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/notes/notes-feed-overview.png" alt="Notes feed with Pinned and Earlier day-group sections, search bar, and filter chips for All, Customer, Job, Invoice, Quote, Standalone, and Pinned" />
 
 ## Where notes live
 
-Notes can be attached to customers, jobs, invoices, and quotes. You can also save a standalone note — one not linked to any record — from the Notes page.
+You can attach a note to a customer, job, invoice, or quote. You can also save a standalone note — one not linked to anything — from the Notes page.
 
-From any entity detail page, find the **Notes** panel and select **Add note**. The composer opens pre-filled with that entity as the attachment target, so you don't have to search for it.
+To add a note while you're already on a record (say, inside a job), find the **Notes** panel on that page and select **Add note**. Zoop pre-fills the attachment for you, so you don't have to search for the job manually.
 
-The top-level **Notes** page shows every note across your account in a single feed, grouped by day.
+The top-level **Notes** page (in the main navigation) shows every note across your account in a single feed, grouped by day.
 
 ## Add a note
 
@@ -25,16 +25,16 @@ The top-level **Notes** page shows every note across your account in a single fe
     From the top-level Notes page, select **New note** in the top-right corner.
   </Step>
   <Step title="Write the note">
-    Type directly into the text area. The composer supports basic Markdown — use the toolbar to add **bold**, _italic_, bullet lists, or links without typing the syntax yourself.
+    Type directly into the text area. Use the toolbar buttons to add **bold**, _italic_, bullet lists, or links — no special formatting knowledge needed.
 
     Press **Cmd+Enter** (Mac) or **Ctrl+Enter** (Windows) to save without reaching for the button.
   </Step>
   <Step title="Attach to a record (optional)">
-    If you opened the composer from a detail page, the entity is already attached — you'll see a chip at the top of the composer showing the customer name, job title, invoice number, or quote title.
+    If you opened the composer from inside a job, customer, invoice, or quote, the attachment is already filled in — you'll see a label at the top of the composer showing which record it's linked to.
 
-    To attach from the standalone Notes page, select the paperclip icon in the toolbar and search for a customer, job, invoice, or quote. Select it from the dropdown to add the chip.
+    If you opened the composer from the standalone Notes page, select the paperclip icon in the toolbar and search for the record you want. Select it from the list to link it.
 
-    To remove an attachment, select the chip and it clears.
+    To remove the attachment, select the label and it clears.
   </Step>
   <Step title="Pin the note (optional)">
     Select the bookmark icon to pin the note. Pinned notes appear in a dedicated section above the day-grouped feed so they stay visible.
@@ -53,19 +53,19 @@ The top-level **Notes** page shows every note across your account in a single fe
 
 ## Photo attachments
 
-Each note holds up to 6 photos. The composer shows a strip of thumbnails below the text area; select any thumbnail to open the full-screen viewer.
+Each note holds up to 6 photos. The composer shows a row of thumbnails below the text area — select any thumbnail to open the full-screen viewer.
 
-On the notes feed, cards with photos show up to 3 thumbnails inline. If there are more, a tile shows the count — tap it to open the viewer from that position.
+In the notes feed, note cards show up to 3 thumbnails inline. If there are more, a tile shows the remaining count — tap it to open the viewer starting from that photo.
 
 <Callout type="warning">
-Your account has a shared photo storage limit. Zoop will warn you when you're approaching it. If uploads fail with a storage error, delete unused photos from older notes to free space.
+Your account has a shared photo storage limit. Zoop will warn you when you're getting close. If an upload fails with a storage error, delete unused photos from older notes to free up space.
 </Callout>
 
-## Search and filter
+## Search and filter notes
 
-The search bar at the top of the Notes page searches across all note text in real time. When results are truncated, refine your search to narrow them down.
+The search bar at the top of the Notes page searches all your notes as you type. If there are too many results to show, type more to narrow them down.
 
-Filter chips below the search bar let you narrow by record type or pin status:
+The filter buttons below the search bar let you show only certain types of notes:
 
 | Chip | What it shows |
 |------|---------------|
@@ -77,21 +77,23 @@ Filter chips below the search bar let you narrow by record type or pin status:
 | Standalone | Notes not attached to any record |
 | Pinned | Only pinned notes |
 
-You can combine multiple chips — for example, select **Job** and **Invoice** together to see notes on either type.
+You can select more than one filter at a time — for example, select **Job** and **Invoice** together to see notes on either type.
 
-## Pin and unpin
+## Pin and unpin a note
 
-The hover actions on a feed card — pin, edit, and delete — show only on notes you wrote. Even an account owner doesn't see the bookmark icon on a teammate's note in the feed; owners can still pin or unpin any note through the API. Pinned notes float above the day-grouped feed.
+Pinned notes appear in a dedicated section at the top of the feed so they stay easy to find.
 
-To pin or unpin one of your own notes from the feed, hover a card and select the bookmark icon. The same icon appears inside the composer when you're creating or editing a note.
+To pin or unpin one of your own notes, hover the note card and select the bookmark icon that appears. The same bookmark icon is also in the composer when you create or edit a note.
+
+You can only pin notes you wrote yourself. The bookmark icon won't show on a teammate's note in your feed.
 
 ## Edit a note
 
-Only the note's author can edit or delete a note from the feed. Hover a note card and select the pencil icon to open it in the composer with the existing text, attachment, pin state, and photos pre-loaded. Edit and save as normal.
+You can only edit notes you wrote yourself. Hover the note card and select the pencil icon to open it in the composer — your existing text, attachment, pin state, and photos are all loaded and ready to change. Edit and select **Save note** when you're done.
 
-Every save creates a new version. The note body, author, and timestamp of each version are preserved.
+Every time you save an edit, Zoop keeps a record of the previous version. You can view and restore old versions in the version history panel (see below).
 
-## Version history
+## View and restore older versions
 
 <Callout type="info">TODO(screenshot): the version history panel open on the right side, showing a list of versions with v1, v2, etc., author name, relative time, and a Restore button beside each entry.</Callout>
 
@@ -102,30 +104,30 @@ Every save creates a new version. The note body, author, and timestamp of each v
     <Callout type="warning">TODO(verify): no UI entry point for version history is wired up yet. The panel component (`version-history-panel.tsx`) and its backend routes (`/api/notes/[id]/versions`, `/api/notes/[id]/restore-version`) all exist, but the panel is not rendered or triggered anywhere in the notes UI — not from the composer, the note card, or the feed. Confirm where (and whether) the trigger ships before publishing this step.</Callout>
   </Step>
   <Step title="Browse versions">
-    The panel lists every version newest-first. Select a version row to expand a line-by-line diff showing what changed — added lines in green, removed lines in red.
+    The panel lists every version newest-first. Select a version row to expand it and see what changed — added text appears in green, removed text in red.
   </Step>
   <Step title="Restore a version">
-    Select **Restore** beside any version. Confirm the prompt. The note body is replaced with that version's content and a new version entry is created so the restore itself is part of the history.
+    Select **Restore** beside the version you want. Confirm the prompt. The note goes back to that version's content, and Zoop records the restore as a new version entry so nothing is permanently lost.
 
-    If someone else edits the note between when you opened the history and when you restore, Zoop blocks the restore and asks you to reload first.
+    If someone else edits the note after you opened the history panel, Zoop will block the restore and ask you to reload before trying again.
   </Step>
 </Steps>
 
 ## Delete a note
 
-Hover a note card and select the delete (trash) icon. Confirm the prompt. The note disappears from the feed right away, and there is no in-app way to bring it back.
+Hover the note card and select the delete (trash) icon. Confirm the prompt. The note disappears from the feed right away. There is no in-app way to bring it back, so take a moment to make sure before you confirm.
 
-Deleting a note doesn't erase its photos on the spot. Zoop marks the note deleted and hides it; a daily cleanup job removes the attached photos from storage 30 days later. Within that window the underlying files still exist, even though the note is no longer visible anywhere in Zoop.
+Any photos attached to the note are removed from storage 30 days after deletion — not immediately.
 
-## Notes on entity detail pages
+## Notes inside a job, customer, invoice, or quote
 
-When you're inside a job, customer, invoice, or quote, the Notes panel shows only the notes attached to that record. The search bar and filter chips are not shown in this scope — the list is already scoped to that entity.
+When you're on a record's detail page, the Notes panel shows only the notes attached to that record — the search bar and filter buttons aren't shown there because you're already looking at a focused list.
 
-Select **Add note** from the panel header to create a note pre-attached to that record.
+Select **Add note** from the panel header to write a new note that's pre-attached to that record.
 
 ## Draft recovery
 
-If your browser closes or crashes while you're writing a note, Zoop saves a draft automatically. The next time you open the composer, a banner asks whether to restore your draft or discard it.
+If your browser closes or crashes while you're writing, Zoop saves your draft automatically. The next time you open the composer, a banner asks if you want to restore it or start fresh.
 
 ## Related pages
 

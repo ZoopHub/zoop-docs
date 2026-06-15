@@ -4,7 +4,7 @@ description: Sign in, set up your business, and connect payments so you can star
 audience: end-user
 ---
 
-Sign in, tell Zoop about your business, and connect payments. The whole thing takes around ten minutes.
+This page walks you through everything you need to do before your first job: create an account, tell Zoop about your business, and connect payments. The whole thing takes around ten minutes.
 
 <Steps>
 
@@ -15,7 +15,7 @@ Go to [app.zoop.mom](https://app.zoop.mom) and choose how you want to sign in.
 <Tabs>
 <Tab title="Continue with Google">
 
-Select **Continue with Google** and pick your Google account. No password needed — Google handles the authentication.
+Select **Continue with Google** and pick your Google account. No password needed — Google signs you in automatically.
 
 </Tab>
 <Tab title="Email and password">
@@ -48,7 +48,7 @@ If someone invited you to join an existing Zoop account, you'll see a pending in
 
 <Step title="Fill in your business profile">
 
-Open **Settings** and select the **Business info** tab. Fill in:
+Open **Settings** (bottom of the left sidebar) and select the **Business info** tab. Fill in:
 
 - **Company logo** — shown on your storefront, invoices, and customer messages.
 - **Tagline** — a short description of your business (up to 255 characters).
@@ -67,20 +67,20 @@ Select **Save changes** when you're done.
 
 In **Settings**, select the **Service area & hours** tab.
 
-**Service area**
+### Service area
 
 - **Service radius** — how far you travel from your base location, in miles (1–200).
-- **Service ZIP codes** — optional. If you add ZIP codes, they override the radius for storefront display. Type a ZIP and press Enter to add it.
+- **Service ZIP codes** — optional. Type a ZIP code and press Enter to add it. When you add ZIP codes, Zoop shows those instead of the radius on your customer-facing storefront.
 
-**Business hours**
+### Business hours
 
-- Set your **time zone** first. Open and close times are shown to customers in your zone, not theirs.
-- Toggle each day on or off and set open and close times. Times run from 6:00 AM to 10:00 PM in 30-minute increments.
+- Set your **time zone** first. Zoop shows your open and close times to customers in your time zone.
+- Toggle each day on or off, then set your open and close times. Times go from 6:00 AM to 10:00 PM in 30-minute steps.
 
-**After-hours and emergency**
+### After-hours and emergency
 
 - **After-hours message** — what customers see when they request service outside your hours (up to 500 characters).
-- **Emergency dispatch** — toggle this on if you want to accept after-hours emergency calls. When enabled, you can set an emergency dispatch fee.
+- **Emergency dispatch** — turn this on if you want to take after-hours emergency calls. You can set an emergency dispatch fee once it's enabled.
 
 Select **Save changes** when you're done.
 
@@ -88,23 +88,25 @@ Select **Save changes** when you're done.
 
 </Step>
 
-<Step title="Connect Stripe to accept payments">
+<Step title="Connect payments">
+
+Zoop uses Stripe to process card payments. Stripe is a payment service that holds your money until it's deposited into your bank account — you set it up once, and Zoop handles the rest.
 
 In **Settings**, select **Card payments** from the left nav.
 
-Select **Set up payments**. Zoop opens the Stripe onboarding flow — follow the steps there to enter your business and banking details. Onboarding typically takes around five minutes.
+Select **Set up payments**. Zoop opens a Stripe form — fill in your business details and bank account information. This takes around five minutes.
 
-When you finish on Stripe, Zoop updates your payment status automatically. You'll see a green "Active" badge once your account is fully enabled.
+When you're done, come back to Zoop. Your payment status updates automatically. You'll see a green **Active** badge once your account is fully enabled.
 
 <Callout type="info">TODO(screenshot): Settings → Card payments page in the active state, showing the green Active badge and the "Open Stripe dashboard" button</Callout>
 
 <Callout type="warning">
-If your Stripe account shows "Action needed" or "Setup in progress," Stripe still needs information from you. Select **Finish on Stripe** to complete the steps. Use **Refresh status** if you've already finished on Stripe but the status hasn't updated yet.
+If you see "Action needed" or "Setup in progress," Stripe still needs more information from you. Select **Finish on Stripe** to continue. If you've already finished on Stripe but the status hasn't changed, select **Refresh status**.
 </Callout>
 
-**Offline payment instructions**
+### Offline payment instructions
 
-If some customers pay by check, Zelle, or another offline method, add instructions in the **Offline payment instructions** box on the same page. This text appears on invoices alongside your online payment options.
+If some customers pay by check, Zelle, or another method, add instructions in the **Offline payment instructions** box on the same page. This text shows up on your invoices alongside the online payment link.
 
 For more on how payments work — including how customers pay invoices and how payouts reach your bank — see [Payments](/using-zoop/payments).
 

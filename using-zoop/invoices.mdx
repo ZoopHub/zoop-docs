@@ -4,7 +4,7 @@ description: Create invoices from jobs or quotes and send them in a tap.
 audience: end-user
 ---
 
-Invoices are how you ask for money. You can create one from scratch, from a completed [job](/using-zoop/jobs), or from an accepted [quote](/using-zoop/quotes). Once sent, your customer gets a payment link they can use to pay by card — or you can record an offline payment yourself.
+Invoices are how you ask for money. You can create one from scratch, from a completed [job](/using-zoop/jobs), or from an accepted [quote](/using-zoop/quotes). Once sent, your customer gets a payment link they can use to pay by card — or you can record cash, check, or any other offline payment yourself.
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/invoices/invoices-list-status-tabs.png" alt="Invoices list with status tabs (All, Draft, Sent, In dunning, Overdue, Paid, Uncollectible, Void) and a table of invoices showing mixed statuses" />
 
@@ -16,7 +16,7 @@ Invoices are how you ask for money. You can create one from scratch, from a comp
 | Sent | Sent to the customer with a payment link. |
 | Overdue | The due date has passed and it is not yet paid. |
 | Paid | Payment received in full. |
-| Dunning | Stripe is retrying an automatic payment that initially failed. |
+| Dunning | A card payment failed and Stripe is automatically retrying it. Nothing for you to do yet. |
 | Uncollectible | Written off — stays on your books but is removed from the overdue list. |
 | Void | Cancelled. History is preserved; collection stops. |
 
@@ -65,11 +65,11 @@ For recording and tracking payments, see [Payments](/using-zoop/payments).
         Go to [Jobs](/using-zoop/jobs) and open the job you want to invoice.
       </Step>
       <Step title="Create invoice from the job">
-        Use the invoice action on the job detail page.
+        Select **Create invoice** on the job detail page.
 
         <Callout type="info">TODO(screenshot): job detail page showing the "Create invoice" action or button.</Callout>
 
-        Zoop derives the customer and total from the job. You cannot supply separate line items through this path — the job's amount drives the total directly.
+        Zoop fills in the customer and total from the job automatically. You cannot add separate line items this way — the job's amount becomes the invoice total.
       </Step>
       <Step title="Review and send">
         The new invoice opens in draft. Adjust dates or notes if needed, then send it.
@@ -82,11 +82,11 @@ For recording and tracking payments, see [Payments](/using-zoop/payments).
         Go to [Quotes](/using-zoop/quotes) and open the accepted quote.
       </Step>
       <Step title="Create invoice from the quote">
-        Use the invoice action on the quote detail page.
+        Select **Create invoice** on the quote detail page.
 
         <Callout type="info">TODO(screenshot): quote detail page showing the "Create invoice" action.</Callout>
 
-        Zoop derives the customer and total from the quote. As with the job path, line items are not carried over separately.
+        Zoop fills in the customer and total from the quote automatically. As with the job path, line items are not carried over separately.
       </Step>
       <Step title="Review and send">
         Adjust dates if needed, then send.
@@ -172,7 +172,7 @@ You can edit any invoice while it is still in **Draft** status. Once an invoice 
     On the invoice detail page, select **Edit** in the action bar.
   </Step>
   <Step title="Make your changes">
-    Update the status, total, issue date, due date, or notes. Select **Save changes** when done.
+    Update the total, issue date, due date, or notes. Select **Save changes** when done.
   </Step>
 </Steps>
 
@@ -186,7 +186,7 @@ Only draft invoices can have their amounts, line items, and dates edited. Sent a
 
 ## Void an invoice
 
-Voiding stops collection on an invoice. Past payments and history remain on record. You cannot undo a void.
+Voiding stops collection on an invoice. This is the right move when an invoice was sent in error or the job was cancelled. Past payments and history remain on record. You cannot undo a void.
 
 <Steps>
   <Step title="Open the invoice">
@@ -203,19 +203,19 @@ You can also void from the row menu on the invoice list — select the three-dot
 
 ## Mark as uncollectible
 
-If you have given up collecting on an overdue invoice but want to keep it for write-off purposes, mark it uncollectible. It disappears from the overdue list but stays on your books.
+If a customer is not going to pay and you want to write it off, mark the invoice uncollectible. It disappears from your overdue list but stays on your books so you have a record at tax time.
 
-On the invoice detail page, select **Mark uncollectible** from the action bar (visible on overdue and dunning invoices).
-
----
-
-## Find invoices
-
-Use the status tabs at the top of the invoices list to filter by **Draft**, **Sent**, **In dunning**, **Overdue**, **Paid**, **Uncollectible**, or **Void**. Use the search bar to search by invoice number or customer name.
+On the invoice detail page, select **Mark uncollectible** from the action bar. This option appears on overdue and dunning invoices.
 
 ---
 
-## Invoice notes
+## Find an invoice
+
+At the top of the invoices list, select a status tab to filter: **Draft**, **Sent**, **In dunning**, **Overdue**, **Paid**, **Uncollectible**, or **Void**. Use the search bar to find an invoice by number or customer name.
+
+---
+
+## Add notes to an invoice
 
 Each invoice has a notes section at the bottom of its detail page. Notes are internal — add context, follow-up reminders, or anything your team needs to know. They do not appear on the customer-facing payment page.
 

@@ -4,7 +4,7 @@ description: Let Zoop handle the busywork — missed calls, maintenance reminder
 audience: end-user
 ---
 
-Zoop has a small set of AI-powered automations that run in the background so you can stay on the job. You turn them on in [Settings](/using-zoop/settings) under the **AI & automation** tab.
+This page covers the built-in automations Zoop runs for you — answering texts when you are busy, reminding you to schedule maintenance, and alerting customers when you are running late. All of them are optional and off by default. You turn them on in [Settings](/using-zoop/settings) under the **AI & automation** tab.
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/ai-features/ai-automation-settings-tab.png" alt="AI & automation settings tab with the Enable AI receptionist toggle, intro message field, SMS preview, and Enable maintenance reminders toggle" />
 
@@ -14,7 +14,7 @@ Zoop has a small set of AI-powered automations that run in the background so you
 
 When you are on a job and cannot answer your phone, the AI receptionist can reply automatically to customers who text or call your Zoop business number. It introduces itself and answers common questions based on what you tell it.
 
-Receptionist conversations are designed to land on the customer's timeline. Open a customer and filter the timeline to **AI sessions** to see them alongside the customer's other SMS, email, and call activity.
+Receptionist conversations show up on the customer's record. Open any customer, go to their **Timeline** tab, and set the filter to **AI sessions** to see those exchanges alongside the customer's other SMS, email, and call activity.
 
 <Callout type="warning">TODO(verify): the receptionist runtime (what it captures during a call, and the exact timeline entry it writes) is not yet wired up in the codebase — only the settings and the AI sessions timeline filter exist. Confirm with the product team what details an AI session records once the receptionist goes live.</Callout>
 
@@ -65,9 +65,9 @@ The AI receptionist only activates on your Zoop business number. If customers re
 
 ## Maintenance reminders
 
-When this is on, Zoop prompts you to schedule a follow-up maintenance visit after equipment installations — for example, after you install an A/C unit or a water heater. The reminder surfaces inside Zoop; it does not automatically contact the customer.
+When this is on, Zoop prompts you to schedule a follow-up maintenance visit after equipment installations — for example, after you install an A/C unit or a water heater. The reminder appears inside Zoop; Zoop does not contact the customer on your behalf.
 
-To turn it on, go to [Settings](/using-zoop/settings) → **AI & automation** and toggle **Enable Maintenance Reminders** on.
+To turn it on, go to [Settings](/using-zoop/settings), select the **AI & automation** tab, and toggle **Enable Maintenance Reminders** on.
 
 <Callout type="warning">TODO(verify): only the settings toggle exists in the codebase today — there is no trigger logic that watches job types or line items and raises a reminder. Confirm with the product team which installs fire a reminder, and where it surfaces, once that runtime ships.</Callout>
 
@@ -75,45 +75,45 @@ To turn it on, go to [Settings](/using-zoop/settings) → **AI & automation** an
 
 ## Auto-text when a job is running late
 
-Zoop watches your route in real time. When a hard-window visit's estimated arrival slips past the promised window, Zoop can automatically send the customer a heads-up text.
+Zoop watches your route in real time. When the estimated arrival for a visit slips past the time window you promised the customer, Zoop can automatically send them a heads-up text.
 
-This is **off by default.** When it is off, you or your tech send the message manually from the route cockpit. Turn it on only if you want Zoop to send it without you reviewing it first.
+This is **off by default.** When it is off, you or your tech send the late-arrival text manually from the route screen. Turn it on only if you want Zoop to send the text without you reviewing it first.
 
-To enable it, go to [Settings](/using-zoop/settings) → **Notifications** and toggle **Auto-text customers when a job is likely to run late**.
+To enable it, go to [Settings](/using-zoop/settings), select the **Notifications** tab, and toggle **Auto-text customers when a job is likely to run late** on.
 
 <Callout type="info">
-This only fires for hard-window visits (where you confirmed a specific arrival window with the customer). Flexible or FYI-window visits are not affected.
+This only fires for hard-window visits — jobs where you confirmed a specific arrival window with the customer (for example, "between 10 am and noon"). Flexible or FYI-window visits are not affected.
 </Callout>
 
 ---
 
 ## Missed jobs
 
-If a job's scheduled day passes without it being marked done, it appears in a **Needs rescheduling** tray at the top of the [dispatch board](/using-zoop/dispatch). From there you can generate a reschedule link and send it to the customer so they can pick a new time.
+If a job's scheduled day passes without it being marked done, Zoop flags it automatically. It appears in a **Needs rescheduling** tray at the top of the [dispatch board](/using-zoop/dispatch). From there you can generate a reschedule link and send it to the customer so they can pick a new time.
 
-Zoop does not automatically move or reassign the job. You decide whether and when to send the link.
+Zoop does not move or reassign the job on its own. You decide whether and when to send the link.
 
 <Callout type="info">TODO(screenshot): the "Needs rescheduling" tray on the dispatch board showing a missed job row with the Reschedule button.</Callout>
 
 ---
 
-## Job drafting from notes (MCP / AI assistant)
+## Job drafting from notes (advanced)
 
-If you use an external AI assistant — such as Claude Desktop — connected to Zoop via MCP, you can dictate rough notes and have the assistant draft a job for you. You review and confirm before anything is saved.
+If you connect an external AI assistant — such as Claude Desktop — to Zoop, you can dictate rough job notes and have the assistant draft a job for you. You review and confirm before anything is saved.
 
-This works through Zoop's **customer-job-draft** prompt. You provide a customer and your spoken or typed notes; the assistant proposes a job title and description in plain language, then calls `jobs.create` once you confirm.
+This is not something you set up inside Zoop. It requires a separate developer integration called MCP. Most solo contractors will not need it. If you are curious, see [MCP](/developers/mcp) for setup instructions.
 
-There is no AI chat inside Zoop itself for this. Job drafting from notes is available only through an external MCP client such as Claude Desktop — it is a developer and power-user feature. See [MCP](/developers/mcp) for setup instructions.
+There is no AI chat inside Zoop itself for this feature.
 
 ---
 
-## Voice notes
+## Voice notes (mobile only)
 
-In the **Zoop mobile app**, you can record a voice note and Zoop transcribes it to text for you. Tap the microphone in the note composer, talk through what happened on the job, and Zoop turns it into a note you can edit and save. The original audio is kept as an attachment on the note.
+In the **Zoop mobile app**, you can record a voice note and Zoop transcribes it to text. Tap the microphone button in the note composer, talk through what happened on the job, and Zoop turns it into a note you can edit and save. The original audio is kept as an attachment on the note.
 
-Voice transcription has a monthly limit per business. When you reach it, transcription pauses until the limit resets on the 1st of the month.
+Voice transcription has a monthly limit per business. When you reach it, transcription pauses until the 1st of the month.
 
-In the web app, the note composer shows a microphone button too, but it is disabled — its tooltip reads "Voice notes coming soon." Use the mobile app to capture voice notes for now.
+The web app shows a microphone button in the note composer too, but it is currently disabled — its tooltip reads "Voice notes coming soon." Use the mobile app for voice notes for now.
 
 ---
 

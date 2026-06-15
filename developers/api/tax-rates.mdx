@@ -4,12 +4,12 @@ description: Manage tax rates and the tenant default via the Zoop MCP tool layer
 audience: developer
 ---
 
-Tax rates are tenant-level configuration records. Each rate has a name and a percentage value. One rate can be marked as the **tenant default** — the rate Zoop applies automatically when creating new invoices, unless the caller overrides it.
+Use these tools to create and manage tax rates for your Zoop tenant (your account's isolated workspace). Each rate has a name and a percentage value. One rate can be marked as the **tenant default** — the rate Zoop applies automatically when creating new invoices, unless you override it.
 
 All tools in this group require `read:tax_rates` or `write:tax_rates`. There is no umbrella scope that expands to cover these — the pair stands alone. See [Scopes](/developers/authentication/scopes) for the full catalog.
 
 <Callout type="info">
-If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
+New to the Zoop MCP tool layer? Start at [MCP overview](/developers/mcp) to learn how to connect and authenticate before calling any tools on this page.
 </Callout>
 
 ---
@@ -21,19 +21,19 @@ If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to lea
 | `read:tax_rates` | `tax_rates.list`, `tax_rates.get` |
 | `write:tax_rates` | `tax_rates.create`, `tax_rates.update`, `tax_rates.archive` |
 
-`write:tax_rates` does **not** imply `read:tax_rates`. Grant both if your integration needs to read and write.
+`write:tax_rates` does **not** imply `read:tax_rates`. If your integration needs to both read and write, request both scopes.
 
-Unlike many other write tools, the tax rate tools **do not require a user actor**. Tenant-key tokens (no user ID) can call all five tools, because tax rates have no `created_by` attribution column.
+Unlike most write tools, the tax rate tools **do not require a user actor**. A tenant-key token — a token issued to your app directly, without an associated user ID — can call all five tools. This is because tax rates have no `created_by` field to attribute.
 
 ---
 
 ## How rates are stored
 
-Tax rates are stored internally as a decimal — for example, `0.0825` represents 8.25%. This is the value you will see in `get` and `list` responses in the `rate_decimal` field.
+Zoop stores rates as a decimal internally — for example, `0.0825` represents 8.25%. You will see this in `rate_decimal` in `get` and `list` responses.
 
-When **creating or updating** a rate, supply the human-readable percentage in `rate_percentage` (e.g. `8.25`). Zoop converts it to the stored decimal. You never write `rate_decimal` directly — attempting to send it to `tax_rates.update` is an `invalid_input` error.
+When you **create or update** a rate, send the human-readable percentage in `rate_percentage` (e.g. `8.25`). Zoop does the conversion for you. Do not send `rate_decimal` directly — attempting to patch it returns `invalid_input`.
 
-Valid range: `0` to `99.9999`, with at most 4 decimal places. A value of `99.99999` or higher would round to a stored decimal of `1.0`, which is not allowed.
+Valid range for `rate_percentage`: `0` to `99.9999`, with at most 4 decimal places. A value of `99.99999` or higher would round to a stored decimal of `1.0`, which is not allowed.
 
 ---
 
@@ -41,9 +41,9 @@ Valid range: `0` to `99.9999`, with at most 4 decimal places. A value of `99.999
 
 ### `tax_rates.list`
 
-List all active tax rates for the tenant, most recent first. The response also includes `default_tax_rate_id` — the `id` of whichever rate is currently the tenant default, or `null` if no default is set.
+Returns all active tax rates for your tenant, most recent first. The response also includes `default_tax_rate_id` — the `id` of the rate currently set as the tenant default, or `null` if no default is set.
 
-Archived rates are excluded by default. Pass `include_archived: true` to include them.
+Archived (soft-deleted) rates are excluded by default. Pass `include_archived: true` to include them.
 
 <ParamField body="include_archived" type="boolean" optional>
   When `true`, returns archived (soft-deleted) rates alongside active ones. Defaults to `false`.
@@ -82,17 +82,33 @@ Archived rates are excluded by default. Pass `include_archived: true` to include
 
 ### `tax_rates.get`
 
-Fetch a single tax rate by `id`. Returns `not_found` if the rate does not exist in the tenant or has been archived.
+Fetch a single tax rate by its `id`. Returns `not_found` if the rate does not exist in your tenant or has been archived.
 
 <ParamField body="id" type="string (UUID)" required>
   The tax rate's `id`. Get this from `tax_rates.list`.
 </ParamField>
 
+#### Example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "tax_rates.get",
+    "arguments": {
+      "id": "d4e5f6a7-..."
+    }
+  }
+}
+```
+
 ---
 
 ### `tax_rates.create`
 
-Create a new tax rate. The name must be unique among active rates in the tenant — a duplicate name is a `conflict` error.
+Create a new tax rate. The name must be unique among active rates in your tenant — a duplicate name returns a `conflict` error.
 
 <ParamField body="name" type="string" required>
   Display name for the rate. Max 60 characters. Must be unique among active rates.
@@ -148,9 +164,9 @@ Create a new tax rate. The name must be unique among active rates in the tenant 
 
 ### `tax_rates.update`
 
-Update a tax rate's mutable fields. This is a partial patch — only the fields you send are changed. Fields you omit stay as they are.
+Update a tax rate's fields. This is a partial patch — only the fields you send are changed; fields you omit stay as they are.
 
-You cannot patch `rate_decimal` directly (use `rate_percentage` instead) or `is_active` (use `tax_rates.archive` to deactivate a rate). Attempting either returns `invalid_input`.
+Two fields cannot be patched directly: `rate_decimal` (use `rate_percentage` instead) and `is_active` (use `tax_rates.archive` to deactivate a rate). Attempting either returns `invalid_input`.
 
 <ParamField body="id" type="string (UUID)" required>
   The tax rate to update.
@@ -169,7 +185,7 @@ You cannot patch `rate_decimal` directly (use `rate_percentage` instead) or `is_
 </ParamField>
 
 <ParamField body="is_default" type="boolean" optional>
-  Pass `true` to make this the tenant default. Pass `false` to clear the default if this rate is currently the default (the default becomes `null`). Has no effect if `false` and this rate is not currently the default.
+  Pass `true` to make this the tenant default — any existing default is automatically demoted. Pass `false` to clear the default when this rate is currently the default (the tenant default becomes `null`). Has no effect if this rate is not currently the default.
 </ParamField>
 
 #### Example — change the rate percentage
@@ -193,9 +209,9 @@ You cannot patch `rate_decimal` directly (use `rate_percentage` instead) or `is_
 
 ### `tax_rates.archive`
 
-Soft-archive a tax rate. Archived rates are hidden from default list results but the record is preserved — any invoices or quotes that used it retain their correct totals.
+Archive (soft-delete) a tax rate. Archiving hides the rate from default list results without deleting the underlying record — any invoices or quotes that used the rate keep their correct totals.
 
-If the rate being archived is the tenant default, **the default is automatically cleared** (set to `null`). Zoop will not apply any tax rate automatically until you set a new default.
+If the archived rate is the tenant default, **the default is automatically cleared** (set to `null`). Zoop will not apply any tax rate automatically until you set a new default.
 
 Archiving a rate that is already archived (or does not exist) returns `not_found`. There is no restore tool in the current MCP version.
 
@@ -204,7 +220,7 @@ Archiving a rate that is already archived (or does not exist) returns `not_found
 </ParamField>
 
 <Callout type="warning">
-Archiving the default rate clears the tenant default. New invoices and quotes will have no tax rate pre-applied until you set a new default with `tax_rates.update` or `tax_rates.create`.
+If you archive the current default rate, the tenant default is cleared. New invoices and quotes will have no tax rate pre-applied until you set a new default with `tax_rates.update` or `tax_rates.create`.
 </Callout>
 
 #### Example
@@ -242,7 +258,7 @@ Archiving the default rate clears the tenant default. New invoices and quotes wi
 
 ## Managing the tenant default
 
-The tenant default is a single pointer — at most one rate is marked as the default at any time. Here is the typical lifecycle:
+The tenant default is a single pointer: at most one rate is marked as the default at any time. Here is the typical lifecycle.
 
 <Steps>
   <Step title="Create the rate">

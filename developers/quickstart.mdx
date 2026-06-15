@@ -8,13 +8,15 @@ This guide walks you through getting an API key and sending your first two reque
 
 **What you need:** a Zoop account with owner-level access and a terminal with `curl`.
 
+**Base URL:** every example uses `https://app.zoop.example` as a placeholder. Replace it with your actual Zoop URL. If you are unsure what that is, fetch `GET /.well-known/oauth-protected-resource` — the `resource` field is the canonical base URL for your environment.
+
 ---
 
 ## Background: what the MCP server is
 
-Zoop exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server at `POST /api/mcp`. MCP is a JSON-RPC 2.0 protocol. Every request you send is a JSON object with a `jsonrpc`, `id`, `method`, and `params` field. Every response is a JSON object with the result or an error.
+Zoop exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server at `POST /api/mcp`. MCP is an open standard for letting AI agents and tools talk to services like Zoop. Under the hood it uses JSON-RPC 2.0 — a convention where every request is a JSON object with four fields (`jsonrpc`, `id`, `method`, `params`) and every response is a JSON object with either a `result` or an `error`.
 
-You do not need to know much about MCP to use this guide — the examples below are complete copy-paste calls.
+You do not need to know the full spec to follow this guide — the examples below are complete, copy-paste calls.
 
 ---
 
@@ -32,17 +34,17 @@ In Zoop, go to **Settings → API & MCP**. You need owner role to reach this pag
 
 <Step title="Create a user key">
 
-Click **New API key**. Choose **User key** — the prefix will be `zoop_uk_`. User keys carry your identity, which some tools require for attribution (the `created_by` / `updated_by` fields on records). A tenant key (`zoop_tk_`) works for read tools and write tools that do not require a user actor, but cannot call write tools that stamp `created_by` or `updated_by`.
+Click **New API key**. When prompted for the key type, choose **User key** — these have the prefix `zoop_uk_`. A user key carries your identity, which Zoop uses to record who created or updated a record (the `created_by` / `updated_by` fields). A tenant key (`zoop_tk_`) works for read-only tools and some write tools, but cannot call any tool that stamps a user actor on the record.
 
-Select the scopes you want. For this guide, enable at least `read:customers`.
+Next, select **scopes** — scopes are permissions that control which tools your key can call. For this guide, enable at least `read:customers`.
 
 </Step>
 
 <Step title="Copy the key immediately">
 
-The plaintext key is shown **once**. Zoop stores only a SHA-256 hash — if you close the dialog without copying it, you must revoke the key and create a new one.
+The key is shown **once** in plain text. Zoop only stores a hashed version — if you close the dialog without copying the key, you will need to revoke it and create a new one.
 
-Store it in an environment variable, not in source code:
+Store it in an environment variable rather than pasting it directly into source code:
 
 ```bash
 export ZOOP_API_KEY="zoop_uk_<the rest of your key>"
@@ -56,7 +58,7 @@ export ZOOP_API_KEY="zoop_uk_<the rest of your key>"
 
 ## Step 2: confirm the connection with `tools/list`
 
-The `tools/list` JSON-RPC method returns all the tools your key has access to. It is a good first call because it does not touch any tenant data — it just proves your key is valid and the connection works.
+`tools/list` is a built-in MCP method that returns every tool your key has permission to call. It is a safe first call because it does not read or write any of your data — it just proves your key is valid and the server is reachable.
 
 Send the request with `curl`:
 
@@ -70,9 +72,9 @@ curl -X POST https://app.zoop.example/api/mcp \
 
 **What the headers do:**
 
-- `Authorization: Bearer $ZOOP_API_KEY` — your API key is the credential. There is no token-exchange step; the key is sent directly.
-- `Content-Type: application/json` — tells the server the body is JSON.
-- `Accept: application/json, text/event-stream` — the MCP server uses a streamable HTTP transport and expects this header.
+- `Authorization: Bearer $ZOOP_API_KEY` — sends your API key as the credential. There is no separate login step; Zoop reads the key directly from this header.
+- `Content-Type: application/json` — tells the server the request body is JSON.
+- `Accept: application/json, text/event-stream` — the MCP server uses a streamable HTTP transport; this header is required or the server will reject the request.
 
 A successful response looks like this (truncated):
 
@@ -91,15 +93,15 @@ A successful response looks like this (truncated):
 }
 ```
 
-If you see a `401` error instead, the key is invalid, expired, or revoked. Check that you copied the full key (including the `zoop_uk_` prefix) and that the environment variable is set correctly. See [errors](/developers/errors) for the full error shape.
+If you see a `401` error, the key is invalid, expired, or revoked. The most common cause is a missing prefix — make sure you copied the full key including `zoop_uk_`. Also confirm the environment variable is set in the same shell session where you are running `curl`. See [errors](/developers/errors) for the full error shape.
 
 ---
 
 ## Step 3: search for a customer
 
-Now call an actual tool. `customers.search` lets you look up customers by name, phone, tag, or status. It requires the `read:customers` scope.
+Now call an actual Zoop tool. `customers.search` lets you look up customers by name, phone, tag, or status. It requires the `read:customers` scope you enabled in step 1.
 
-The `method` for calling a tool is always `tools/call`. The tool name and its arguments go in `params`:
+To call any tool, set `method` to `tools/call` and put the tool name and its arguments in `params`:
 
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
@@ -136,9 +138,9 @@ A successful response returns a list of matching customers plus a pagination cur
 }
 ```
 
-The `content[0].text` field is a JSON string — parse it to get the structured result. The `rows` array holds matching customers. `hasMore: true` means there are more results; pass `cursor` from `nextCursor` in the next call to page through them.
+The `content[0].text` field is a JSON string — you need to parse it to get the structured data. Inside it, `rows` holds the matching customers. If `hasMore` is `true`, there are more results on the next page; pass the value of `nextCursor` as `cursor` in your next call to continue paging.
 
-If you get `insufficient_scope`, the key was not issued with `read:customers`. Revoke the key and create a new one with that scope — you cannot add scopes to an existing key.
+If you get an `insufficient_scope` error, the key was created without the `read:customers` scope. You cannot add scopes to an existing key — revoke it, create a new one, and make sure to check `read:customers` during setup.
 
 ---
 
@@ -159,6 +161,3 @@ If you get `insufficient_scope`, the key was not issued with `read:customers`. R
   </Card>
 </Columns>
 
-## A note on the base URL
-
-`https://app.zoop.example` in these examples is a placeholder — replace it with your Zoop base URL. The host differs across environments, so don't hardcode it: resolve it from the `resource` field of `GET /.well-known/oauth-protected-resource`, which always reflects the canonical URL for the environment you're hitting.

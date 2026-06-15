@@ -4,9 +4,9 @@ description: Create and manage notes attached to other records.
 audience: developer
 ---
 
-Notes are free-text records that can stand alone or be attached to another record — a customer, contact, location, job, invoice, quote, or estimate. They support pinning, full-text search, date filtering, and soft-archiving.
+Notes are free-text records you can attach to almost any record in Zoop — a customer, contact, location, job, invoice, quote, or estimate — or leave standalone. They support pinning, full-text search, date filtering, and archiving (hiding without deleting).
 
-Notes have their own scope pair (`read:notes` / `write:notes`) separate from the records they attach to. See [scopes](/developers/authentication/scopes) for context.
+Notes use their own permission scopes (`read:notes` / `write:notes`), separate from the scopes for the records they attach to. See [scopes](/developers/authentication/scopes) for background on how scopes work.
 
 ## Scopes
 
@@ -15,19 +15,21 @@ Notes have their own scope pair (`read:notes` / `write:notes`) separate from the
 | `read:notes` | `notes.list`, `notes.get` |
 | `write:notes` | `notes.create`, `notes.update`, `notes.archive` |
 
-`write:notes` does not include `read:notes`. Grant both if your integration needs to read and write.
+`write:notes` does not automatically include `read:notes`. If your integration needs to both read and write notes, request both scopes.
 
-## User actor requirement
+## Write operations require a user identity
 
-`notes.create`, `notes.update`, and `notes.archive` require a **user actor** — a token issued to or bound to a real team member. Tenant-key tokens (`zoop_tk_` prefix) have no user identity and cannot author or mutate notes; they will receive an `invalid_input` error.
+`notes.create`, `notes.update`, and `notes.archive` require a **user actor** — meaning the API key must be tied to a real team member so Zoop knows who authored the note. Tenant-level keys (the `zoop_tk_` prefix) represent the account as a whole, not a person, so they cannot create or modify notes. If you try, you'll get an `invalid_input` error.
 
-If you need to write notes from an automated pipeline, use a user-bound API key (`zoop_uk_`) issued to a service account team member. See [API keys](/developers/authentication/api-keys).
+If you need to write notes from an automated pipeline with no human in the loop, create a dedicated service-account team member in Zoop and issue a user-bound API key (`zoop_uk_`) for that account. See [API keys](/developers/authentication/api-keys).
 
 ## Tools
 
+Each tool below is called by sending a JSON-RPC request to the Zoop MCP endpoint (`POST /api/mcp`). See the [MCP server](/developers/mcp) page for the full request envelope and transport details.
+
 ### `notes.list`
 
-Lists notes for the tenant, newest first. Returns cursor-based pages — default 25 rows, max 100.
+Returns a list of notes for your tenant, sorted newest first. Results are paged — you get up to 25 notes per call (max 100), and a cursor you can use to fetch the next page.
 
 **Scope:** `read:notes`
 
@@ -75,7 +77,7 @@ Each row includes the note's `id`, `body`, `pinned`, `created_by`, `created_at`,
 
 ### `notes.get`
 
-Fetches a single note by ID.
+Returns a single note by its ID.
 
 **Scope:** `read:notes`
 
@@ -155,7 +157,7 @@ At least one field is required. Returns `not_found` if the note does not exist o
 
 ### `notes.archive`
 
-Soft-archives a note. Archived notes are hidden from default list and get responses but their data is preserved.
+Archives a note. The note is hidden from `notes.list` and `notes.get` results, but its data is preserved in Zoop's database (it is not deleted).
 
 **Scope:** `write:notes` — requires a user actor.
 
@@ -171,7 +173,7 @@ Returns `{ archived: true, id }` on success. Returns `not_found` if the note doe
 
 ## Example: list pinned notes on a job
 
-The request below fetches the first page of pinned notes attached to a specific job.
+The request below fetches the first page of pinned notes attached to a specific job. Replace `zoop_uk_<your-secret>` with your API key and the `subject_id` value with the real job ID.
 
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
@@ -218,14 +220,14 @@ A successful response looks like:
 | `not_found` | The note ID does not exist in this tenant, the note is already archived, or the subject record (`subject_id`) was not found. |
 | `invalid_input` | A required field is missing, the input failed validation, the caller is a tenant actor, or the caller is not the author/owner. |
 | `insufficient_scope` | The token does not hold `read:notes` or `write:notes` as required. |
-| `conflict` | The write rate limit for this user was exceeded. |
+| `conflict` | The write rate limit for this user was exceeded. Slow down your requests and retry. |
 | `internal` | An unexpected server error — details are not returned to the client. |
 
 See [errors](/developers/errors) for the full error reference and HTTP status codes.
 
 ## Pagination
 
-`notes.list` uses cursor-based pagination. When `hasMore` is `true`, pass the `nextCursor` value back as the `cursor` parameter on your next call to continue reading.
+`notes.list` uses cursor-based pagination. Instead of page numbers, each response includes a `nextCursor` token. When `hasMore` is `true`, pass that token as the `cursor` parameter on your next call to get the following page.
 
 ```ts
 let cursor: string | undefined
@@ -260,7 +262,9 @@ do {
 } while (cursor)
 ```
 
-When `nextCursor` is `null` and `hasMore` is `true`, the result set was truncated (this can happen with full-text search). Narrow your query with additional filters rather than fetching more pages.
+<Callout type="warning">
+If `nextCursor` is `null` but `hasMore` is still `true`, the result set was truncated — this can happen with full-text search queries. You cannot page past this point. Narrow your query with additional filters (for example, a tighter date range or a more specific search term) to get a complete result set.
+</Callout>
 
 ## Related
 

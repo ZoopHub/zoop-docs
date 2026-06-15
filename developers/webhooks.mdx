@@ -4,50 +4,52 @@ description: Inbound webhooks Zoop receives from Stripe, Twilio, and Resend — 
 audience: developer
 ---
 
-Zoop receives inbound webhooks from three providers: Stripe (payments), Twilio (SMS), and Resend (email). These endpoints are public — no `Authorization` header is required — but every request is rejected unless the provider's signature is valid. You do not call these endpoints yourself; the providers do.
+A webhook is an HTTP request a service sends to your server when something happens — a payment lands, an SMS arrives, an email bounces. This page covers the webhooks that Stripe, Twilio, and Resend send **to** Zoop, not webhooks that Zoop sends to you.
 
-There are no outbound webhooks for third-party developers to subscribe to. Zoop does not deliver event notifications to URLs you register — there is no subscription mechanism, and every webhook route Zoop exposes is inbound only. If you need to react to events in Zoop, poll the API.
+Zoop receives webhooks from three providers: Stripe (payments), Twilio (SMS), and Resend (email). These endpoints are public — no `Authorization` header is required — but every request is rejected unless the provider's signature is valid. You do not call these endpoints yourself; the providers do.
+
+Zoop does not send outbound webhooks to URLs you register. There is no subscription mechanism. If you need to react to events in Zoop, poll the API instead.
 
 ---
 
-## How verification works
+## How signature verification works
 
-Each provider uses a different scheme.
+Each provider signs its requests so Zoop can confirm they are genuine. The signing method differs per provider.
 
-| Provider | Method | Key header(s) |
+| Provider | Signing method | Key header(s) |
 |---|---|---|
-| Stripe | HMAC-SHA256 over the raw body | `Stripe-Signature` |
-| Twilio | HMAC-SHA1 over the canonical request URL + params | `X-Twilio-Signature` |
-| Resend | Svix (standardwebhooks HMAC) over the raw body | `svix-id`, `svix-timestamp`, `svix-signature` |
+| Stripe | HMAC-SHA256 computed over the raw request body | `Stripe-Signature` |
+| Twilio | HMAC-SHA1 computed over the full public URL and its POST parameters | `X-Twilio-Signature` |
+| Resend | Svix (an open standard called standardwebhooks) HMAC over the raw body | `svix-id`, `svix-timestamp`, `svix-signature` |
 
-A request that fails signature verification is rejected with a `400` or `401` response depending on the provider. The provider will retry — Zoop does not silently drop unverified bodies.
+A request that fails signature verification is rejected with a `400` or `401` response. The provider will retry — Zoop does not silently accept unverified requests.
 
 ---
 
 ## Stripe
 
-Zoop registers two separate Stripe webhook destinations. Each has its own signing secret and handles a different scope of events.
+Zoop registers two separate Stripe webhook endpoints. Each has its own signing secret and listens to a different scope of events.
 
-### Stripe platform
+### Stripe platform endpoint
 
 ```http
 POST /api/webhooks/stripe/platform
 ```
 
-Receives events on the **Your account** scope — events that happen on the Zoop platform account itself (platform-level charges, indirect destination charges, and Stripe Connect v2 account state changes).
+Receives events on the **Your account** scope — things that happen on the Zoop platform account itself (platform-level charges, indirect destination charges, and Stripe Connect v2 account state changes).
 
-### Stripe connect
+### Stripe connect endpoint
 
 ```http
 POST /api/webhooks/stripe/connect
 ```
 
-Receives events on the **Connected accounts** scope — events that happen on your Stripe connected account (charges, refunds, disputes, payouts, and related objects).
+Receives events on the **Connected accounts** scope — things that happen on your Stripe connected account (charges, refunds, disputes, payouts, and related objects).
 
-### Raw body requirement
+### Keep the raw body intact
 
 <Callout type="warning">
-Stripe computes its HMAC against the **exact raw bytes** it sent. If anything re-serializes the body before verification — for example, parsing JSON and then stringifying it — the signature will not match and the request will be rejected. Always read the body as a raw string; never call `request.json()` before verifying.
+Stripe computes its signature against the **exact raw bytes** it sent. If anything re-serializes the body before verification — for example, parsing JSON and then re-stringifying it — the signature will not match and the request will be rejected. Always read the body as a raw string; never call `request.json()` before verifying.
 </Callout>
 
 ### Verification flow
@@ -62,14 +64,14 @@ Both Stripe routes follow the same pattern:
     The signing secret for the endpoint is read from an environment variable. If the signature does not match, the route returns `400 { "error": "Invalid signature" }` and Stripe retries.
   </Step>
   <Step title="Check live/test mode">
-    The event's `livemode` field is compared against the deployment's expected mode (derived from the `STRIPE_SECRET_KEY` prefix). A mismatch parks the event and returns `200` — it does not make Stripe retry, because the mismatch is a misconfiguration, not a transient error.
+    The event's `livemode` field is compared against the deployment's expected mode (derived from the `STRIPE_SECRET_KEY` prefix — `sk_test_` means test, `sk_live_` means live). A mismatch parks the event and returns `200` — Zoop does not ask Stripe to retry, because a mode mismatch is a config problem, not a temporary error.
   </Step>
-  <Step title="Ingest atomically">
-    Verified events are written to the `domain_event_outbox` table in a single transaction. If a Stripe event ID was already ingested (re-delivery), the route responds `200 { "received": true, "deduped": true }` and skips the write.
+  <Step title="Store the event">
+    Verified events are written to the `domain_event_outbox` table in a single database transaction. If the same Stripe event ID arrives twice (Stripe re-delivery), the route responds `200 { "received": true, "deduped": true }` and skips the write.
   </Step>
 </Steps>
 
-### Stripe response shapes
+### Stripe success responses
 
 ```json
 // Normal ingest
@@ -97,7 +99,7 @@ Both Stripe routes follow the same pattern:
 
 ## Twilio
 
-Zoop registers two Twilio webhook callbacks: one for messages your customers send in (inbound SMS), and one for delivery status updates on messages Zoop sends out.
+Zoop registers two Twilio webhook callbacks: one for messages your customers send in, and one for delivery status updates on messages Zoop sends out.
 
 ### Inbound SMS
 
@@ -127,10 +129,10 @@ Called by Twilio when a customer sends an SMS to a Zoop-managed phone number. Th
 
 **What happens after verification:**
 
-1. The `To` number is looked up against `tenant_inbound_addresses`. If no tenant owns it, the message is quarantined (stored for operator review) and Twilio receives a `200`.
+1. The `To` number is looked up against `tenant_inbound_addresses`. If no tenant owns that number, the message is quarantined — stored for operator review — and Twilio receives a `200`.
 2. If a tenant is found, Zoop tries to match the `From` number to an existing customer and contact.
 3. The message is written to the `communications` table with `channel: 'sms'`, `direction: 'inbound'`, `status: 'received'`.
-4. A duplicate `MessageSid` (Twilio re-delivery) is silently acknowledged with `200` — the unique index on `(tenant_id, provider, provider_message_id)` prevents double-writes.
+4. A duplicate `MessageSid` (Twilio re-delivery) is acknowledged with `200` — a unique index on `(tenant_id, provider, provider_message_id)` prevents double-writes.
 
 **Response:** Always `text/xml` TwiML — `<Response></Response>` (empty, no reply). Zoop responds `200` on success and `401` on signature failure. A `5xx` response causes Twilio to retry.
 
@@ -170,17 +172,17 @@ Called by Twilio when the delivery status of an outbound SMS changes. The reques
 
 **What happens after verification:**
 
-Zoop looks up the `MessageSid` in the `communications` table first, then falls back to `invoice_deliveries`. A state-machine guard prevents backwards transitions and replays (e.g., a `queued` callback arriving after `delivered` is ignored). The route always responds `200` so Twilio does not retry stale callbacks.
+Zoop looks up the `MessageSid` in the `communications` table first, then falls back to `invoice_deliveries`. Status updates only move forward — a `queued` callback that arrives after `delivered` is ignored. The route always responds `200` so Twilio does not retry stale callbacks.
 
-### Twilio signature verification detail
+### How Twilio signature verification works
 
-Twilio signs the **exact public URL** it posted to plus all form parameters. On Vercel, the internal hostname may differ from the public hostname, so Zoop reconstructs the canonical public URL from trusted proxy headers (`x-forwarded-*`) before computing the signature check.
+Twilio signs the **exact public URL** it posted to, plus all the form parameters in the request body. On Vercel, the internal hostname can differ from the public hostname, so Zoop rebuilds the correct public URL from trusted proxy headers (`x-forwarded-*`) before running the signature check.
 
 ---
 
 ## Resend
 
-Resend uses [Svix](https://www.svix.com) (an implementation of the standardwebhooks spec) to deliver and sign webhook payloads. Zoop registers two Resend endpoints.
+Resend uses [Svix](https://www.svix.com) — an open standard called standardwebhooks — to deliver and sign webhook payloads. Zoop registers two Resend endpoints.
 
 ### Resend inbound email
 
@@ -235,7 +237,7 @@ Called by Resend when a customer sends an email to a Zoop-managed address. The r
 </ParamField>
 
 <ParamField body="dmarc" type="string">
-  DMARC verdict from Resend's gateway. One of `pass`, `fail`, `neutral`, or `none`. When `fail`, Zoop persists the message but does not correlate it to a customer (the `From` header is untrusted).
+  DMARC (email authentication) verdict from Resend's gateway. One of `pass`, `fail`, `neutral`, or `none`. When `fail`, the sender's identity cannot be trusted, so Zoop stores the message but does not link it to a customer.
 </ParamField>
 
 <ParamField body="attachments" type="array">
@@ -250,10 +252,10 @@ Called by Resend when a customer sends an email to a Zoop-managed address. The r
 
 **What happens after verification:**
 
-1. The `to` address is resolved to a tenant. Unmatched addresses are quarantined and Resend receives `200`.
-2. The `communications` row is inserted **before** any attachment uploads. A duplicate `messageId` (Svix re-delivery) short-circuits at the unique index and returns `200` without re-uploading.
-3. Attachments are uploaded to Supabase Storage (`communications-attachments` bucket) and their paths are written back to the row. If an upload fails, the text body is still preserved.
-4. Svix retries on `5xx`. A `200` with `accepted: false` is returned when the signature is valid but the payload schema is unrecognized (provider drift) — retrying would not help.
+1. The `to` address is resolved to a tenant. Unmatched addresses are quarantined — stored for operator review — and Resend receives `200`.
+2. The `communications` row is inserted **before** any attachment uploads. A duplicate `messageId` (Svix re-delivery) is caught by the unique index, returns `200`, and skips re-uploading.
+3. Attachments are uploaded to Supabase Storage (`communications-attachments` bucket) and their paths are written back to the row. If an upload fails, the text body is still saved.
+4. Svix retries on `5xx`. When the signature is valid but the payload schema is unrecognized (for example, after a provider change), Zoop returns `200` with `accepted: false` — retrying the same payload would not help.
 
 ### Resend email events
 
@@ -286,48 +288,58 @@ Called by Resend when the delivery status of an outbound email changes. Signed t
 
 **What happens after verification:**
 
-Zoop looks up the `email_id` in `communications` first, then falls back to `invoice_deliveries`. The route always responds `200` — even on a database update failure — to prevent Svix from triggering a ~24-hour retry storm on a non-transient error.
+Zoop looks up the `email_id` in `communications` first, then falls back to `invoice_deliveries`. The route always responds `200` — even when the database update fails — to prevent Svix from queuing up to 24 hours of retries for an error that retrying would not fix.
 
 ---
 
 ## Testing locally
 
-You can forward provider webhooks to your local dev server using each provider's official CLI.
+Each provider has a way to forward real webhook events to your local dev server. Pick the tab for the provider you want to test.
 
 <Tabs>
   <Tab title="Stripe">
+    Install the [Stripe CLI](https://stripe.com/docs/stripe-cli), then run:
+
     ```bash
     stripe listen --forward-to localhost:3000/api/webhooks/stripe/connect
     ```
 
-    The Stripe CLI prints a signing secret (`whsec_...`) on startup. Set it as `STRIPE_WEBHOOK_SECRET_CONNECT_TEST` in your `.env.local` (the env var name carries both the destination — `CONNECT` or `PLATFORM` — and the mode — `TEST` or `LIVE`). To test the platform destination instead, forward to `/api/webhooks/stripe/platform` and set `STRIPE_WEBHOOK_SECRET_PLATFORM_TEST`.
+    When it starts, the Stripe CLI prints a signing secret that looks like `whsec_...`. Copy it and add it to your `.env.local` as `STRIPE_WEBHOOK_SECRET_CONNECT_TEST`.
+
+    To test the platform endpoint instead, forward to `/api/webhooks/stripe/platform` and set `STRIPE_WEBHOOK_SECRET_PLATFORM_TEST`.
   </Tab>
   <Tab title="Twilio">
+    Twilio cannot reach `localhost` directly, so you need a tunnel that gives your machine a public URL. [ngrok](https://ngrok.com) is a common choice.
+
     ```bash
-    # Expose your local server with a tunnel first (e.g. ngrok)
+    # 1. Start the tunnel — ngrok gives you a public URL like https://abc123.ngrok-free.app
     ngrok http 3000
 
-    # Then point your Twilio phone number's webhook URL at:
+    # 2. In the Twilio console, set your phone number's inbound webhook URL to:
     # https://<your-ngrok-subdomain>.ngrok-free.app/api/webhooks/twilio/inbound-sms
     ```
 
-    Twilio signs requests using your `TWILIO_AUTH_TOKEN`. Make sure your local `.env.local` has the same auth token as the Twilio account sending the test request.
+    Twilio signs requests with your `TWILIO_AUTH_TOKEN`. Make sure your `.env.local` has the same auth token as the Twilio account sending the test request.
   </Tab>
   <Tab title="Resend">
+    Resend also cannot reach `localhost`, so start a tunnel first.
+
     ```bash
-    # Expose your local server with a tunnel first
+    # 1. Start the tunnel
     ngrok http 3000
 
-    # Then register the tunnel URL as a Resend webhook endpoint in the
-    # Resend dashboard. Resend provides a signing secret (whsec_...) —
-    # set it as RESEND_WEBHOOK_SECRET in your .env.local.
+    # 2. In the Resend dashboard, go to Webhooks and add a new endpoint.
+    #    Use your ngrok URL: https://<your-ngrok-subdomain>.ngrok-free.app/api/webhooks/resend/inbound
+    #
+    # 3. Resend shows a signing secret (whsec_...) after you save the endpoint.
+    #    Add it to your .env.local as RESEND_WEBHOOK_SECRET.
     ```
   </Tab>
 </Tabs>
 
-### Stripe webhook signing secret env vars
+### Stripe signing secret env vars
 
-Stripe issues a distinct signing secret per endpoint per mode, so Zoop reads a different env var for each of the four combinations. Zoop derives the mode (test or live) from the prefix of `STRIPE_SECRET_KEY` (`sk_test_`/`rk_test_` is test, `sk_live_`/`rk_live_` is live) and then reads the matching secret:
+Stripe issues a different signing secret for each endpoint and each mode (test vs. live). Zoop figures out the mode from the prefix of your `STRIPE_SECRET_KEY` — `sk_test_` or `rk_test_` means test; `sk_live_` or `rk_live_` means live — and then reads the matching env var:
 
 | Destination | Mode | Env var |
 |---|---|---|
@@ -336,4 +348,4 @@ Stripe issues a distinct signing secret per endpoint per mode, so Zoop reads a d
 | Platform | test | `STRIPE_WEBHOOK_SECRET_PLATFORM_TEST` |
 | Platform | live | `STRIPE_WEBHOOK_SECRET_PLATFORM_LIVE` |
 
-For the Connect destination only, Zoop falls back to the pre-rename names `STRIPE_WEBHOOK_SECRET_TEST` / `STRIPE_WEBHOOK_SECRET_LIVE`, and then to the legacy single-secret `STRIPE_WEBHOOK_SECRET`, if the new per-mode var is unset. The Platform destination has no fallback — you must set its per-mode var explicitly. If the resolved secret is missing, the route returns `500 { "error": "misconfigured" }` and Stripe retries while you fix config.
+For the Connect endpoint only, Zoop falls back to the older names `STRIPE_WEBHOOK_SECRET_TEST` / `STRIPE_WEBHOOK_SECRET_LIVE`, and then to the legacy single-secret `STRIPE_WEBHOOK_SECRET`, if the per-mode var is missing. The Platform endpoint has no fallback — you must set its per-mode var explicitly. If the resolved secret is missing, the route returns `500 { "error": "misconfigured" }` and Stripe retries while you fix the config.

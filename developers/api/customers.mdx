@@ -4,9 +4,11 @@ description: Manage customers, contacts, locations, and tags via the Zoop MCP to
 audience: developer
 ---
 
-Customers are the central entity in Zoop. A customer record contains core identity fields plus sub-resources: **contacts** (people you can reach) and **locations** (addresses you can dispatch to). **Tags** are a tenant-level label library you can attach to customers.
+This page covers every MCP tool for reading and writing customer data in Zoop.
 
-All tools in this group require the `read:customers` or `write:customers` scope. Contacts, locations, and tags are sub-resources — they do not have separate scopes. See [Scopes](/developers/authentication/scopes) for the full scope catalog.
+A customer record holds core identity fields plus two child resources: **contacts** (the people you call or email) and **locations** (the service addresses you dispatch to). **Tags** are shared labels — one library per account — that you attach to customers to organize them.
+
+All tools in this group require the `read:customers` or `write:customers` scope (a scope is a named permission you grant your API token — see [Scopes](/developers/authentication/scopes)). Contacts, locations, and tags share those two scopes; they do not have their own.
 
 <Callout type="info">
 If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
@@ -21,7 +23,7 @@ If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to lea
 | `read:customers` | `customers.search`, `customers.get`, `contacts.list`, `contacts.get`, `locations.list`, `locations.get`, `tags.list`, `tags.get` |
 | `write:customers` | `customers.create`, `customers.update`, `customers.archive`, `contacts.create`, `contacts.update`, `contacts.archive`, `locations.create`, `locations.update`, `locations.archive`, `tags.create`, `tags.update`, `tags.delete` |
 
-`write:customers` does **not** imply `read:customers`. Grant both if your integration needs to read and write.
+`write:customers` does **not** imply `read:customers`. If your integration needs to both read and write, request both scopes.
 
 ---
 
@@ -29,7 +31,7 @@ If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to lea
 
 ### `customers.search`
 
-Search customers by name, phone, tag, or status. Returns a page of id-bearing rows plus a pagination cursor. Use this tool to resolve a name or phone number the user mentioned into a customer `id` before calling other tools.
+Search customers by name, phone, tag, or status. Returns a list of matching customers, each with an `id` you can pass to other tools. If you only have a name or phone number and need the customer's `id`, start here.
 
 <ParamField body="q" type="string" optional>
   Free-text search string. Matches against name and phone fields.
@@ -48,7 +50,7 @@ Search customers by name, phone, tag, or status. Returns a page of id-bearing ro
 </ParamField>
 
 <ParamField body="cursor" type="string" optional>
-  Opaque pagination cursor from a previous response's `nextCursor` field. Omit for the first page.
+  Pagination cursor. Copy the `nextCursor` value from a previous response to fetch the next page. Omit this on your first request.
 </ParamField>
 
 <ParamField body="limit" type="integer" optional>
@@ -102,12 +104,12 @@ Fetch one customer's full record by `id`, including their contacts and locations
 
 ### `customers.create`
 
-Create a new customer. The `customer_type` field is a discriminator that controls which other fields are required.
+Create a new customer. The `customer_type` field determines which other fields are required.
 
 - For `individual`: `first_name` is required.
 - For `company`: `company_name` is required.
 
-You cannot change `customer_type` after creation.
+You cannot change `customer_type` after creation, so pick the right one up front.
 
 <ParamField body="customer_type" type="string" required>
   `individual` or `company`.
@@ -126,7 +128,7 @@ You cannot change `customer_type` after creation.
 </ParamField>
 
 <ParamField body="phone" type="string" optional>
-  Phone number in any common format. Zoop normalizes it to E.164 and stores both the normalized value and the raw input.
+  Phone number in any common format (e.g. `(510) 555-0199`). Zoop converts it to E.164 format (e.g. `+15105550199`) and stores both the original and the converted value.
 </ParamField>
 
 <ParamField body="email" type="string" optional>
@@ -205,7 +207,7 @@ You cannot change `customer_type` after creation.
 
 ### `customers.update`
 
-Update mutable fields on an existing customer. This is a partial patch — only the fields you send are changed. You cannot change `customer_type`.
+Update fields on an existing customer. This is a partial update — only the fields you include in the request are changed; everything else stays as-is. You cannot change `customer_type`.
 
 <ParamField body="id" type="string (UUID)" required>
   The customer to update.
@@ -255,7 +257,7 @@ Update mutable fields on an existing customer. This is a partial patch — only 
 
 ### `customers.archive`
 
-Soft-archive a customer. Archived customers are hidden from default list views, but their record and all related history (jobs, invoices, notes) is preserved. Use this instead of deleting.
+Archive a customer. Archived customers are hidden from default list views, but their record and all related history (jobs, invoices, notes) is fully preserved. Zoop does not hard-delete customers — use this instead.
 
 <ParamField body="id" type="string (UUID)" required>
   The customer to archive.
@@ -265,9 +267,9 @@ Soft-archive a customer. Archived customers are hidden from default list views, 
 
 ## Contacts
 
-A contact is a person associated with a customer — someone you can call or email. Every customer has at least one contact. The first contact added becomes the primary contact automatically.
+A contact is a person associated with a customer — someone you can call or email. Every customer has at least one contact, and the first one added becomes the primary contact automatically.
 
-Contacts are scoped to a customer: every tool that reads or writes a contact requires the parent `customer_id`.
+Every contact belongs to one customer. All contact tools require the parent `customer_id` so Zoop knows which customer you are working with.
 
 ---
 
@@ -297,9 +299,9 @@ Fetch one contact by `id`.
 
 ### `contacts.create`
 
-Add a contact to a customer. `first_name` and `last_name` are required. Phone numbers are normalized to E.164.
+Add a contact to a customer. `first_name` and `last_name` are required. Phone numbers are automatically converted to E.164 format.
 
-If you send `is_primary: true` on a new contact and a primary already exists, the database promotes your new contact and demotes the previous primary automatically.
+If you set `is_primary: true` and a primary contact already exists, Zoop promotes your new contact and demotes the previous primary — no extra call needed.
 
 <ParamField body="customer_id" type="string (UUID)" required>
   The parent customer.
@@ -314,7 +316,7 @@ If you send `is_primary: true` on a new contact and a primary already exists, th
 </ParamField>
 
 <ParamField body="phone" type="string" optional>
-  Phone number. Normalized to E.164; raw input is also stored.
+  Phone number. Converted to E.164 format; the original input is also stored.
 </ParamField>
 
 <ParamField body="email" type="string" optional>
@@ -341,7 +343,7 @@ If you send `is_primary: true` on a new contact and a primary already exists, th
 
 ### `contacts.update`
 
-Update a contact's mutable fields. Partial patch — only the fields you send change. You cannot move a contact from one customer to another.
+Update a contact's fields. This is a partial update — only the fields you include change; everything else stays as-is. You cannot move a contact from one customer to another.
 
 <ParamField body="id" type="string (UUID)" required>
   The contact to update.
@@ -351,13 +353,13 @@ Update a contact's mutable fields. Partial patch — only the fields you send ch
   The parent customer's `id`.
 </ParamField>
 
-All other fields from `contacts.create` are accepted as optional patches.
+All other fields from `contacts.create` are accepted as optional updates.
 
 ---
 
 ### `contacts.archive`
 
-Soft-archive a contact. Archived contacts are hidden from default views but their history is preserved.
+Archive a contact. Archived contacts are hidden from default views but their history is preserved.
 
 <ParamField body="id" type="string (UUID)" required>
   The contact to archive.
@@ -371,12 +373,12 @@ Soft-archive a contact. Archived contacts are hidden from default views but thei
 
 ## Locations
 
-A location is a service address tied to a customer — where you send a crew. Every customer can have multiple locations across different types (`service`, `billing`, `mailing`, `other`). The first location of each type becomes the primary for that type.
+A location is a service address tied to a customer — where you send a crew. Every customer can have multiple locations. Each location has a type (`service`, `billing`, `mailing`, or `other`), and the first location of each type becomes the primary for that type automatically.
 
 Like contacts, locations require the parent `customer_id` on every call.
 
 <Callout type="warning">
-Promoting a second location to primary requires two steps: first call `locations.update` on the current primary with `is_primary: false`, then call `locations.update` on your target with `is_primary: true`. Creating a location with `is_primary: true` when a primary already exists for that type returns a `conflict` error.
+To promote a different location to primary, you must do it in two steps: first call `locations.update` on the current primary with `is_primary: false`, then call `locations.update` on the new one with `is_primary: true`. Trying to create a location with `is_primary: true` when a primary already exists for that type returns a `conflict` error.
 </Callout>
 
 ---
@@ -477,7 +479,7 @@ Add a service location to a customer. `address_line1`, `city`, `state`, and `pos
 
 ### `locations.update`
 
-Update a location's mutable fields. Partial patch — only the fields you send change. You cannot move a location from one customer to another.
+Update a location's fields. This is a partial update — only the fields you include change; everything else stays as-is. You cannot move a location from one customer to another.
 
 <ParamField body="id" type="string (UUID)" required>
   The location to update.
@@ -487,13 +489,13 @@ Update a location's mutable fields. Partial patch — only the fields you send c
   The parent customer's `id`.
 </ParamField>
 
-All other fields from `locations.create` are accepted as optional patches.
+All other fields from `locations.create` are accepted as optional updates.
 
 ---
 
 ### `locations.archive`
 
-Soft-archive a location. Archived locations are hidden from default views but their history is preserved.
+Archive a location. Archived locations are hidden from default views but their history is preserved.
 
 <ParamField body="id" type="string (UUID)" required>
   The location to archive.
@@ -507,10 +509,10 @@ Soft-archive a location. Archived locations are hidden from default views but th
 
 ## Tags
 
-Tags are a tenant-level label library. A tag is a name-and-color pair that you attach to customers to organize them (e.g. `VIP`, `Seasonal`, `HOA`). Because tags are tenant-level, none of the tag tools require a `customer_id`.
+Tags are shared labels for your whole account. Each tag is a name-and-color pair you attach to customers to organize them (e.g. `VIP`, `Seasonal`, `HOA`). Tags belong to the account, not to individual customers, so none of the tag tools require a `customer_id`.
 
 <Callout type="warning">
-`tags.delete` is a **hard delete**. The tag and every customer assignment are permanently removed and cannot be recovered. There is no soft-archive for tags. Use deliberately.
+`tags.delete` permanently removes the tag and all its customer assignments. This cannot be undone — there is no archive for tags. Double-check the `id` before calling this.
 </Callout>
 
 Attaching and detaching tags from customers is not yet available as an MCP tool. See [MCP overview — limitations](/developers/mcp) for what is out of scope in v1.
@@ -519,7 +521,7 @@ Attaching and detaching tags from customers is not yet available as an MCP tool.
 
 ### `tags.list`
 
-List all customer tags for the tenant, ordered by name. Tags are shared across the whole tenant — not per customer.
+List all customer tags for this account, ordered by name. Tags are shared across the whole account, not tied to individual customers.
 
 No input parameters.
 
@@ -540,7 +542,7 @@ Fetch one tag by `id`.
 Create a customer tag. The name must be unique within the tenant.
 
 <Callout type="info">
-`tags.create` requires a **user actor**. Tokens issued from tenant-bound API keys (no user ID) cannot call this tool. Use a user-bound API key or OAuth token instead.
+`tags.create` requires a token that identifies a specific user. API keys that are scoped only to the account (with no associated user) cannot call this tool. Use a user-bound API key or an OAuth token instead. See [API keys](/developers/authentication/api-keys) if you are unsure which type you have.
 </Callout>
 
 <ParamField body="name" type="string" required>
@@ -555,7 +557,7 @@ Create a customer tag. The name must be unique within the tenant.
 
 ### `tags.update`
 
-Rename or recolor a tag. Partial patch — omit fields you do not want to change. Renaming to a name already used by another tag in the tenant returns a `conflict` error.
+Rename or recolor a tag. This is a partial update — omit any field you do not want to change. Renaming to a name that already exists in the account returns a `conflict` error.
 
 <ParamField body="id" type="string (UUID)" required>
   The tag to update.
@@ -573,7 +575,7 @@ Rename or recolor a tag. Partial patch — omit fields you do not want to change
 
 ### `tags.delete`
 
-Permanently delete a tag. This removes the tag row and all customer assignments via cascade. It cannot be undone.
+Permanently delete a tag. This removes the tag and all customer assignments. It cannot be undone.
 
 <ParamField body="id" type="string (UUID)" required>
   The tag to delete.
@@ -583,7 +585,7 @@ Permanently delete a tag. This removes the tag row and all customer assignments 
 
 ## Error reference
 
-These are the error kinds you will encounter when calling customer tools. All errors are returned as JSON-RPC error results (`isError: true`).
+When a tool call fails, Zoop returns a JSON-RPC error result (`isError: true`). The `kind` field tells you what went wrong.
 
 | Kind | What it means | Common cause |
 |---|---|---|

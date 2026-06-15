@@ -4,9 +4,11 @@ description: Create and manage invoices and their line items.
 audience: developer
 ---
 
-An invoice is a billable document sent to a customer. In Zoop, invoices always start as drafts and move through a lifecycle: `draft` → `sent` → `paid` (or `overdue`). Voiding is the permanent soft-delete — it is one-way and preserves billing history.
+Use these tools to create, update, and manage invoices — the billable documents you send to customers asking for payment.
 
-Line items fold under the invoice scope — there is no separate `read:invoice_line_items` scope. See [scopes](/developers/authentication/scopes).
+In Zoop, every invoice starts as a `draft` and moves forward through a fixed set of statuses: `draft` → `sent` → `paid` (or `overdue`). When an invoice is no longer needed, you void it — voiding hides it from the default list but keeps the billing history intact. You cannot un-void an invoice.
+
+Line items (the individual charges on an invoice) are covered by the same scope as the invoice itself — there is no separate `read:invoice_line_items` scope. See [scopes](/developers/authentication/scopes).
 
 ## Scopes
 
@@ -19,15 +21,20 @@ Line items fold under the invoice scope — there is no separate `read:invoice_l
 
 ## User actor requirement
 
-`invoices.create` and `invoices.update` require a **user actor** — a token issued to or bound to a real team member. This is because invoices record a `created_by` user ID for attribution.
+`invoices.create` and `invoices.update` require a **user actor** — meaning the token must be tied to a real Zoop team member. Zoop records that team member's ID on every invoice for attribution.
 
-Tenant-key tokens (`zoop_tk_` prefix) have no user identity and cannot create or update invoices; they will receive an `invalid_input` error. Use a user-bound API key (`zoop_uk_`) issued to a service account team member instead. See [API keys](/developers/authentication/api-keys).
+There are two types of API keys:
 
-`invoices.void` does not require a user actor and can be called by either token type.
+- **Tenant key** (`zoop_tk_` prefix) — represents the account as a whole, with no individual user identity attached. Calling `invoices.create` or `invoices.update` with a tenant key returns an `invalid_input` error.
+- **User key** (`zoop_uk_` prefix) — bound to a specific team member. Use this type for creating or updating invoices. You can issue a `zoop_uk_` key to a dedicated service account team member for automated integrations.
+
+See [API keys](/developers/authentication/api-keys) for how to issue each type.
+
+`invoices.void` does not require a user actor and works with either token type.
 
 ## Invoice lifecycle
 
-Invoices follow a status machine. The table below shows what each status means and which transitions are valid.
+An invoice can only be in one status at a time, and it can only move forward — not backward. The table below shows what each status means and which transitions are allowed.
 
 | Status | Meaning |
 |---|---|
@@ -37,7 +44,7 @@ Invoices follow a status machine. The table below shows what each status means a
 | `overdue` | Past the due date without payment. |
 | `void` | Soft-deleted. Hidden from the default list but billing history is preserved. One-way — cannot be un-voided. |
 
-Status-only transitions (for example, moving `sent` → `paid`) can be applied to any non-voided invoice via `invoices.update`. Editing any other field — notes, dates, line items, customer — is only allowed while the invoice is in `draft` status. Attempting to edit a non-draft invoice returns a `conflict` error.
+You can move a non-voided invoice to a new status at any time using `invoices.update`. However, editing any other field — notes, dates, line items, customer — is only allowed while the invoice is still in `draft` status. Trying to change those fields on a `sent` or `paid` invoice returns a `conflict` error.
 
 <Callout type="warning">
 `uncollectible`, `dunning`, `partially_refunded`, and `refunded` are Stripe-managed statuses set by payment sync triggers. You cannot write these values via the API.
@@ -47,7 +54,7 @@ Status-only transitions (for example, moving `sent` → `paid`) can be applied t
 
 ### `invoices.list`
 
-Lists invoices for the tenant, most recent first. Voided invoices are excluded unless you filter explicitly to `status: "void"`. Returns page-based results with 20 rows per page.
+Returns a list of your invoices, newest first. Voided invoices are excluded from the default results — pass `status: "void"` to see them explicitly. Results are paginated at 20 rows per page.
 
 **Scope:** `read:invoices`
 
@@ -67,7 +74,7 @@ Each item in `data` is a full invoice row. `count` is the total number of matchi
 
 ### `invoices.get`
 
-Fetches a single invoice by ID, including all scalar fields and computed totals.
+Fetches a single invoice by its ID, including all fields and computed totals (subtotal, tax, total).
 
 **Scope:** `read:invoices`
 
@@ -78,16 +85,16 @@ Fetches a single invoice by ID, including all scalar fields and computed totals.
 Returns the full invoice record. Returns `not_found` if the invoice does not exist in this tenant.
 
 <Callout type="info">
-`invoices.get` does not return line items as a nested array. The response contains invoice header fields and computed totals only. To read line items, use the invoice's `id` with the HTTP REST endpoint.
+The response includes invoice header fields and computed totals, but not the individual line items. To read line items, call the HTTP REST endpoint with the invoice `id` instead.
 </Callout>
 
 ---
 
 ### `invoices.create`
 
-Creates a draft invoice for a customer. The invoice is always created with `status: "draft"`. Totals, tax amounts, and subtotals are computed server-side from your line items — do not calculate them yourself.
+Creates a new invoice in `draft` status. You supply the customer and line items; Zoop computes the subtotal, tax, and total for you — do not calculate or pass those values yourself.
 
-**Scope:** `write:invoices` — requires a user actor.
+**Scope:** `write:invoices` — requires a user actor (a `zoop_uk_` key).
 
 <Callout type="warning">
 Creating an invoice from a quote or job ID is not supported via this tool. Supply `customer_id` and `line_items` directly. Use the HTTP REST route if you need to derive an invoice from an existing quote or job.
@@ -135,19 +142,19 @@ Creating an invoice from a quote or job ID is not supported via this tool. Suppl
   Internal or customer-facing notes, max 2,000 characters.
 </ParamField>
 
-Returns the created invoice record. The `status` will be `"draft"`. The `total`, `subtotal`, and `tax_amount` fields reflect the server-computed values.
+Returns the created invoice record. The `status` is `"draft"` and the `total`, `subtotal`, and `tax_amount` fields contain the server-computed values.
 
 ---
 
 ### `invoices.update`
 
-Partially updates an invoice. Only the fields you send are changed.
+Updates an invoice. Only the fields you include in the request are changed — you do not need to resend the entire record.
 
-**Scope:** `write:invoices` — requires a user actor.
+**Scope:** `write:invoices` — requires a user actor (a `zoop_uk_` key).
 
-Status transitions (`draft` → `sent`, `sent` → `paid`, etc.) can be applied to any non-voided invoice. All other fields — `notes`, `issued_at`, `due_at`, `customer_id`, `default_tax_rate_id`, and `line_items` — can only be changed while the invoice is in `draft` status. Sending these on a non-draft invoice returns a `conflict` error.
+You can change the `status` on any non-voided invoice. All other fields — `notes`, `issued_at`, `due_at`, `customer_id`, `default_tax_rate_id`, and `line_items` — can only be changed while the invoice is in `draft` status. Sending those fields on a non-draft invoice returns a `conflict` error.
 
-When you supply `line_items`, the existing line items are replaced wholesale and totals are recomputed. Sending `line_items: []` removes all line items.
+When you include `line_items`, the existing line items are replaced in full and totals are recomputed. Send `line_items: []` to remove all line items.
 
 <ParamField name="id" type="string (UUID)" required>
   The invoice's ID.
@@ -187,7 +194,7 @@ Returns the updated invoice record on success. Returns `not_found` if the invoic
 
 ### `invoices.void`
 
-Voids an invoice. Voiding is the soft-delete for invoices — it sets `status` to `"void"` and hides the invoice from the default list, while preserving the billing history record. This is one-way: a voided invoice cannot be un-voided.
+Voids an invoice. The invoice is hidden from the default list, but the billing history record is preserved. This action is permanent — a voided invoice cannot be un-voided.
 
 **Scope:** `write:invoices`
 
@@ -201,11 +208,11 @@ Returns `{ voided: true, id }` on success. Returns `not_found` if the invoice do
 
 ## Example: create and send an invoice
 
-The steps below walk through the full create-and-send flow for a single visit invoice.
+The steps below walk through the full create-and-send flow for a single visit invoice. Replace `zoop_uk_<your-secret>` with your own user key, and replace the UUID placeholders with real IDs from your tenant.
 
 <Steps>
   <Step title="Create the draft">
-    Call `invoices.create` with your customer ID and line items. The server computes the totals.
+    Call `invoices.create` with your `customer_id` and line items. Zoop computes the totals and returns the new invoice's `id`.
 
     ```bash
     curl -X POST https://app.zoop.example/api/mcp \
@@ -245,11 +252,11 @@ The steps below walk through the full create-and-send flow for a single visit in
       }'
     ```
 
-    The response includes the new invoice's `id` and the server-computed `subtotal`, `tax_amount`, and `total`. Hold on to the `id` — you need it for the next step.
+    The response body contains the new invoice's `id` along with the server-computed `subtotal`, `tax_amount`, and `total`. Copy the `id` — you need it in the next step.
   </Step>
 
-  <Step title="Transition to sent">
-    Call `invoices.update` with just a `status` change. This is a status-only transition, so it works even on non-draft invoices, but here the invoice is already a draft.
+  <Step title="Mark it as sent">
+    Call `invoices.update` with `status: "sent"`. Swap in the `id` from step 1. This status-only change does not require the invoice to be a draft.
 
     ```bash
     curl -X POST https://app.zoop.example/api/mcp \
@@ -291,6 +298,8 @@ A successful create response looks like:
 
 ## Example: list open invoices
 
+The request below fetches the first page of `sent` invoices — the ones that have been sent to customers but not yet paid.
+
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
@@ -312,7 +321,9 @@ curl -X POST https://app.zoop.example/api/mcp \
 
 ## Pagination
 
-`invoices.list` uses page-based pagination with 20 rows per page. Use the `count` field in the response to determine the total number of matching invoices, then increment `page` to fetch subsequent pages.
+`invoices.list` returns up to 20 invoices per request (one page). If your tenant has more than 20 matching invoices, you need to make multiple requests and stitch the results together. The response includes a `count` field — the total number of matching invoices across all pages — which lets you calculate how many pages exist. Increment `page` by one on each request until you have fetched them all.
+
+The TypeScript example below shows a simple loop:
 
 ```ts
 let page = 1
@@ -351,6 +362,8 @@ while (true) {
 ```
 
 ## Error reference
+
+Every error response includes a `kind` field. The table below covers the errors specific to invoice tools.
 
 | Error kind | When it occurs |
 |---|---|

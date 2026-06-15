@@ -4,15 +4,15 @@ description: Authorize third-party apps with OAuth 2.1, PKCE, and resource indic
 audience: developer
 ---
 
-OAuth lets your app act on behalf of a Zoop user — reading their customers, creating jobs, or sending invoices — without ever seeing their password. The user approves access through a consent screen; you get a short-lived access token and a refresh token.
+OAuth lets your app act on behalf of a Zoop user — reading their customers, creating jobs, or sending invoices — without ever seeing their password. The user approves access through a consent screen; you get a short-lived **access token** (a credential your app includes on every API request) and a **refresh token** (used to get a new access token when the first one expires).
 
-Use OAuth when your app serves multiple Zoop accounts or when you need the access to be tied to a specific user identity. If you are building a server-to-server integration that runs unattended, [API keys](/developers/authentication/api-keys) are simpler.
+Use OAuth when your app serves multiple Zoop accounts or when you need access tied to a specific user's identity. If you are building a server-to-server integration that runs unattended and does not need a user identity, [API keys](/developers/authentication/api-keys) are simpler.
 
 ## How it works
 
-Zoop uses **OAuth 2.1** with **PKCE** (Proof Key for Code Exchange). The authorization server is **Supabase** — Zoop owns the consent screen and the grant table that binds scopes to the issued token, but the actual token exchange happens against the Supabase auth endpoint.
+Zoop uses **OAuth 2.1** with **PKCE** (Proof Key for Code Exchange — a security extension that stops attackers from hijacking the authorization code in transit). The auth server is **Supabase** — Zoop owns the consent screen and the grant table, but the actual token exchange happens against the Supabase auth endpoint.
 
-The issued access token is an **ES256-signed JWT**. A custom access token hook injects `tenant_id`, `scopes`, and `role` into the claims at issuance. Zoop verifies these claims on every request without a database lookup.
+The access token is a **JWT** (JSON Web Token) — a signed string that encodes the user's identity, tenant, and allowed scopes. Zoop verifies it on every request without a database lookup. The signature algorithm is ES256.
 
 ```text
 Your app              Supabase auth             Zoop
@@ -31,13 +31,13 @@ Your app              Supabase auth             Zoop
 
 ## Prerequisites
 
-Before you can run this flow, you need:
+Before you run this flow, you need three things set up by a Zoop admin.
 
-1. **A registered OAuth client.** Contact your Zoop instance admin. They register the client via the Supabase Management API or dashboard. Registration returns a `client_id` — and a `client_secret` for confidential (server-side) clients.
+1. **A registered OAuth client.** Ask your Zoop instance admin to register one via the Supabase dashboard or Management API. You get back a `client_id`. Server-side (confidential) clients also get a `client_secret`.
 
-2. **Allowed scopes.** Zoop's scope model is default-deny. A newly registered client cannot request any scopes until a Zoop admin explicitly adds them to the `oauth_client_registrations` table. The consent screen shows exactly those registered scopes, regardless of what you put in the `scope` query parameter.
+2. **Allowed scopes.** Zoop uses a default-deny scope model — a new client has no permissions until an admin adds specific scopes to the `oauth_client_registrations` table. The consent screen shows exactly those registered scopes, regardless of what you put in the `scope` query parameter.
 
-3. **A pre-registered redirect URI.** The redirect URI your app will receive the authorization code at must be registered with the client. Unregistered URIs are rejected.
+3. **A pre-registered redirect URI.** The URL in your app where Zoop sends the user after they approve access. It must be registered with the client in advance — unregistered URIs are rejected.
 
 <Callout type="info">
 If you are building an MCP integration, the OAuth flow is the same. The token you receive can be sent directly to `POST /api/mcp` with an `Authorization: Bearer` header.
@@ -45,7 +45,7 @@ If you are building an MCP integration, the OAuth flow is the same. The token yo
 
 ## Discovery
 
-Do not hardcode the authorization server URL. Resolve it from the protected-resource metadata document first:
+Before you build any URLs, find out which authorization server your Zoop instance uses. Do not hardcode it — resolve it from the protected-resource metadata endpoint:
 
 ```bash
 GET https://app.zoop.example/.well-known/oauth-protected-resource
@@ -66,21 +66,22 @@ Response:
 The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.example`. You will need the exact `resource` string when you build the authorization URL and the token request.
 </Callout>
 
-Then fetch the Supabase authorization server metadata to get the `authorization_endpoint` and `token_endpoint`:
+The `authorization_servers` array tells you which Supabase project handles auth for this instance. Use that URL to fetch the authorization server metadata — this gives you the exact `authorization_endpoint` and `token_endpoint` you will need in the steps below:
 
 ```bash
 GET https://<project>.supabase.co/auth/v1/.well-known/oauth-authorization-server
 ```
 
-This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata including supported grants, PKCE methods, and scopes.
+This endpoint returns standard OAuth 2.0 server metadata including supported grants, PKCE methods, and scopes.
 
 ## The authorization flow
 
 <Steps>
   <Step title="Generate PKCE parameters and state">
-    PKCE (Proof Key for Code Exchange) prevents authorization code interception. You generate a random secret (`code_verifier`), hash it (`code_challenge`), and send the hash. Later, you prove you hold the original secret by sending the verifier.
+    You need two random values before you redirect the user.
 
-    `state` is a random value you bind to the user's session. You verify it in the callback to block cross-site request forgery (CSRF) attacks.
+    - **`code_verifier`** — a random secret only your server knows. You hash it into a `code_challenge` and send the hash to the authorization endpoint. Later, you prove you hold the original secret by sending the verifier to the token endpoint. This stops an attacker who intercepts the authorization code from using it.
+    - **`state`** — a random value you tie to the user's session. You check it matches in the callback to block cross-site request forgery (CSRF) attacks.
 
     ```ts
     import { randomBytes, createHash } from 'crypto'
@@ -94,11 +95,11 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     session.oauthState = state
     ```
 
-    Store `codeVerifier` and `state` server-side (signed cookie, Redis session, etc.) — they are needed in steps 3 and 4.
+    Store `codeVerifier` and `state` server-side (signed cookie, Redis session, or similar) — you need both in steps 3 and 4.
   </Step>
 
   <Step title="Redirect the user to the authorization endpoint">
-    Build the authorization URL and send the user's browser there.
+    Build the authorization URL using the `authorization_endpoint` from discovery, then redirect the user's browser to it.
 
     ```text
     GET https://<project>.supabase.co/auth/v1/oauth/authorize
@@ -146,27 +147,27 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
       The `resource` value from `/.well-known/oauth-protected-resource` (RFC 8707). Required by MCP-spec-compliant clients. Must match exactly.
     </ParamField>
 
-    Supabase validates the parameters and redirects to the Zoop consent landing page:
+    Supabase validates the parameters and redirects the user to the Zoop consent screen:
 
     ```text
     https://app.zoop.example/oauth/consent?authorization_id=<opaque_id>
     ```
 
-    If the user has multiple tenants, they pick which one to bind the grant to. If they are not signed in, they are redirected to `/login` first and returned here after.
+    If the user is not signed in, they see the login page first and are returned here after. If they have multiple Zoop tenants, they choose which one to give your app access to.
 
     <Callout type="warning">
-    One grant per (client, user). If a user re-consents for a different tenant, the previous grant is overwritten. The client loses access to the previous tenant and gains access to the new one. There are no parallel per-tenant grants for the same client and user.
+    One grant per client and user. If a user re-consents for a different tenant, the previous grant is overwritten — your app loses access to the old tenant and gains access to the new one. You cannot hold grants for multiple tenants from the same user simultaneously.
     </Callout>
   </Step>
 
   <Step title="Handle the callback">
-    After the user approves, Supabase redirects to your `redirect_uri`:
+    After the user approves on the consent screen, Supabase redirects them back to your `redirect_uri` with two query parameters:
 
     ```text
     https://your-app.example.com/callback?code=<authorization_code>&state=<your_state>
     ```
 
-    **Verify `state` before doing anything else.** Compare it to the value you stored in step 1. If they do not match, reject the request — this indicates a CSRF or authorization code injection attempt.
+    **Verify `state` before doing anything else.** Compare it to the value you stored in step 1. If they do not match, reject the request — this is a sign of a CSRF or authorization code injection attempt.
 
     ```ts
     const { code, state } = new URL(request.url).searchParams
@@ -178,11 +179,11 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     // Safe to proceed.
     ```
 
-    If the user previously granted consent for this client, the consent screen is skipped and the redirect happens immediately.
+    If the user has already approved this client before, Zoop skips the consent screen and redirects immediately.
   </Step>
 
   <Step title="Exchange the code for tokens">
-    Send the authorization code and your `code_verifier` to the token endpoint. The server verifies that the verifier hashes to the `code_challenge` sent in step 2.
+    Send the authorization code and your `code_verifier` to the token endpoint. The server checks that the verifier hashes to the `code_challenge` you sent in step 2 — this proves your app made both requests.
 
     <Tabs>
       <Tab title="Confidential client (server-side)">
@@ -215,7 +216,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
       </Tab>
     </Tabs>
 
-    The `resource` parameter (RFC 8707) must appear in both the authorization request (step 2) and this token request.
+    The `resource` parameter must appear in both the authorization request (step 2) and this token request.
 
     Successful response:
 
@@ -228,11 +229,11 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
     }
     ```
 
-    The access token expires in 3600 seconds (1 hour). Store the refresh token securely — you use it to get a new access token without repeating the full flow.
+    The access token expires in 3600 seconds (1 hour). Store the refresh token somewhere safe — you use it to get a new access token without sending the user through the browser flow again. See [Refreshing tokens](#refreshing-tokens) below.
   </Step>
 
   <Step title="Call the API">
-    Send the access token as a `Bearer` token in the `Authorization` header.
+    Send the access token in the `Authorization` header on every API request, using the `Bearer` scheme.
 
     ```bash
     curl -X POST https://app.zoop.example/api/mcp \
@@ -242,7 +243,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
     ```
 
-    The `Accept: application/json, text/event-stream` header is required — the MCP endpoint uses the streamable HTTP transport.
+    The `Accept: application/json, text/event-stream` header is required — Zoop's MCP endpoint uses the streamable HTTP transport and needs both content types declared.
 
     ```ts
     const res = await fetch('https://app.zoop.example/api/mcp', {
@@ -268,7 +269,7 @@ This endpoint is served by Supabase. It returns standard OAuth 2.0 AS metadata i
 
 ## The access token
 
-The access token is an ES256-signed JWT. You can decode it (e.g. at [jwt.io](https://jwt.io)) to inspect the claims. Zoop's verification logic validates these claims on every request.
+The access token is a JWT signed with ES256. If you want to inspect what's inside — for example, to check which tenant or scopes were granted — paste it into [jwt.io](https://jwt.io). Zoop validates these claims on every request.
 
 ```json
 {
@@ -307,7 +308,7 @@ The access token is an ES256-signed JWT. You can decode it (e.g. at [jwt.io](htt
 
 ## Refreshing tokens
 
-When the access token expires, use the refresh token to get a new one without repeating the full browser flow.
+Access tokens expire after one hour. When that happens, use the refresh token to get a new one — no browser redirect needed.
 
 <Tabs>
   <Tab title="Confidential client">
@@ -332,13 +333,13 @@ When the access token expires, use the refresh token to get a new one without re
   </Tab>
 </Tabs>
 
-A successful response is the same shape as the original token response — a new `access_token` and `expires_in`, and potentially a new `refresh_token`.
+A successful response has the same shape as the original token response — a new `access_token` and `expires_in`, and sometimes a new `refresh_token`. If you get a new refresh token, store it and discard the old one.
 
-If the refresh request returns `401` with `error: "invalid_token"`, the session has been terminated on the Supabase side (e.g. the user signed out). You must restart the full authorization flow.
+If the refresh request returns `401` with `error: "invalid_token"`, the user's session has been terminated (for example, they signed out). You need to send them through the full authorization flow again.
 
 ## Scopes
 
-Custom Zoop scopes are determined by the client's registration in `oauth_client_registrations`, not by the `scope` parameter in the authorization request. A newly registered client has no custom scopes by default — a Zoop admin must add them.
+Scopes control what your app can read or write. They are set by the client's registration in `oauth_client_registrations`, not by the `scope` parameter you send in the authorization request. A new client has no scopes by default — a Zoop admin must add them before users can grant access.
 
 Common scope sets:
 
@@ -352,6 +353,8 @@ Request only the scopes your integration actually needs. See [scopes](/developer
 
 ## Error reference
 
+These are the errors you are most likely to see from the API after you have a token.
+
 | Situation | Status | Body |
 |---|---|---|
 | Token expired | `401` | `{"error":"expired"}` — use the refresh token |
@@ -361,7 +364,7 @@ Request only the scopes your integration actually needs. See [scopes](/developer
 | Rate limited | `429` | `Retry-After` header included |
 | JWKS endpoint down | `5xx` | Retryable — Zoop rethrows JWKS infrastructure failures so you get a retryable 5xx, not a misleading 401 |
 
-Handle `5xx` responses with exponential backoff. Do not discard tokens on a `5xx` — the token may be valid and the error may be transient.
+Retry `5xx` responses with exponential backoff. Do not discard your token on a `5xx` — it may be valid and the error transient.
 
 ## Related
 

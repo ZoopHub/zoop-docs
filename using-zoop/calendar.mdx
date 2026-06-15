@@ -4,7 +4,7 @@ description: See your schedule by day, week, or month and manage events around y
 audience: end-user
 ---
 
-The calendar shows all your scheduled jobs and events in one place. Switch between day, week, month, or list views using the buttons at the top of the page. All your state lives in the URL, so you can bookmark a specific week or share a view with a coworker.
+The calendar shows all your scheduled jobs and events in one place. Switch between day, week, month, or list views using the buttons at the top of the page. You can bookmark a specific week or share a view with a coworker — the view is saved in the page address.
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/calendar/week-view.png" alt="Calendar in week view showing scheduled jobs across the week, including cabinet refinish, pressure wash, drywall patch, and trim work" />
 
@@ -60,7 +60,7 @@ Events are non-job calendar entries: meetings, time blocks, personal time, or an
 
 ## Recurring events
 
-When creating or editing an event, turn on recurrence to repeat it on a schedule. Set the RRULE pattern (daily, weekly, monthly, or a custom interval), the timezone, and the duration in minutes.
+When creating or editing an event, turn on recurrence to repeat it on a schedule. Choose how often it repeats — daily, weekly, monthly, or a custom interval — and set the timezone and duration in minutes.
 
 When you edit an event that belongs to a series, Zoop asks where to apply the change under **Apply changes to**:
 
@@ -82,11 +82,11 @@ Select **Filters** in the toolbar to narrow down what you see:
 
 You can also use the **search** field to find events by title. Results update as you type.
 
-A badge on the Filters button shows how many filters are active. Technicians see only the kind filter — their view is already scoped to their own assignments on the server.
+A badge on the **Filters** button shows how many filters are active. Technicians only see the kind filter — Zoop already limits their view to their own assignments.
 
 ## Booking holds
 
-Owner and office roles see a **Holds** button in the top-right corner with a count badge. Holds are time-slot requests that came in through your storefront — customers who picked a time but haven't been confirmed yet. Select **Holds** to open the holds inbox and accept or decline each request.
+When a customer picks a time on your storefront but you haven't confirmed it yet, that's a hold. If you're an owner or office user, you'll see a **Holds** button in the top-right corner of the calendar with a count of pending requests. Select **Holds** to open the inbox and accept or decline each one.
 
 <Callout type="info">TODO(screenshot): Holds inbox panel open with one or two pending hold requests.</Callout>
 
@@ -96,28 +96,28 @@ Your business hours control which time slots the storefront shows to customers. 
 
 To change your hours, go to [settings](/using-zoop/settings). Hours are stored per day of the week with an open and close time in your account timezone. Customers will only see slots that fall inside your open hours.
 
-## Calendar feed (ICS export)
+## Sync to Apple Calendar, Google Calendar, or Outlook
 
-You can subscribe to your Zoop schedule in Apple Calendar, Google Calendar, Outlook, or any app that supports ICS feeds.
+You can subscribe to your Zoop schedule in Apple Calendar, Google Calendar, Outlook, or any calendar app that accepts a subscription link.
 
 <Steps>
   <Step title="Go to account settings">
     Navigate to [settings](/using-zoop/settings) and find the **Calendar feed** section.
   </Step>
   <Step title="Generate the feed URL">
-    Select **Generate feed URL**. Zoop creates a private, token-secured URL for your calendar.
+    Select **Generate feed URL**. Zoop creates a private link just for your calendar.
   </Step>
   <Step title="Copy the URL">
-    Copy the URL shown. You will not see it again after leaving the page — if you lose it, generate a new one with **Rotate token**.
+    Copy the link shown. Save it somewhere safe — if you lose it, you can generate a new one with **Rotate token**, but any app using the old link will stop syncing until you re-add it.
   </Step>
   <Step title="Add it to your calendar app">
-    Paste the URL as a calendar subscription in your app of choice. Your schedule will sync automatically.
+    Paste the link as a calendar subscription in your app of choice. Your schedule will sync automatically.
   </Step>
 </Steps>
 
-<Callout type="warning">Rotating the token invalidates the old URL. Any app already subscribed with the old URL will stop receiving updates until you re-subscribe with the new URL.</Callout>
+<Callout type="warning">Rotating the token breaks the old link immediately. Any app already using it will stop syncing until you paste in the new link.</Callout>
 
-If you want to remove access entirely, select **Revoke** in the calendar feed section. This deletes the token and deactivates the feed.
+To remove access entirely, select **Revoke** in the calendar feed section. This deactivates the feed — nothing outside Zoop will be able to see your schedule.
 
 ## Related
 

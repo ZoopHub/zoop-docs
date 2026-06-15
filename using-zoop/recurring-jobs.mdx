@@ -4,7 +4,7 @@ description: Set up repeating work once — Zoop creates each visit on schedule.
 audience: end-user
 ---
 
-A **job series** is a template that Zoop uses to generate individual jobs on a schedule. You set the title, pricing, assigned techs, and recurrence rule once. Zoop then creates each visit automatically and keeps them on your [calendar](/using-zoop/calendar).
+Use a **job series** when you do the same work for a customer on a regular schedule — weekly lawn care, monthly filter changes, annual inspections. You set up the details once, and Zoop creates each visit for you automatically and puts them on your [calendar](/using-zoop/calendar).
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/recurring-jobs/series-detail-overview.png" alt="Series detail page for Monthly HOA touch-ups, showing the recurrence summary, line items, upcoming scheduled visits, and the past instances section" />
 
@@ -21,7 +21,7 @@ A **job series** is a template that Zoop uses to generate individual jobs on a s
     Below the assignment section, tap **Recurring** in the schedule toggle. The one-time date fields are replaced by the recurrence editor.
   </Step>
   <Step title="Set the schedule">
-    Pick a frequency (daily, weekly, monthly, or yearly) and an interval. For weekly rules, select which days of the week. For monthly rules, choose between same date, a specific weekday position (e.g. second Tuesday), or the last weekday of the month.
+    Pick a frequency (daily, weekly, monthly, or yearly) and an interval — for example, an interval of 2 with "weekly" means every two weeks. For weekly rules, also select which days of the week. For monthly rules, choose between same date each month, a specific weekday position (e.g. second Tuesday), or the last weekday of the month.
 
     Then set:
     - **Start date** — the date the first visit falls on.
@@ -37,13 +37,13 @@ A **job series** is a template that Zoop uses to generate individual jobs on a s
 
 ## How Zoop generates visits
 
-When you create or update a series, Zoop materializes an 8-week rolling window of individual jobs. Each generated job inherits the series title, pricing, line items, and assignments. A daily cron catches up any missed generation, so your upcoming list stays current even if a background step ran slowly.
+When you save a series, Zoop creates the next 8 weeks of visits right away. Each visit gets the series title, pricing, line items, and assigned techs automatically. Zoop checks daily and adds new visits as the window rolls forward, so your upcoming list stays current.
 
-Generated jobs start in **scheduled** status. You can open any individual visit and edit it independently without affecting the rest of the series.
+Each visit starts in **scheduled** status. You can open any individual visit and change it without affecting the rest of the series.
 
 ## View a series
 
-From the [Jobs](/using-zoop/jobs) list, tap a job that has the recurring icon. On the detail page, the schedule section shows the recurrence rule and a "View series" link. From the series detail page you can see:
+From the [Jobs](/using-zoop/jobs) list, tap any visit that belongs to the series — recurring visits show a small repeat icon next to their title. On the job detail page, find the schedule section and tap **View series**. From the series detail page you can see:
 
 - The recurrence summary (e.g. "Repeats every week on Monday, Thursday").
 - The customer linked to the series.
@@ -55,17 +55,17 @@ From the [Jobs](/using-zoop/jobs) list, tap a job that has the recurring icon. O
 
 ## Edit a series
 
-If you need to change the title, schedule, pricing, or assignments for all future visits, open any upcoming visit and tap **Edit**. You'll be asked how far the change should reach:
+To change the title, schedule, pricing, or assigned techs across future visits, open any upcoming visit and tap **Edit**. Zoop asks how far the change should reach:
 
 - **Just this occurrence** — changes only this single visit. The rest of the series is unaffected.
 - **This and future occurrences** — changes this visit and all visits from that point forward. Completed or cancelled visits before this date are left alone.
-- **All occurrences** — changes the series template. Zoop deletes future unscheduled and scheduled visits, then regenerates them from the updated template. Done or cancelled visits are preserved as historical records.
+- **All occurrences** — changes the series template. Zoop removes all upcoming visits and rebuilds them from the updated template. Done or cancelled visits are preserved as historical records.
 
 <Callout type="warning">
 Editing with "all occurrences" replaces every upcoming visit. If you've manually adjusted the time or details of individual visits that haven't happened yet, those changes will be overwritten.
 </Callout>
 
-To edit the series template directly, go to the series detail page and tap **Edit template**. This is equivalent to choosing "all occurrences" from an upcoming visit. The button only appears when at least one upcoming visit exists.
+You can also go to the series detail page and tap **Edit template** — this does the same thing as choosing "all occurrences." The button only appears when at least one upcoming visit exists.
 
 <Callout type="info">TODO(screenshot): Edit job page showing the three scope options (just this one, this and future, all occurrences).</Callout>
 
@@ -80,10 +80,10 @@ To edit the series template directly, go to the series detail page and tap **Edi
 
 ## End a series
 
-To stop new visits from being created, go to the series detail page and tap **Delete series**. Zoop caps the series end date to today, cancels every upcoming unscheduled or scheduled visit, and keeps all past completed jobs as historical records.
+To stop new visits from being created, go to the series detail page and tap **Delete series**. Zoop cancels every upcoming visit and keeps all your completed jobs as permanent records — nothing you've already done is lost.
 
 <Callout type="warning">
-Ending a series cancels all upcoming visits immediately. This cannot be undone from the UI. If you only want to pause work temporarily, consider editing individual upcoming visits to a cancelled status instead.
+Ending a series cancels all upcoming visits right away and cannot be undone. If you only need a short break, a softer option is to open each upcoming visit individually and set its status to cancelled, then leave the series intact for when work resumes.
 </Callout>
 
 ## Recurring jobs from a quote

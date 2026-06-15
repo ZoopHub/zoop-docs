@@ -4,7 +4,9 @@ description: Build on Zoop with a 65-tool MCP API, secured by API keys or OAuth 
 audience: developer
 ---
 
-Zoop's developer surface is an [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server. You send JSON-RPC 2.0 requests to a single HTTP endpoint and get back structured data about a Zoop tenant — customers, jobs, invoices, quotes, and more. This is the same tool layer the in-product Zoop AI agent uses, exposed as a stable API for your own integrations.
+This page explains how the Zoop API works and how to make your first request.
+
+Zoop's API is built on [MCP](https://modelcontextprotocol.io) (Model Context Protocol) — an open standard for calling structured tools over HTTP. You send a request to one endpoint, name the tool you want to run (for example `customers.search`), and get back structured data. This is the same tool layer the in-product Zoop AI agent uses, exposed as a stable API for your own integrations.
 
 <Callout type="info">
 There is no OpenAPI/REST spec yet. All programmatic access goes through the MCP endpoint described here.
@@ -23,9 +25,9 @@ A few examples of what the API makes possible:
 
 **Endpoint:** `POST /api/mcp`
 
-**Protocol:** MCP over streamable HTTP transport, JSON-RPC 2.0.
+There is one endpoint. Every request is a `POST` to that path — you do not need a tenant ID in the URL. The tenant your request operates on is determined by your access token, not the path.
 
-There is one endpoint. You do not need a tenant ID in the URL — the tenant a request operates on is bound to your access token, not the path.
+Requests use [JSON-RPC 2.0](https://www.jsonrpc.org/specification) format: a JSON body with a `method` field naming the action and a `params` field carrying the arguments. You will see full examples in [Making your first request](#making-your-first-request) below.
 
 The server advertises **65 tools** across **13 entities**:
 
@@ -45,11 +47,11 @@ The server advertises **65 tools** across **13 entities**:
 | Plans | list, get, create, update, cancel |
 | Tax rates | list, get, create, update, archive |
 
-Every entity follows the same five-verb shape: list or search, get one, create, update (partial patch), and a destructive verb. The full catalog with scope requirements is in [MCP tools](/developers/mcp).
+Every entity follows the same five-verb shape: list or search, get one, create, update (partial patch), and a destructive verb (void, cancel, archive, or delete). The full catalog with scope requirements is in [MCP tools](/developers/mcp).
 
 ## Authentication
 
-Every request needs an `Authorization: Bearer <token>` header. Two token types are accepted:
+Every request needs an `Authorization: Bearer <token>` header. A bearer token is a secret string your code sends to prove it has permission to act on a Zoop account. Two token types are accepted:
 
 <Columns>
 <Card title="API keys" href="/developers/authentication/api-keys">
@@ -62,24 +64,30 @@ For integrations where your users connect their own Zoop accounts. Implements OA
 
 ### Key prefixes
 
-When you issue an API key you choose the actor type:
+When you issue an API key you choose the actor type. The prefix on the key tells you which type you have:
 
 | Prefix | Actor type | Has a user identity |
 |---|---|---|
 | `zoop_uk_` | User key | Yes — writes are attributed to the issuing user |
 | `zoop_tk_` | Tenant key | No — reads and un-attributed writes only |
 
-Tools that stamp `created_by` or require a real user identity are marked **U** in the tool catalog and can only be called with a user key or an OAuth token.
+Use a **user key** when you need actions recorded against a specific person (for example, `created_by` on a new job). Use a **tenant key** for background scripts and read-only integrations.
+
+Tools that require a real user identity are marked **U** in the tool catalog and can only be called with a user key or an OAuth token.
 
 ### Scopes
 
-Both API keys and OAuth tokens carry **scopes** that restrict which tools they can call. Scopes follow a `read:<entity>` / `write:<entity>` shape — for example, `read:customers` or `write:jobs`. A token without the right scope gets a `403 insufficient_scope` response naming the missing scope.
+Scopes are permissions attached to a token that control which tools it can call. They follow a `read:<entity>` / `write:<entity>` pattern — for example, `read:customers` or `write:jobs`. You choose scopes when you create an API key in **Settings → API & MCP**.
+
+If your token is missing a required scope, you get a `403 insufficient_scope` response that names the missing scope — so you know exactly which permission to add.
 
 The full scope list is in [Authentication — scopes](/developers/authentication/scopes).
 
 ## Making your first request
 
-The example below calls `tools/list` to confirm your token works and see the available tools. Replace `zoop_uk_<secret>` with your actual API key.
+The example below calls `tools/list` — a built-in method that returns all the tools your token can access. It is a safe, read-only call you can use to confirm your token works before writing any real integration code.
+
+Replace `zoop_uk_<secret>` with your actual API key, and replace `https://app.zoop.example` with your Zoop app host.
 
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
@@ -89,9 +97,9 @@ curl -X POST https://app.zoop.example/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-A successful response returns a JSON-RPC envelope containing an array of tool definitions. If you get a `401`, your token is invalid or expired. If you get a `403`, check the scope.
+A successful response returns a JSON object containing a list of tool definitions. If you get a `401`, your token is invalid or expired. If you get a `403`, a required scope is missing — check the error message for which one.
 
-To call a specific tool, change `method` to `tools/call` and add a `params` body:
+To call a specific tool, change `method` to `tools/call` and add a `params` body. The example below searches for customers matching "Henderson":
 
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
@@ -110,12 +118,12 @@ curl -X POST https://app.zoop.example/api/mcp \
 ```
 
 <Callout type="info">
-The `Accept: application/json, text/event-stream` header is required. The MCP endpoint uses the streamable HTTP transport and expects this header on every request.
+The `Accept: application/json, text/event-stream` header is required on every request. Without it, the endpoint will reject the call. Include it exactly as shown above.
 </Callout>
 
 ## Error responses
 
-Tool failures return a JSON-RPC error result (not an HTTP error code, except for auth failures). The error `message` is human-readable. Common cases:
+Auth failures (bad token, missing scope) return standard HTTP error codes (`401`, `403`). All other tool failures return HTTP `200` with a JSON error object inside the response body — this is how JSON-RPC works, and it catches many developers off guard. Always check the response body, not just the HTTP status. The error `message` field is human-readable. Common cases:
 
 | Situation | HTTP status | Error kind |
 |---|---|---|

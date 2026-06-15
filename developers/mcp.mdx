@@ -4,39 +4,45 @@ description: Point any MCP client or AI agent at Zoop with one endpoint — POST
 audience: developer
 ---
 
-Zoop exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server so AI agents and MCP-capable clients — Claude Desktop, LangGraph, n8n, and others — can read and write your tenant's data through a stable tool catalog. This is the same tool layer the in-product Zoop AI uses, surfaced over the open MCP protocol for external integrators.
+This page explains how to connect an AI agent or MCP client to your Zoop account and start calling tools.
+
+Zoop exposes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server so AI agents and MCP-capable clients — Claude Desktop, LangGraph, n8n, and others — can read and write your Zoop data through a stable tool catalog. This is the same tool layer the in-product Zoop AI uses, now available to external integrations.
 
 ## What is MCP?
 
-MCP (Model Context Protocol) is an open protocol that lets AI agents call structured tools over HTTP using JSON-RPC 2.0. Instead of scraping a UI or parsing raw API docs, an MCP client discovers a tool catalog from the server and calls tools by name with typed inputs. The server handles auth, validation, and execution.
+MCP (Model Context Protocol) is an open standard that lets AI agents call structured tools over HTTP. Instead of scraping a UI or parsing raw API responses, an MCP client asks the server for a list of available tools, then calls them by name with typed inputs. The server handles authentication, validation, and execution.
 
 ## The endpoint
+
+All MCP calls go to one URL:
 
 ```
 POST /api/mcp
 ```
 
 <Callout type="warning">
-The base URL is environment-dependent. Do not hardcode a hostname from this page. Resolve the canonical base URL for your environment (production, staging, or local) from the `/.well-known/oauth-protected-resource` metadata document. When in doubt, start there.
+The base URL depends on your environment. Do not hardcode a hostname from this page. Look up the correct base URL for your environment (production, staging, or local) from the `/.well-known/oauth-protected-resource` discovery document. When in doubt, start there.
 </Callout>
 
-- **Protocol:** streamable HTTP transport, JSON-RPC 2.0 on the wire.
-- **Single endpoint, no tenant prefix.** There is no per-tenant URL path like `/tenantId/api/mcp`. The tenant is determined by your access token, not the URL. This means a token can only ever operate on the one tenant it was issued for.
-- **Server identity:** the server advertises itself as `zoop` and declares `tools`, `resources`, and `prompts` capabilities.
+A few things worth knowing up front:
+
+- **Single endpoint, no tenant prefix.** There is no per-tenant path like `/tenantId/api/mcp`. Your access token tells Zoop which tenant you are — so a token can only ever operate on the one tenant it was issued for.
+- **Wire format:** Zoop's MCP server uses streamable HTTP transport with JSON-RPC 2.0 messages. If you are using an MCP client library, it handles this for you automatically.
+- **Server identity:** the server identifies itself as `zoop` and supports `tools`, `resources`, and `prompts`.
 
 ## Authentication
 
-Every request must include an `Authorization` header:
+Every request to `/api/mcp` must include an `Authorization` header with a token. Think of the token as the key that proves who you are and which Zoop account you can access.
 
 ```http
 Authorization: Bearer <token>
 ```
 
-Two token shapes are accepted:
+There are two kinds of token:
 
 <Tabs>
   <Tab title="API key">
-    API keys are the simplest option for server-to-server integrations. Generate one in Zoop and pass it directly.
+    API keys are the simplest option for server-to-server integrations. Generate one in Zoop and pass it directly — no login flow required.
 
     ```http
     POST /api/mcp
@@ -46,14 +52,14 @@ Two token shapes are accepted:
     { ...json-rpc payload... }
     ```
 
-    Zoop issues two API key prefixes:
-    - `zoop_uk_` — user key, bound to a specific user and tenant. Can call tools that require a user actor.
-    - `zoop_tk_` — tenant key, a "bot" credential with no user identity. Can call read tools; cannot call write tools that require user attribution (see [User-actor requirement](#user-actor-requirement) below).
+    Zoop issues two kinds of API key, which you can tell apart by their prefix:
+    - `zoop_uk_` — a user key, tied to a specific user and tenant. Use this when your tools need to record who created or updated something.
+    - `zoop_tk_` — a tenant key, a service credential with no user identity. It can call read tools but cannot call write tools that require a user (see [User-actor requirement](#user-actor-requirement) below).
 
     See [API keys](/developers/authentication/api-keys) for how to create and manage keys.
   </Tab>
   <Tab title="OAuth access token">
-    For integrations acting on behalf of a user through a login flow, use OAuth 2.0.
+    Use OAuth 2.0 when your integration needs to act on behalf of a user who logs in through a browser flow.
 
     ```http
     POST /api/mcp
@@ -63,25 +69,25 @@ Two token shapes are accepted:
     { ...json-rpc payload... }
     ```
 
-    MCP clients that auto-configure via discovery should fetch `/.well-known/oauth-protected-resource` to locate the authorization server. The `resource` parameter ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)) is required in both the authorization request and the token request — set it to the `resource` value published in that metadata document.
+    MCP clients that support auto-discovery should fetch `/.well-known/oauth-protected-resource` to find the authorization server. The `resource` parameter is required in both the authorization request and the token request — set it to the `resource` value from that discovery document.
 
     See [OAuth](/developers/authentication/oauth) for the full flow.
   </Tab>
 </Tabs>
 
-On an auth failure the endpoint returns a JSON-RPC error envelope (not a bare HTTP 401 page) plus a `WWW-Authenticate` header pointing at the discovery document, so a compliant MCP client can auto-discover the authorization server.
+If authentication fails, the endpoint returns a structured error response (not a bare HTTP 401 page) plus a `WWW-Authenticate` header pointing at the discovery document, so a compliant MCP client can auto-discover the authorization server.
 
 ### User-actor requirement
 
-Some write tools require a **user actor** — they stamp `created_by`, `updated_by`, and assignment columns with a real user ID. A tenant-key token (`zoop_tk_`) has no user ID and cannot call those tools; they return an `invalid_input` error. Read tools work for both actor kinds.
+Some write tools require a **user actor** — meaning they record which specific user performed the action by stamping `created_by`, `updated_by`, and assignment fields with a real user ID. A tenant-key token (`zoop_tk_`) has no user ID attached, so it cannot call those tools. Attempting to do so returns an `invalid_input` error. Read tools work with both token kinds.
 
 Tools that require a user actor are marked **U** in the [tool catalog](#tool-catalog) below.
 
 ## Scopes and authorization
 
-Each tool requires specific scopes. Your token must hold the right scope or the call is denied before execution with an `insufficient_scope` error naming the missing scope.
+A scope is a permission string that controls what a token is allowed to do. Each tool requires at least one scope, and your token must include that scope or the call is denied before execution with an `insufficient_scope` error naming the missing scope.
 
-Scopes follow a `read:<entity>` / `write:<entity>` shape. `write:<entity>` is **not** a superset of `read:<entity>` — grant both if you need to read and write the same entity.
+Scopes follow a `read:<entity>` / `write:<entity>` shape. `write:<entity>` is **not** a superset of `read:<entity>` — if you need to both read and write the same entity, grant both scopes.
 
 <Callout type="info">
 Two umbrella scopes expand at verification time: `read:catalog` expands to `read:catalog_items` + `read:catalog_categories` (and the same for `write:`). `read:estimates` and `write:estimates` are legacy aliases for quotes — prefer `read:quotes` / `write:quotes` for new integrations.
@@ -89,9 +95,9 @@ Two umbrella scopes expand at verification time: `read:catalog` expands to `read
 
 See [Scopes](/developers/authentication/scopes) for the full scope catalog.
 
-## Connecting an MCP client
+## Connect an MCP client
 
-Most MCP clients accept a server config block. The minimal config you need:
+Most MCP clients accept a server config block that tells them where the server is and how to authenticate. Here is the minimal config you need:
 
 <CodeGroup>
 
@@ -124,15 +130,15 @@ Most MCP clients accept a server config block. The minimal config you need:
 
 </CodeGroup>
 
-Both blocks point the client straight at the HTTP endpoint with a `url` and an `Authorization` header. Zoop's MCP server is a streamable HTTP server — you do not need a stdio proxy such as `mcp-remote` to connect.
+Both blocks give the client a `url` and an `Authorization` header. Zoop's MCP server speaks streamable HTTP natively — you do not need a local proxy process (such as `mcp-remote`) to connect.
 
-Replace `<your-zoop-base-url>` with the canonical base URL for your environment (resolve from `/.well-known/oauth-protected-resource`). Replace `<your-api-key-or-token>` with a `zoop_uk_` or `zoop_tk_` key from [API keys](/developers/authentication/api-keys).
+Replace `<your-zoop-base-url>` with the base URL for your environment (look it up from `/.well-known/oauth-protected-resource`). Replace `<your-api-key-or-token>` with a `zoop_uk_` or `zoop_tk_` key from [API keys](/developers/authentication/api-keys).
 
-## Making JSON-RPC requests directly
+## Making requests directly with curl
 
-If you are calling the endpoint yourself (rather than through an MCP client library), here is what the wire format looks like.
+If you want to call the endpoint yourself without an MCP client library, use `curl`. The examples below show the exact request format.
 
-### Discover available tools
+### List available tools
 
 ```bash
 curl -X POST https://<your-zoop-base-url>/api/mcp \
@@ -146,7 +152,7 @@ curl -X POST https://<your-zoop-base-url>/api/mcp \
   }'
 ```
 
-The response lists every tool with its name, description, and input schema:
+The response lists every available tool with its name, description, and the fields it accepts:
 
 ```json
 {
@@ -170,7 +176,7 @@ The response lists every tool with its name, description, and input schema:
 }
 ```
 
-### Call a tool
+### Call a specific tool
 
 ```bash
 curl -X POST https://<your-zoop-base-url>/api/mcp \
@@ -190,7 +196,7 @@ curl -X POST https://<your-zoop-base-url>/api/mcp \
   }'
 ```
 
-A successful response:
+A successful response looks like this:
 
 ```json
 {
@@ -208,7 +214,7 @@ A successful response:
 }
 ```
 
-A tool failure (for example, missing scope):
+If the tool call fails — for example because your token is missing a scope — you still get an HTTP 200, but `isError` is `true`:
 
 ```json
 {
@@ -227,26 +233,28 @@ A tool failure (for example, missing scope):
 ```
 
 <Callout type="info">
-Per the MCP spec, tool errors are returned as HTTP 200 with `isError: true` in the result, not as HTTP 4xx. Only transport-level and auth-layer failures return non-200 HTTP status codes.
+Per the MCP spec, tool errors always return HTTP 200 with `isError: true` in the result body. Only transport-level and auth failures return non-200 HTTP status codes (see [Error reference](#error-reference) below).
 </Callout>
 
 ## Error reference
 
-| Kind | Meaning | Typical cause |
-|---|---|---|
-| `invalid_input` | Input failed validation, or a precondition was not met | Bad field type, missing required field, tenant-key calling a user-only tool |
-| `not_found` | The referenced row does not exist in this tenant (or is archived) | Stale ID, cross-tenant ID, already-archived target |
-| `conflict` | Request collides with current state | Duplicate unique name, illegal status transition, editing a non-draft invoice |
-| `insufficient_scope` | Token lacks a required scope | Missing `read:` or `write:` scope |
-| `internal` | Unexpected server error | Generic message — no details are leaked to the client |
+Tool errors appear in the response body with `isError: true`. The `text` field contains the error code and a short message.
 
-Auth-layer failures (before any tool runs) use standard HTTP status codes: `401` for invalid/expired/revoked tokens, `403` for wrong origin (browser CSRF check), `429` for rate limiting. Rate-limited responses include a `Retry-After` header.
+| Error code | What it means | Common cause |
+|---|---|---|
+| `invalid_input` | Input failed validation, or a precondition was not met | Wrong field type, missing required field, or a tenant-key token calling a user-only tool |
+| `not_found` | The record does not exist in this tenant (or is archived) | Stale ID, cross-tenant ID, or already-archived target |
+| `conflict` | The request collides with current state | Duplicate name, illegal status transition, or editing a non-draft invoice |
+| `insufficient_scope` | Your token is missing a required scope | Add the missing `read:` or `write:` scope to your token |
+| `internal` | Unexpected server error | No details are exposed to the client |
+
+Auth failures happen before any tool runs and use standard HTTP status codes: `401` for invalid, expired, or revoked tokens; `403` for wrong origin; `429` for rate limiting. Rate-limited responses include a `Retry-After` header.
 
 ## Tool catalog
 
-There are **65 tools** across **13 entities**. Every entity follows a five-verb shape: list or search, get, create, update, and a destructive verb (usually `archive`, but some entities diverge — see below).
+There are **65 tools** across **13 entities**. Every entity follows a five-verb pattern: list or search, get, create, update, and a destructive verb (usually `archive`, but some entities diverge — see the notes under each section).
 
-Tool names use `<entity>.<verb>` format, for example `customers.search` or `job_series.list`. **U** marks tools that require a user actor (tenant-key tokens cannot call them).
+Tool names follow the `<entity>.<verb>` format, for example `customers.search` or `job_series.list`. **U** marks tools that require a user actor — tenant-key tokens (`zoop_tk_`) cannot call them.
 
 ### Customers — `read:customers` / `write:customers`
 
@@ -286,7 +294,11 @@ Locations are a sub-resource of customers and share the customer scopes.
 
 ### Tags — `read:customers` / `write:customers`
 
-Tags are tenant-level labels that share the customer scopes. `tags.delete` is a **hard delete** — it removes the tag and all its assignments and cannot be undone.
+Tags are account-level labels that share the customer scopes.
+
+<Callout type="warning">
+`tags.delete` is a hard delete — it removes the tag and all its assignments permanently. There is no way to undo this.
+</Callout>
 
 | Tool | Scope | What it does |
 |---|---|---|
@@ -322,19 +334,19 @@ See [Jobs API](/developers/api/jobs). The destructive verb for jobs is `cancel` 
 
 ### Job series — `read:job_series` / `write:job_series`
 
-See [Job series API](/developers/api/job-series). The destructive verb is `end` — it caps the schedule and cancels future instances.
+See [Job series API](/developers/api/job-series). The destructive verb is `end` — it closes the series and cancels all future instances.
 
 | Tool | Scope | What it does |
 |---|---|---|
-| `job_series.list` | `read:job_series` | List recurring series templates. Use `jobs.list` with a `seriesId` filter for individual instances. |
+| `job_series.list` | `read:job_series` | List recurring series templates. Use `jobs.list` with a `seriesId` filter to see individual instances. |
 | `job_series.get` | `read:job_series` | Fetch one series including template line items and assignments. |
-| `job_series.create` | `write:job_series` | **U** Create a series. Accepts an RFC 5545 `rrule`, an IANA timezone, and a `dtstart`. First window is generated immediately. |
-| `job_series.update` | `write:job_series` | **U** Edit-all semantics — future instances are regenerated; completed and cancelled instances are left intact. |
+| `job_series.create` | `write:job_series` | **U** Create a series. Accepts an RFC 5545 `rrule` recurrence string, an IANA timezone name, and a `dtstart` start date. The first job window is generated immediately. |
+| `job_series.update` | `write:job_series` | **U** Updates apply to all future instances — future jobs are regenerated; completed and cancelled jobs are left intact. |
 | `job_series.end` | `write:job_series` | End the series. Caps the end date and cancels future instances. One-way. |
 
 ### Invoices — `read:invoices` / `write:invoices`
 
-See [Invoices API](/developers/api/invoices). The destructive verb is `void` — a one-way soft delete that preserves billing history.
+See [Invoices API](/developers/api/invoices). The destructive verb is `void` — it marks the invoice as void and preserves the billing history. Voiding cannot be undone.
 
 | Tool | Scope | What it does |
 |---|---|---|
@@ -346,7 +358,7 @@ See [Invoices API](/developers/api/invoices). The destructive verb is `void` —
 
 ### Quotes — `read:quotes` / `write:quotes`
 
-See [Quotes API](/developers/api/quotes). Quote writes are owner-gated — a non-owner actor is denied even with `write:quotes`.
+See [Quotes API](/developers/api/quotes). Write tools for quotes are owner-gated — even a token with `write:quotes` is denied if it is not the owner of the quote.
 
 | Tool | Scope | What it does |
 |---|---|---|
@@ -358,7 +370,7 @@ See [Quotes API](/developers/api/quotes). Quote writes are owner-gated — a non
 
 ### Catalog items — `read:catalog_items` / `write:catalog_items`
 
-See [Catalog items API](/developers/api/catalog-items). Owner-only fields (such as cost and supplier) are redacted for non-owner and tenant-key callers.
+See [Catalog items API](/developers/api/catalog-items). Cost and supplier fields are only visible to the owner — they are redacted for other users and for tenant-key tokens.
 
 | Tool | Scope | What it does |
 |---|---|---|
@@ -370,7 +382,11 @@ See [Catalog items API](/developers/api/catalog-items). Owner-only fields (such 
 
 ### Catalog categories — `read:catalog_categories` / `write:catalog_categories`
 
-See [Catalog categories API](/developers/api/catalog-categories). `catalog_categories.delete` is a **hard delete** — it re-parents children, clears items' `category_id`, and removes the row.
+See [Catalog categories API](/developers/api/catalog-categories).
+
+<Callout type="warning">
+`catalog_categories.delete` is a hard delete — it moves child categories up to the parent, clears the `category_id` on any items in the category, and removes the row permanently.
+</Callout>
 
 | Tool | Scope | What it does |
 |---|---|---|
@@ -382,13 +398,13 @@ See [Catalog categories API](/developers/api/catalog-categories). `catalog_categ
 
 ### Plans — `read:plans` / `write:plans`
 
-The destructive verb is `cancel` — plans use a status machine and cancellation is terminal.
+The destructive verb is `cancel` — cancellation is a terminal state. A cancelled plan cannot be reactivated.
 
 | Tool | Scope | What it does |
 |---|---|---|
 | `plans.list` | `read:plans` | List recurring plans (newest first). Filter by status. |
 | `plans.get` | `read:plans` | Fetch one plan including line items in sort order. |
-| `plans.create` | `write:plans` | **U** Create a plan template with a cadence rrule and at least one line item. Defines the plan only — does not charge. |
+| `plans.create` | `write:plans` | **U** Create a plan template with a recurrence cadence and at least one line item. This defines the plan only — it does not charge the customer. |
 | `plans.update` | `write:plans` | **U** Partial patch. Items replace wholesale. Customer is immutable. |
 | `plans.cancel` | `write:plans` | **U** Cancel a plan. Terminal — no resume, no refund. |
 
@@ -397,23 +413,23 @@ The destructive verb is `cancel` — plans use a status machine and cancellation
 | Tool | Scope | What it does |
 |---|---|---|
 | `tax_rates.list` | `read:tax_rates` | List tax rates including the tenant default. Pass `include_archived` to see archived rates. |
-| `tax_rates.get` | `read:tax_rates` | Fetch one rate. Stores `rate_decimal` (for example `0.0825` = 8.25%). |
-| `tax_rates.create` | `write:tax_rates` | Create a rate. Pass `rate_percentage` like `8.25`. Set `is_default` to make it the tenant default. |
+| `tax_rates.get` | `read:tax_rates` | Fetch one rate. The `rate_decimal` field stores the decimal form (for example `0.0825` = 8.25%). |
+| `tax_rates.create` | `write:tax_rates` | Create a rate. Pass `rate_percentage` as a number like `8.25`. Set `is_default: true` to make it the account default. |
 | `tax_rates.update` | `write:tax_rates` | Partial patch. `is_default` toggles the tenant default. |
 | `tax_rates.archive` | `write:tax_rates` | Soft-archive a rate. Clears the default if this was the tenant default. |
 
 ## Pagination
 
-Two pagination styles are used:
+Two pagination styles are used across the tool catalog:
 
-- **Cursor-based** (`customers.search`, `notes.list`): pass the opaque `cursor` from the previous response; read `nextCursor` and `hasMore` to continue.
-- **Page-based** (all other list tools): pass a 1-based `page` integer.
+- **Cursor-based** (`customers.search`, `notes.list`): pass the `cursor` value from the previous response to fetch the next page. Check `hasMore` to know if there are more results, and read `nextCursor` to get the value to pass next time.
+- **Page-based** (all other list tools): pass a `page` integer starting at `1`.
 
 ## What is not available yet
 
 The following are intentionally out of scope for the current version:
 
-- **Payments.** There are no payment tools. Payments, charges, Stripe state, and refunds are deferred to their own design pass.
-- **Specialized action tools.** Operations beyond core CRUD — for example `notes.pin`, quote PDF generation, invoice send, plan charge-now, tag attach/detach, and customer merge — are not yet exposed as MCP tools.
-- **Tenant administration.** No tool requires an `admin:*` scope. Tenant, billing, and credential administration is not exposed over MCP.
-- **Scopes without tools.** The `communications`, `companies`, `settings`, and `agent_sessions` scopes exist for other Zoop surfaces and do not yet back any MCP tool.
+- **Payments.** There are no payment tools. Payments, charges, Stripe state, and refunds are planned for a future release.
+- **Specialized actions.** Operations beyond core create/read/update/archive — for example `notes.pin`, quote PDF generation, invoice send, plan charge-now, tag attach/detach, and customer merge — are not yet exposed as MCP tools.
+- **Account administration.** Tenant settings, billing, and credential administration are not exposed over MCP.
+- **Scopes without tools.** The `communications`, `companies`, `settings`, and `agent_sessions` scopes exist for other Zoop surfaces and do not yet back any MCP tools.

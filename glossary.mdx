@@ -4,25 +4,23 @@ description: Plain definitions of the words Zoop uses — customers, jobs, invoi
 audience: end-user
 ---
 
-Plain definitions of the terms you will see throughout Zoop. If a word behaves differently somewhere in the product, that page will say so.
-
-## Terms
+This page defines the words Zoop uses. When you see an unfamiliar term in the product, find it here. If a word behaves differently on a specific page, that page will explain it.
 
 ### Zoop
 
-The field service management software your business runs on. Zoop connects your customers, jobs, quotes, invoices, and payments in one place. It is available in a browser and on mobile.
+The field service management software your business runs on. Zoop connects your customers, jobs, quotes, invoices, and payments in one place. It works in a browser and on mobile.
 
 ---
 
 ### Tenant
 
-Your business account in Zoop. Everything — customers, jobs, invoices, settings — is isolated to your tenant. If you run two separate businesses, each gets its own tenant. The word "tenant" is a technical term you will mostly not see in the product itself; Zoop just calls it your account or your business.
+Your business account in Zoop. Everything — customers, jobs, invoices, settings — belongs to your tenant. If you run two separate businesses, each gets its own tenant. You will mostly not see the word "tenant" in the product itself; Zoop just calls it your account or your business.
 
 ---
 
 ### Team member
 
-Anyone on your Zoop account. Every team member has one of three roles:
+Anyone you add to your Zoop account. Every team member has one of three roles:
 
 | Role | What they can do |
 |---|---|
@@ -36,7 +34,7 @@ See [Team](/using-zoop/team) for how to invite and manage team members.
 
 ### Customer
 
-A person or company you do work for. A customer can be an **individual** (first name, last name) or a **company** (company name). Each customer gets a unique customer number, and can have multiple contacts, locations, and billing profiles attached.
+A person or company you do work for. A customer can be an **individual** (first name, last name) or a **company** (company name). Each customer gets a unique customer number and can have multiple contacts, locations, and billing profiles attached.
 
 See [Customers](/using-zoop/customers).
 
@@ -44,7 +42,16 @@ See [Customers](/using-zoop/customers).
 
 ### Job
 
-A single unit of work for a customer. A job has a title, an optional description, a status (`unscheduled`, `scheduled`, `done`, or `cancelled`), and an optional scheduled start and end time. Jobs can be linked to a quote and an invoice.
+A single unit of work for a customer. A job has a title, an optional description, a start and end time, and a status that tells you where it stands:
+
+| Status | What it means |
+|---|---|
+| `unscheduled` | Created but not yet on the calendar |
+| `scheduled` | On the calendar, not yet done |
+| `done` | Completed |
+| `cancelled` | Cancelled — kept for your records |
+
+Jobs can be linked to a quote and an invoice.
 
 See [Jobs](/using-zoop/jobs).
 
@@ -60,7 +67,16 @@ See [Recurring jobs](/using-zoop/recurring-jobs).
 
 ### Quote
 
-A priced proposal you send to a customer before work begins. A quote has a status: `draft` (still building it), `quoted` (sent to the customer), `converted` (accepted and turned into a job or invoice), or `archived`. Customers can accept a quote through a shared link without needing a Zoop account.
+A priced proposal you send to a customer before work begins. A quote has a status that tells you where it stands:
+
+| Status | What it means |
+|---|---|
+| `draft` | Still building it — not sent yet |
+| `quoted` | Sent to the customer |
+| `converted` | Accepted and turned into a job or invoice |
+| `archived` | Closed without converting |
+
+Customers can accept a quote through a shared link — they do not need a Zoop account.
 
 See [Quotes](/using-zoop/quotes).
 
@@ -68,7 +84,16 @@ See [Quotes](/using-zoop/quotes).
 
 ### Invoice
 
-A request for payment sent to a customer after (or during) work. An invoice is independent of any job or quote — it can reference both, either, or neither. Statuses: `draft`, `sent`, `processing` (payment received and being confirmed), `paid`, `overdue`, `void`. Invoices are sent by email or SMS and can be paid online through a payment link.
+A request for payment you send to a customer after (or during) work. An invoice can reference a job, a quote, both, or neither — they are independent records. Invoices go out by email or SMS, and customers pay through a link — no login required. Here is what each status means:
+
+| Status | What it means |
+|---|---|
+| `draft` | Still building it — not sent yet |
+| `sent` | Sent to the customer, payment not yet received |
+| `processing` | Payment received and being confirmed |
+| `paid` | Fully paid |
+| `overdue` | Past due date, still unpaid |
+| `void` | Cancelled — kept for your records |
 
 See [Invoices](/using-zoop/invoices).
 
@@ -76,7 +101,7 @@ See [Invoices](/using-zoop/invoices).
 
 ### Plan
 
-A recurring billing agreement with a customer. A plan runs on a schedule (weekly, monthly, annually, or any custom cadence) and generates invoices automatically. Plans can optionally charge the customer's saved payment method without them needing to act each cycle.
+A recurring billing agreement with a customer. A plan runs on a schedule — weekly, monthly, annually, or any cadence you choose — and generates invoices automatically. If your customer has a saved payment method on file, Zoop can charge it each cycle without them needing to do anything.
 
 See [Recurring billing](/using-zoop/recurring-billing).
 
@@ -102,7 +127,7 @@ See [Team](/using-zoop/team).
 
 ### Storefront
 
-Your public-facing business page, hosted by Zoop at your account URL. It shows your business name, contact info, service hours, service area, and the services you offer. If you turn on the booking widget, customers can request appointments directly from the storefront.
+Your public-facing business page, hosted by Zoop. It shows your business name, contact info, service hours, service area, and the services you offer. If you turn on the booking widget in **Settings → Storefront**, customers can request appointments directly from the page.
 
 See [Storefront](/using-zoop/storefront).
 
@@ -110,7 +135,7 @@ See [Storefront](/using-zoop/storefront).
 
 ### Customer portal
 
-A private, token-protected page where a specific customer can view their invoices, pay outstanding balances, and manage their saved payment methods. You share a unique link with each customer — they do not need a Zoop account to use it.
+A private page where one specific customer can view their invoices, pay outstanding balances, and manage their saved payment methods. Zoop gives each customer their own unique link — they do not need a Zoop account to use it.
 
 See [Customer portal](/using-zoop/customer-portal).
 
@@ -118,7 +143,7 @@ See [Customer portal](/using-zoop/customer-portal).
 
 ### Dispatch
 
-The owner and office view for assigning jobs to team members across a day. The dispatch board shows who is working, what they are doing, and where. Techs have their own route view; dispatch is the management surface above it.
+The view that owners and office members use to assign jobs to team members across a day. The dispatch board shows who is working, what they are assigned to, and where. Techs see their own route view — dispatch is the scheduling surface above it.
 
 See [Dispatch](/using-zoop/dispatch).
 
@@ -126,7 +151,7 @@ See [Dispatch](/using-zoop/dispatch).
 
 ### Route
 
-A tech's ordered list of stops for a given day — jobs and calendar events in the sequence they plan to visit them. Routes can be reordered manually. The system can flag stops that are at risk of running late.
+A tech's ordered list of stops for a given day — their jobs and calendar events in the sequence they plan to visit them. Routes can be reordered by dragging. Zoop flags any stop that looks at risk of running late.
 
 See [Dispatch](/using-zoop/dispatch).
 
@@ -134,7 +159,7 @@ See [Dispatch](/using-zoop/dispatch).
 
 ### Note
 
-A text record attached to a customer, job, quote, or other subject. Notes can be pinned, versioned (every edit is saved as a revision), and created by a team member or by Zoop's AI agent. Notes are internal — customers do not see them.
+A text record attached to a customer, job, quote, or other subject. Notes are internal — customers never see them. You can pin a note so it stays at the top, and Zoop saves every edit as a revision so nothing is lost. Zoop's AI agent can also create notes automatically.
 
 See [Notes](/using-zoop/notes).
 
@@ -142,7 +167,7 @@ See [Notes](/using-zoop/notes).
 
 ### Tax rate
 
-A named percentage (for example, 8.25%) that you apply to invoice line items. You define tax rates once in settings and then select them when building invoices or plans. Multiple tax rates can be active at the same time.
+A named percentage — for example, "State sales tax 8.25%" — that you apply to line items on invoices and plans. You set up tax rates once in **Settings → Tax rates**, then select them when building an invoice or plan. You can have more than one tax rate active at the same time.
 
 See [Settings](/using-zoop/settings).
 
@@ -150,7 +175,7 @@ See [Settings](/using-zoop/settings).
 
 ### MCP
 
-Model Context Protocol — an open standard that lets AI clients (Claude Desktop, LangGraph, and others) connect to Zoop and read or write your data through a set of defined tools. Zoop's MCP server is the same tool layer the in-product AI agent uses, exposed for external integrators. Access requires an API key or OAuth token with the appropriate scopes.
+Model Context Protocol — an open standard that lets AI tools (such as Claude Desktop) connect to Zoop and read or write your data. If you are not building an integration, you will not need this. For developers: Zoop's MCP server exposes the same tool layer the in-product AI agent uses. Access requires an API key or OAuth token with the appropriate scopes.
 
 See [MCP](/developers/mcp).
 
@@ -158,7 +183,7 @@ See [MCP](/developers/mcp).
 
 ### Scope
 
-A permission that controls what an API key or OAuth token is allowed to do. Scopes follow a `read:<entity>` / `write:<entity>` pattern — for example, `read:jobs` lets a token list and view jobs, while `write:jobs` lets it create and update them. A token can only do what its scopes allow.
+A permission that controls what an API key or OAuth token is allowed to do. If you are not building an integration, you will not need to set scopes. For developers: scopes follow a `read:<entity>` / `write:<entity>` pattern — for example, `read:jobs` lets a token list and view jobs, while `write:jobs` lets it create and update them. A token can only do what its scopes allow.
 
 See [Scopes](/developers/authentication/scopes).
 
@@ -166,11 +191,11 @@ See [Scopes](/developers/authentication/scopes).
 
 ### API key
 
-A long-lived credential that lets an external script or tool authenticate with Zoop without a browser login. Zoop issues two kinds:
+A long-lived credential that lets an external script or tool connect to Zoop without signing in through a browser. Most users will not need one. If you are building an integration, Zoop issues two kinds:
 
-- **User key** (`zoop_uk_…`) — acts as the team member who created it. Required for any action that records who made a change.
-- **Tenant key** (`zoop_tk_…`) — acts as the account itself, with no individual user attached. Suited for read-heavy or reporting integrations.
+- **User key** (`zoop_uk_…`) — acts as the team member who created it. Use this for actions that need to record who made a change.
+- **Tenant key** (`zoop_tk_…`) — acts as the account itself, with no individual user attached. Use this for read-heavy or reporting integrations.
 
-Keys are created in **Settings → API & MCP** and require the owner role. The plaintext key is shown once at creation and cannot be retrieved again.
+Create keys in **Settings → API & MCP**. You need the owner role to do this. Zoop shows you the key once when you create it — copy it then, because you cannot retrieve it again.
 
 See [API keys](/developers/authentication/api-keys).

@@ -4,13 +4,20 @@ description: Define recurring jobs that generate instances on a schedule.
 audience: developer
 ---
 
-A job series is a recurring-job template. You define the schedule once — as an RFC 5545 `rrule`, an IANA timezone, and a start date — and Zoop materializes individual job instances from it. The instances live in the `jobs` table and have their own tools; the series tools manage the template.
+Use this page to create and manage recurring job schedules through the Zoop API. It covers all four `job_series` tools, a complete working example, and a reference for errors.
 
-Think of a series as the blueprint and the generated jobs as the copies. When you update a series, Zoop regenerates the future copies from the updated blueprint. When you end a series, it stops generating new copies and cancels the pending ones.
+A job series is a recurring-job template. You define the schedule once and Zoop generates the individual job instances automatically. Think of the series as the blueprint and the generated jobs as the copies.
+
+- **Series template** — the schedule, title, line items, and team assignments. Managed with `job_series.*` tools.
+- **Job instances** — the individual jobs Zoop generates from the template. Managed with [`jobs.*`](/developers/api/jobs) tools.
+
+When you update a series, Zoop regenerates all future instances from the updated template. When you end a series, it stops generating new instances and cancels the pending ones.
 
 For the end-user view of how recurring jobs work in the product, see [recurring jobs](/using-zoop/recurring-jobs).
 
 ## Scopes
+
+Scopes control what your API token is allowed to do. You request them when you create an API key in Zoop under **Settings > API keys**.
 
 | Scope | Grants |
 |---|---|
@@ -19,13 +26,15 @@ For the end-user view of how recurring jobs work in the product, see [recurring 
 
 `write:job_series` does not include `read:job_series`. Grant both if your integration needs to read and write.
 
-## User actor requirement
+## Who can create and update a series
 
-`job_series.create` and `job_series.update` require a **user actor** — a token issued to or bound to a real team member. Tenant-key tokens (`zoop_tk_` prefix) have no user identity and cannot author or mutate a series; they will receive an `invalid_input` error.
+`job_series.create` and `job_series.update` require a **user-bound token** — an API key tied to a real Zoop team member (`zoop_uk_` prefix). These tokens carry an identity, which is required to author a series.
 
-`job_series.end` does not require a user actor; either actor kind can end a series.
+Tenant-key tokens (`zoop_tk_` prefix) have no user identity and will receive an `invalid_input` error on those two calls.
 
-If you need to write series from an automated pipeline, use a user-bound API key (`zoop_uk_`) issued to a service account team member. See [API keys](/developers/authentication/api-keys).
+`job_series.end` has no such restriction — either token type can end a series.
+
+If you need to write series from an automated pipeline (no human in the loop), create a dedicated service-account team member in Zoop and issue a `zoop_uk_` key for that account. See [API keys](/developers/authentication/api-keys).
 
 ## Tools
 
@@ -65,26 +74,30 @@ Returns the full series record with `job_series_line_items` and `job_series_assi
 
 ### `job_series.create`
 
-Creates a recurring job series. Zoop attempts to generate the first window of job instances immediately after the series is saved.
+Creates a recurring job series. After saving, Zoop immediately tries to generate the first batch of job instances so they are ready to use.
 
-**Scope:** `write:job_series` — requires a user actor.
+**Scope:** `write:job_series` — requires a user-bound token (`zoop_uk_`).
 
 <ParamField name="title" type="string" required>
   Series title, max 200 characters.
 </ParamField>
 
 <ParamField name="rrule" type="string" required>
-  Recurrence rule in RFC 5545 format. `FREQ` must be one of `DAILY`, `WEEKLY`, `MONTHLY`, or `YEARLY`. Sub-daily frequencies (`BYHOUR`, `BYMINUTE`, `BYSECOND`) are not allowed. If you include `COUNT`, it must be between 1 and 366. If you include `UNTIL`, it must be within 5 years of today.
+  The recurrence rule string (RFC 5545 iCalendar format) that defines how often jobs repeat. `FREQ` must be one of `DAILY`, `WEEKLY`, `MONTHLY`, or `YEARLY`. Sub-daily frequencies (`BYHOUR`, `BYMINUTE`, `BYSECOND`) are not allowed. If you include `COUNT`, it must be between 1 and 366. If you include `UNTIL`, it must be within 5 years of today.
 
-  Example: `FREQ=WEEKLY;BYDAY=MO` (every Monday).
+  Example: `FREQ=WEEKLY;BYDAY=MO` — generates a job every Monday.
+
+  You can use a tool like [rrule.js playground](https://jakubroztocil.github.io/rrule/) to build and test rules before passing them here.
 </ParamField>
 
 <ParamField name="timezone" type="string" required>
-  IANA timezone name for the schedule — for example, `America/Los_Angeles` or `America/New_York`. The value must be recognized by the platform's `Intl.DateTimeFormat` API. Invalid timezone strings are rejected.
+  IANA timezone name for the schedule — for example, `America/Los_Angeles` or `America/New_York`. This controls what "Monday" means: a job scheduled on Monday Pacific time fires at midnight Pacific, not UTC. Invalid timezone strings are rejected.
+
+  See the [IANA tz database](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for valid names.
 </ParamField>
 
 <ParamField name="dtstart" type="string (YYYY-MM-DD)" required>
-  The date the series starts, in `YYYY-MM-DD` format. This anchors the recurrence rule — it is the first possible date an instance can be generated on. It cannot be changed after the series is created.
+  The date the series starts, in `YYYY-MM-DD` format (for example, `2026-07-07`). This anchors the recurrence rule — it is the first possible date a job instance can be generated on. Cannot be changed after the series is created.
 </ParamField>
 
 <ParamField name="customer_id" type="string (UUID) or null">
@@ -133,7 +146,7 @@ Creates a recurring job series. Zoop attempts to generate the first window of jo
   Team member IDs to assign to each generated job. Every ID must be a member of your tenant. Defaults to an empty array.
 </ParamField>
 
-Returns the created series record. Zoop attempts to generate the first window of job instances synchronously — they are usually available via `jobs.list` immediately after a successful call. If materialization fails (for example, a transient database error), the series is still created and a background cron will generate the instances shortly after.
+Returns the created series record. Zoop generates the first window of job instances synchronously — they are usually available via `jobs.list` immediately after a successful call. If that first generation step fails (for example, a transient database error), the series is still created and a background job will generate the instances shortly after.
 
 ---
 
@@ -141,11 +154,11 @@ Returns the created series record. Zoop attempts to generate the first window of
 
 Updates a recurring job series. This is an **edit-all** operation: changes apply to the whole series template, not just future occurrences.
 
-**Scope:** `write:job_series` — requires a user actor.
+**Scope:** `write:job_series` — requires a user-bound token (`zoop_uk_`).
 
-After a successful update, Zoop cancels all future `unscheduled` and `scheduled` job instances and regenerates them from the updated template. Jobs with status `done` or `cancelled` are left intact — they are historical record.
+After a successful update, Zoop cancels all future `unscheduled` and `scheduled` job instances and regenerates them from the updated template. Jobs with status `done` or `cancelled` are left intact — they are the historical record and cannot be regenerated.
 
-`dtstart` is immutable and cannot be changed after creation. Passing it returns an `invalid_input` error.
+`dtstart` cannot be changed after a series is created. Passing it to `update` returns an `invalid_input` error. To use a different start date, end the existing series and create a new one.
 
 <ParamField name="id" type="string (UUID)" required>
   The series ID.
@@ -201,16 +214,20 @@ Returns the updated series record on success. Returns `not_found` if the series 
 
 ### `job_series.end`
 
-Ends a recurring job series. This is the destructive verb for series — there is no archive or delete.
+Permanently stops a recurring job series. There is no archive or soft-delete — once ended, a series cannot be resumed.
 
 **Scope:** `write:job_series`
+
+<Callout type="warning">
+  Ending a series is one-way. If you only want to pause generation temporarily, use `job_series.update` to set `ends_on` to a future date instead — you can move it again later.
+</Callout>
 
 Ending a series does two things in sequence:
 
 1. Sets `ends_on` to today, so no further instances are generated.
 2. Cancels every future `unscheduled` and `scheduled` instance that has a `scheduled_start` from now onward.
 
-Jobs with status `done` or `cancelled` are untouched. Ending a series is **one-way** — you cannot resume it.
+Jobs with status `done` or `cancelled` are untouched — completed work is preserved.
 
 <ParamField name="id" type="string (UUID)" required>
   The series ID.
@@ -222,7 +239,7 @@ Returns `{ ended: true, id }` on success. Returns `not_found` if the series does
 
 ## Example: create a weekly recurring job
 
-The example below creates a series that generates a job every Monday starting 2026-07-07, in the Pacific timezone, assigned to one team member.
+The example below creates a series that generates a job every Monday starting 2026-07-07, in the Pacific timezone, assigned to one team member. Swap in your real API key, customer ID, and team member ID before running it.
 
 <Tabs>
   <Tab title="cURL">
@@ -339,23 +356,27 @@ const instancesResponse = await fetch('https://app.zoop.example/api/mcp', {
 
 ## Key concepts
 
+These are the common points of confusion when first working with this API.
+
 ### Series vs. instances
 
 The `job_series` tools manage the **template** — the schedule definition, title, line items, and assignments. The generated jobs are regular `jobs` rows accessed through the [`jobs`](/developers/api/jobs) tools. Use `jobs.list` with the `seriesId` filter to retrieve all instances for a series.
 
 ### `dtstart` is immutable
 
-Once a series is created, its `dtstart` cannot be changed. If you need a different start date, end the existing series and create a new one.
+Once a series is created, `dtstart` cannot be changed. If you need a different start date, end the existing series and create a new one.
 
-### Update semantics
+### Update semantics — edit-all, not "this and future"
 
-`job_series.update` uses **edit-all** semantics — every change applies to the whole series. This is different from the in-product editor, which offers a "this and future" mode. The MCP tool does not support that split; it only supports edit-all.
+`job_series.update` applies every change to the whole series template, then regenerates all future instances. This differs from the Zoop product UI, which lets users choose "this and future." The API only supports edit-all.
 
-When you update `line_items` or `assigned_user_ids`, the new value **replaces** the current list entirely. Omit those fields to leave them unchanged.
+When you update `line_items` or `assigned_user_ids`, the new value **replaces** the entire current list. Omit those fields to leave them unchanged.
 
-### Ending a series
+### Ending a series vs. pausing it
 
-`job_series.end` is one-way and cannot be undone. It caps `ends_on` at today and cancels all pending instances. If you only want to pause generation temporarily, update `ends_on` to a future date instead — that still allows future instances up to that date.
+`job_series.end` is one-way. It caps `ends_on` at today and cancels all pending instances.
+
+If you only want to pause generation temporarily, use `job_series.update` to set `ends_on` to a future date instead — jobs still generate up to that date, and you can move the date again later.
 
 ---
 
@@ -364,8 +385,8 @@ When you update `line_items` or `assigned_user_ids`, the new value **replaces** 
 | Error kind | Meaning |
 |---|---|
 | `not_found` | The series ID does not exist in this tenant. |
-| `invalid_input` | A required field is missing, the `rrule` shape is invalid, the timezone is not a recognized IANA name, `dtstart` was passed to `update`, the caller is a tenant actor on `create` or `update`, or a referenced `customer_id`, `catalog_item_id`, or user ID does not belong to this tenant. |
-| `insufficient_scope` | The token does not hold `read:job_series` or `write:job_series` as required. |
+| `invalid_input` | A required field is missing; the `rrule` is malformed; the timezone is not a recognized IANA name; `dtstart` was passed to `update`; the token is a tenant key (`zoop_tk_`) on `create` or `update`; or a referenced `customer_id`, `catalog_item_id`, or user ID does not belong to this tenant. |
+| `insufficient_scope` | The token does not have `read:job_series` or `write:job_series` as required. |
 | `conflict` | A conflicting series already exists (unique constraint). |
 | `internal` | An unexpected server error — details are not returned to the client. |
 
@@ -373,9 +394,9 @@ See [errors](/developers/errors) for the full error reference and HTTP status co
 
 ---
 
-## Pagination
+## Paginating through all series
 
-`job_series.list` uses page-based pagination. Pass `page` (1-based) to advance through results. The response includes `count` (total matching rows), `page` (current page), and `limit` (page size, 20).
+`job_series.list` returns up to 20 series per call. To fetch more, pass `page` (starting at `1`) to step through results. The response tells you how many total series exist (`count`), which page you are on (`page`), and the page size (`limit`, always 20).
 
 ```ts
 let page = 1

@@ -4,7 +4,9 @@ description: Invite your team, set what they can do, and group techs into crews.
 audience: end-user
 ---
 
-Team management lives under **Team** in the sidebar. From here you invite teammates, change their roles, and organise them into crews.
+This page covers how to invite people to your Zoop account, control what they can do, and group them into crews for easy job assignment.
+
+Team management lives under **Team** in the sidebar. From here you invite teammates, change their roles, and organize them into crews.
 
 Only owners can access the Team and Crews pages. Office and tech members see a "no access" notice if they navigate there directly.
 
@@ -14,7 +16,7 @@ Only owners can access the Team and Crews pages. Office and tech members see a "
 
 ## Roles
 
-Zoop has three roles. Every person you invite gets exactly one.
+A role controls what a person can see and do in Zoop. Every person you invite gets exactly one role.
 
 | Role | What they can do |
 |------|-----------------|
@@ -22,10 +24,10 @@ Zoop has three roles. Every person you invite gets exactly one.
 | **Office** | Operational access — schedule, customers, jobs. No financials, no settings. |
 | **Tech** | Own assigned jobs only. No customer list, no settings. |
 
-The invite form defaults to **Tech** (least privilege). Change the role before sending if the person needs broader access.
+The invite form defaults to **Tech** — the most limited role. Change the role before sending if the person needs broader access.
 
 <Callout type="warning">
-Every tenant must have at least one owner at all times. Zoop prevents you from demoting or removing the last remaining owner.
+Every Zoop account must have at least one owner at all times. Zoop prevents you from demoting or removing the last remaining owner.
 </Callout>
 
 ---
@@ -66,7 +68,7 @@ From the pending-invites table you can:
 
 ## Change a member's role
 
-Find the person in the **Members** table and use the role dropdown in their row. The change takes effect immediately — no confirmation dialog. If something goes wrong, Zoop shows an error toast and restores the previous role in the table.
+Find the person in the **Members** table and use the role dropdown in their row. The change takes effect immediately — no confirmation step. If something goes wrong, Zoop shows an error message and restores the previous role in the table.
 
 You cannot change your own role if you are the only owner of the account.
 
@@ -74,7 +76,7 @@ You cannot change your own role if you are the only owner of the account.
 
 ## Remove a member
 
-Select the remove icon (the circle-with-slash) on the member's row and confirm. The person loses access immediately. You can invite them back at any time.
+Select the remove icon (the circle-with-slash) on the member's row and confirm. The person loses access immediately. Their past work stays in Zoop — removing them only stops their access. You can invite them back at any time.
 
 You cannot remove the last owner of the account.
 
@@ -125,7 +127,7 @@ On the crew's row, select the pencil icon, edit the name, and select **Save**. T
 
 ### Archive a crew
 
-Archiving hides a crew from the dispatch picker without deleting its history. Select the circle-with-slash icon on the crew's row and confirm. Archived jobs that already used the crew retain the crew name.
+Archiving is safe — it hides a crew from the dispatch picker without deleting any history. Select the circle-with-slash icon on the crew's row and confirm. Jobs that already used the crew keep the crew name in their history.
 
 To see archived crews, turn on the **Show archived** toggle above the table.
 

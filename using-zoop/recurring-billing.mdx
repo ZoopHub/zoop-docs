@@ -4,13 +4,15 @@ description: Charge customers automatically on a schedule with subscription plan
 audience: end-user
 ---
 
-A plan is a reusable billing template tied to one customer. You define the cadence, the line items, and optionally a card to charge. Zoop generates each invoice automatically and — if auto-pay is set up — charges the card on file without you lifting a finger.
+Use recurring billing when you charge the same customer on a regular schedule — for example, a monthly lawn care contract or a quarterly HVAC service agreement.
+
+A plan is a saved billing template tied to one customer. You set how often to bill (weekly, monthly, etc.), what to charge for, and optionally a card to charge. Zoop then creates and sends each invoice on schedule — and if auto-pay is set up, collects payment automatically too.
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/recurring-billing/plans-list.png" alt="Plans list showing three active plans with cadence, next run date, lead time, status, and total per run columns" />
 
 ## How plans work
 
-When you create a plan, Zoop calculates the first invoice date from the cadence you choose. On each scheduled run, it snapshots your current line items into a new invoice, sends it to the customer (the same way as a manual invoice), and — if auto-pay is on — charges the card on file automatically.
+When you create a plan, Zoop calculates the first invoice date from the billing frequency you choose. On each scheduled run, it creates a new invoice from your line items, sends it to the customer (the same way a manual invoice goes out), and — if auto-pay is on — charges the card on file automatically.
 
 The plan keeps a full history of every invoice it has generated. You can see it on the plan detail page.
 
@@ -26,7 +28,7 @@ The plan keeps a full history of every invoice it has generated. You can see it 
   <Step title="Give it a title">
     Use something descriptive, like "Monthly lawn mow" or "Quarterly HVAC service". This appears on every invoice the plan generates.
   </Step>
-  <Step title="Set the cadence">
+  <Step title="Set the billing frequency">
     Choose how often Zoop should bill. The preset options are:
 
     - Weekly
@@ -35,10 +37,10 @@ The plan keeps a full history of every invoice it has generated. You can see it 
     - Quarterly
     - Annually
 
-    If none of those fit, switch to **Advanced** and enter a raw RRULE string (for example, `FREQ=WEEKLY;BYDAY=MO,WE,FR`). Most plans don't need this.
+    If none of those fit, switch to **Advanced** and enter a custom schedule using an RRULE string (for example, `FREQ=WEEKLY;BYDAY=MO,WE,FR` bills every Monday, Wednesday, and Friday). Most plans don't need this.
   </Step>
   <Step title="Set a lead time (optional)">
-    Lead time tells Zoop to generate the invoice a number of days *before* the cadence date. For example, a lead time of 7 means the invoice arrives a week early, giving you time to review it before the period begins. Leave it at 0 to generate on the day itself.
+    Lead time tells Zoop to create the invoice a number of days *before* the billing date. For example, a lead time of 7 means the invoice lands a week early — useful if you want to review it before it goes out. Leave it at 0 to create the invoice on the billing date itself.
   </Step>
   <Step title="Add line items">
     Add every service or product that should appear on each invoice. You can pull from your pricebook or enter items manually. The total per run shows at the bottom of the form.
@@ -58,10 +60,10 @@ The plan keeps a full history of every invoice it has generated. You can see it 
 
 ## Set up auto-pay
 
-Auto-pay lets Zoop charge the customer's card automatically each time an invoice is generated. You need two things before you can turn it on:
+Auto-pay lets Zoop charge the customer's saved card automatically each time an invoice is created — no manual collection needed. Before you can turn it on, two things must be in place:
 
-1. **A card on file for the customer.** Cards are managed on the customer's profile page. See [Customers](/using-zoop/customers).
-2. **Auto-pay consent.** The customer must consent to being charged automatically. Zoop captures this through a formal attestation flow that creates a mandate tied to the plan.
+1. **A card on file for the customer.** You save a card on the customer's profile page. See [Customers](/using-zoop/customers).
+2. **The customer's consent to be charged automatically.** Zoop walks you through a short confirmation step where you record that the customer agreed. This creates a billing authorization tied to the plan.
 
 <Callout type="warning">
 Auto-pay requires your business name to be set in Zoop settings. The mandate shown to the customer includes your business name; if it isn't set, the "Set up auto-pay" option is disabled. Add a business name in [Settings](/using-zoop/settings) first.
@@ -74,7 +76,7 @@ Auto-pay requires your business name to be set in Zoop settings. The mandate sho
     Go to **Plans** and open the plan you want to configure.
   </Step>
   <Step title="Set up auto-pay">
-    In the **Auto-pay** section, select **Set up auto-pay**. Zoop opens an attestation dialog that presents the mandate terms. Confirm on the customer's behalf. Once confirmed, auto-pay is active and Zoop will charge the card on file on each billing run.
+    In the **Auto-pay** section, select **Set up auto-pay**. Zoop shows a confirmation dialog with the terms the customer agreed to. Confirm on the customer's behalf. Once confirmed, auto-pay is active and Zoop will charge the card on file on each billing run.
   </Step>
 </Steps>
 
@@ -84,16 +86,16 @@ You can also set up auto-pay from the plan editor: open **Edit plan**, pick a pa
 
 <Callout type="info">TODO(screenshot): Auto-pay status card on the plan detail page showing "Auto-pay is on" with card brand and last 4 digits.</Callout>
 
-### What auto-pay requires at run time
+### When auto-pay charges the card
 
-Zoop charges the card automatically only when all of the following are true at the moment the invoice is generated:
+Zoop charges the card automatically only when all of the following are true at the moment the invoice is created:
 
-- The plan's auto-charge flag is on.
+- Auto-charge is turned on for the plan.
 - A payment method is selected on the plan.
-- An active, non-revoked auto-pay consent exists for that customer and plan.
-- The payment method is an active Stripe card with a processor mandate ID captured at consent time.
+- The customer's billing consent is active and has not been revoked.
+- The saved card is valid and was authorized at the time consent was captured.
 
-If any of those conditions aren't met, Zoop still generates and sends the invoice — the customer just pays manually via the invoice link.
+If any of those conditions aren't met, Zoop still creates and sends the invoice — the customer just pays manually via the invoice link.
 
 ## Manage an active plan
 
@@ -109,7 +111,7 @@ This option is available only when the plan is active.
 
 ### Skip next
 
-Skips the upcoming billing period. Zoop won't generate an invoice for that period, and the plan resumes its normal cadence after that. Zoop asks you to confirm because the period cannot be recovered.
+Skips the upcoming billing period. Zoop won't create an invoice for that period, and the plan resumes its normal schedule after that. Zoop asks you to confirm — a skipped period can't be undone, but the plan itself keeps running.
 
 This option is available only when the plan is active.
 

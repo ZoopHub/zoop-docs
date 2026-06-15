@@ -4,7 +4,7 @@ description: What your customers see — a passwordless page to view and pay inv
 audience: end-user
 ---
 
-The customer portal is a private web page you send to each customer. It requires no account or password — the link itself is the key. From the portal, customers can view their invoice history, pay outstanding invoices, save a card, and manage auto-pay. You control who has access.
+The customer portal is a private web page you send to each customer so they can view and pay their invoices on their own. There is no account or password — the link itself is the key. Customers can see their invoice history, pay outstanding invoices, save a card, and manage auto-pay. You control who gets access and can turn it off at any time.
 
 <Callout type="info">
 TODO(screenshot): customer portal home — header with business name/logo, outstanding quotes section, past invoices list, saved payment methods, and auto-pay section.
@@ -35,14 +35,14 @@ Once paid, the invoice page shows a "Paid on [date]" banner with a link to the r
 
 ### How payment works on the invoice page
 
-The pay block adapts based on whether you have Stripe connected and whether you've set payment instructions:
+What the customer sees on the pay block depends on whether you've connected Zoop to Stripe (to accept cards online) and whether you've added payment instructions (such as "Send a check to…"):
 
-| Stripe connected | Payment instructions set | What the customer sees |
+| Online payments (Stripe) | Payment instructions set | What the customer sees |
 | --- | --- | --- |
-| Yes | No | "Pay now" button only |
-| Yes | Yes | "Pay now" button + collapsible "Or pay offline" section |
-| No | Yes | Instructions only — no online payment |
-| No | No | A note to contact you directly |
+| Connected | No | "Pay now" button only |
+| Connected | Yes | "Pay now" button + collapsible "Or pay offline" section |
+| Not connected | Yes | Instructions only — no online payment |
+| Not connected | No | A note to contact you directly |
 
 When the customer pays online, they can optionally check:
 
@@ -55,7 +55,7 @@ TODO(screenshot): invoice page pay block with "Pay now" button and "Or pay offli
 
 ## Generating a portal link
 
-The portal link is generated from the customer detail page in Zoop. Only account owners can generate or revoke links — office staff can see whether a link is active but can't create one.
+You generate the link from the customer's detail page in Zoop. Only the account owner can generate or revoke links — office staff can see whether a link is active but can't create one.
 
 <Steps>
   <Step title="Open the customer">
@@ -68,12 +68,12 @@ The portal link is generated from the customer detail page in Zoop. Only account
     Select **Generate portal link**. A dialog opens showing the full URL.
   </Step>
   <Step title="Copy and send it">
-    Copy the link and send it to your customer — paste it into a text message, email, or your invoicing message. The link is shown only once. Close the dialog without copying and you'll need to rotate to a new link.
+    Copy the link and paste it into a text message, email, or invoice message to your customer. Copy it before you close the dialog — the link is shown only once and cannot be retrieved afterward. If you close without copying, select **Rotate portal link** to generate a fresh one.
   </Step>
 </Steps>
 
 <Callout type="warning">
-The portal link is shown exactly once. Zoop stores only a one-way hash — if you close the dialog without copying, you cannot retrieve the same link. Generate a new one using **Rotate portal link**.
+Copy the link before closing the dialog. Zoop does not store the link itself — only a secure hash — so there is no way to retrieve it later. If you lose it, just select **Rotate portal link** on the customer's page to create a new one (the old link will stop working).
 </Callout>
 
 ## Managing access
@@ -82,19 +82,19 @@ The portal link is shown exactly once. Zoop stores only a one-way hash — if yo
 TODO(screenshot): portal access section on the customer detail page — "Active" badge, created/last seen timestamps, Generate and Revoke buttons.
 </Callout>
 
-**Rotating the link** — selecting "Rotate portal link" on a customer who already has one replaces it with a new link. The old link stops working immediately. Use this if a link was forwarded somewhere it shouldn't have been.
+**Rotating the link** — select **Rotate portal link** to replace the current link with a new one. The old link stops working right away. Do this if a link was forwarded somewhere it shouldn't have been.
 
-**Revoking access** — selecting **Revoke** permanently disables the current link. The customer sees a 404 if they try to use it. You can generate a fresh link any time.
+**Revoking access** — select **Revoke** to permanently disable the current link. Anyone who tries to use it will see a "page not found" error. You can generate a fresh link any time from the same card.
 
-The "Last seen" timestamp on the portal access card updates each time the customer visits their portal page, so you can tell whether they've opened the link.
+The **Last seen** timestamp on the portal access card updates each time the customer opens their portal, so you can see whether they've used the link.
 
 ## Saved cards and auto-pay
 
-When a customer saves a card through the portal or during invoice payment, it appears in the **Saved payment methods** section of their portal. They can:
+When a customer saves a card through the portal or while paying an invoice, it appears in the **Saved payment methods** section. From there, they can:
 
-- Set any card as the default (the radio button on each row)
-- Add a new card using the **Add a card** button
-- Remove a card — if that card backs an active auto-pay plan, the portal warns them that removing it will also turn off auto-pay on those plans
+- Set a default card — select the radio button on any card row to make it the default
+- Add a new card — select **Add a card**
+- Remove a card — if that card is linked to an active auto-pay plan, the portal warns them that removing the card will also turn off auto-pay on those plans
 
 Each saved card shows brand, last 4 digits, expiry, and when it was added. Cards expiring within 30 days are flagged "Expiring soon."
 
@@ -102,13 +102,13 @@ Each saved card shows brand, last 4 digits, expiry, and when it was added. Cards
 
 The **Auto-pay** section lists every active recurring auto-pay consent the customer has. Each row shows the plan name, the card it's charged to (brand and last 4), when the consent was granted, and any per-payment cap if one was set.
 
-Customers can select **Turn off** next to any plan and confirm. After they confirm, Zoop stops charging that card automatically for future invoices under that plan — they'll receive the invoices as normal and pay manually instead.
+Customers can select **Turn off** next to any plan and confirm in the dialog that appears. After they confirm, Zoop stops charging that card automatically for future invoices under that plan — they will still receive the invoices and can pay them manually.
 
 <Callout type="info">
 TODO(screenshot): auto-pay section on the portal — consent row with plan name, card, "Granted" date, and "Turn off" button.
 </Callout>
 
-If you set up auto-pay on behalf of a customer (zooper-attested consent), the row shows a "Zooper attested" badge. If the customer opted in themselves during checkout, it shows "Inline."
+Each row shows a badge indicating how auto-pay was set up: **Zooper attested** means you enrolled the customer on their behalf; **Inline** means the customer opted in themselves during checkout.
 
 Customers can also turn off auto-pay using a direct link from the auto-pay confirmation email — the link opens the portal and pre-arms the confirmation dialog for that specific consent.
 

@@ -4,9 +4,9 @@ description: Create and manage quotes.
 audience: developer
 ---
 
-A quote is the document you send a customer before work begins — a priced proposal they can accept or decline. The quote tools cover the quote shell (title, customer, status). Line items and sections are managed inside Zoop's quote editor, not via these tools.
+A quote is the priced proposal you send a customer before work begins — they can accept or decline it. This page covers the API tools that manage the quote shell: its title, attached customer, and status. Line items and sections are added through the Zoop quote editor, not via these tools.
 
-The lifecycle follows a fixed path: `draft` → `sent` → `accepted` or `declined`. Archiving a quote is a separate, one-way action handled by `quotes.archive`.
+The quote moves through a fixed lifecycle: `draft` → `sent` → `accepted` or `declined`. Archiving a quote is a separate, one-way action handled by `quotes.archive` — it hides the record without changing its status.
 
 ## Scopes
 
@@ -15,28 +15,28 @@ The lifecycle follows a fixed path: `draft` → `sent` → `accepted` or `declin
 | `read:quotes` | `quotes.list`, `quotes.get` |
 | `write:quotes` | `quotes.create`, `quotes.update`, `quotes.archive` |
 
-`write:quotes` does not include `read:quotes`. Grant both if your integration needs to read and write.
+`write:quotes` does not bundle `read:quotes`. If your integration needs to both read and write quotes, request both scopes.
 
-**Legacy aliases.** The legacy scopes `read:estimates` and `write:estimates` expand to `read:quotes` and `write:quotes` respectively. Tokens minted before the rename continue to work. For new integrations, use `read:quotes` / `write:quotes`.
+**Legacy aliases.** The older scopes `read:estimates` and `write:estimates` are aliases for `read:quotes` and `write:quotes`. Tokens issued before the rename continue to work. For new integrations, use `read:quotes` / `write:quotes`.
 
 See [scopes](/developers/authentication/scopes) for the full scope catalog.
 
-## User actor and owner requirement
+## Who can write quotes
 
-All write tools (`quotes.create`, `quotes.update`, `quotes.archive`) have two requirements beyond the `write:quotes` scope:
+All write tools (`quotes.create`, `quotes.update`, `quotes.archive`) have two requirements on top of the `write:quotes` scope:
 
-1. **User actor** — the token must be bound to a real team member (a user-bound API key `zoop_uk_` or an OAuth access token). Tenant-key tokens (`zoop_tk_`) have no user identity and cannot write quotes.
-2. **Owner role** — the authenticated user must hold the `owner` role. Team members with the `office` or `tech` role will receive an `invalid_input` error even if their token holds `write:quotes`.
+1. **User-bound token** — the token must be tied to a real team member. Use a user-bound API key (prefix `zoop_uk_`) or an OAuth access token. Tenant-key tokens (prefix `zoop_tk_`) represent the account itself, not a person, and cannot write quotes.
+2. **Owner role** — the team member must hold the `owner` role. The `office` and `tech` roles cannot write quotes even if the token carries `write:quotes`; the call returns `invalid_input`.
 
-Read tools (`quotes.list`, `quotes.get`) are open to any valid `read:quotes` token regardless of actor kind or role.
+Read tools (`quotes.list`, `quotes.get`) accept any valid `read:quotes` token — user-bound or tenant-key, any role.
 
-If your integration needs to create or update quotes from an automated pipeline, use a user-bound API key issued to an owner-role service account. See [API keys](/developers/authentication/api-keys).
+If you need to create or update quotes from an automated pipeline (no human in the loop), issue a user-bound API key to an owner-role service account. See [API keys](/developers/authentication/api-keys).
 
 ## Tools
 
 ### `quotes.list`
 
-Lists quotes for the tenant, most recent first. Archived quotes are excluded from the default results.
+Returns quotes for your account, newest first. Archived quotes are excluded unless you specifically request them.
 
 **Scope:** `read:quotes`
 
@@ -48,7 +48,7 @@ Lists quotes for the tenant, most recent first. Archived quotes are excluded fro
   1-based page number. Defaults to `1`.
 </ParamField>
 
-Returns an object with `data` (array of quote rows), `count`, `page`, and `limit`.
+Returns an object with `data` (array of quotes), `count` (total matching), `page`, and `limit`.
 
 ---
 
@@ -62,7 +62,7 @@ Fetches a single quote by ID.
   The quote's ID.
 </ParamField>
 
-Returns the full quote shell. Returns `not_found` if the quote does not exist in this tenant or has been archived.
+Returns the full quote record. Returns `not_found` if the quote ID does not exist in your account or the quote has been archived.
 
 ---
 
@@ -80,17 +80,17 @@ Creates a new quote in `draft` status.
   The customer to attach the quote to. Must belong to this tenant. Omit or pass `null` to create an unattached quote.
 </ParamField>
 
-Returns the created quote record. Returns `invalid_input` if `customer_id` does not belong to this tenant.
+Returns the newly created quote record. Returns `invalid_input` if `customer_id` does not belong to your account.
 
 <Callout type="warning">
-Line items, sections, and attachments are not accepted by this tool. After creating the shell, add line items and sections through the Zoop quote editor.
+Line items, sections, and attachments are not accepted here. After creating the quote, open it in the Zoop quote editor to add line items and sections.
 </Callout>
 
 ---
 
 ### `quotes.update`
 
-Partially updates a quote's shell fields. Only the fields you send are changed.
+Updates one or more fields on an existing quote. Fields you omit are left unchanged.
 
 **Scope:** `write:quotes` — requires a user actor with the owner role.
 
@@ -116,7 +116,7 @@ Partially updates a quote's shell fields. Only the fields you send are changed.
   | `accepted` | (terminal) |
   | `declined` | (terminal) |
 
-  An illegal transition returns a `conflict` error. To soft-delete, use `quotes.archive` instead of setting `status` here.
+  An illegal transition (for example, moving from `accepted` back to `draft`) returns a `conflict` error. To hide a quote without changing its status, use `quotes.archive`.
 </ParamField>
 
 Returns the updated quote on success. Returns `not_found` if the quote does not exist. Returns `conflict` if the status transition is illegal.
@@ -125,7 +125,7 @@ Returns the updated quote on success. Returns `not_found` if the quote does not 
 
 ### `quotes.archive`
 
-Archives a quote. This is the soft-delete for quotes — the record is hidden from default list and get responses but its history is preserved. Archiving is one-way.
+Archives a quote. The record is hidden from `quotes.list` and `quotes.get` results, but its history is preserved. Archiving is one-way — there is no unarchive tool.
 
 **Scope:** `write:quotes` — requires a user actor with the owner role.
 
@@ -133,7 +133,7 @@ Archives a quote. This is the soft-delete for quotes — the record is hidden fr
   The quote's ID.
 </ParamField>
 
-Returns `{ archived: true, id }` on success. Returns `not_found` if the quote does not exist. Returns `conflict` if the quote is already archived.
+Returns `{ archived: true, id }` on success. Returns `not_found` if the quote ID does not exist in your account. Returns `conflict` if the quote is already archived.
 
 ---
 
@@ -144,11 +144,11 @@ draft ──→ sent ──→ accepted
                 └──→ declined
 ```
 
-`accepted` and `declined` are terminal — no further status changes are allowed. Archiving is independent of lifecycle state: any quote at any status can be archived.
+`accepted` and `declined` are terminal — you cannot change the status after reaching either. Archiving is separate from the lifecycle: you can archive a quote at any status.
 
 ## Example: create a quote and mark it sent
 
-The following example creates a draft quote for a customer, then advances it to `sent`.
+This example creates a draft quote for a customer and then advances it to `sent`. You will need a `zoop_uk_` API key (owner role) and a valid `customer_id` from [Customers](/developers/api/customers).
 
 <Steps>
 <Step title="Create the draft">
@@ -172,7 +172,7 @@ curl -X POST https://app.zoop.example/api/mcp \
   }'
 ```
 
-A successful response returns the new quote. The row carries no `archived_at` column — archival is encoded in the `status` enum as `status: "archived"`, so an active quote simply reports its lifecycle status (`draft` here):
+A successful response returns the new quote. The `status` field shows where the quote sits in its lifecycle — `draft` right after creation:
 
 ```json
 {
@@ -192,7 +192,7 @@ A successful response returns the new quote. The row carries no `archived_at` co
 </Step>
 <Step title="Advance to sent">
 
-After you have added line items in the Zoop quote editor, mark the quote as sent using the ID returned above.
+After adding line items in the Zoop quote editor, mark the quote as sent. Use the `id` returned in step 1.
 
 ```bash
 curl -X POST https://app.zoop.example/api/mcp \
@@ -216,7 +216,7 @@ curl -X POST https://app.zoop.example/api/mcp \
 </Step>
 </Steps>
 
-## Example: list all accepted quotes
+## Example: list accepted quotes
 
 ```ts
 const response = await fetch('https://app.zoop.example/api/mcp', {

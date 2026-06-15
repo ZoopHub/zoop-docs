@@ -4,36 +4,36 @@ description: Two key types for server-to-server access, with instant revocation.
 audience: developer
 ---
 
-API keys are the machine-to-machine (M2M) authentication path. There is no browser redirect, no consent screen, and no token exchange step — the key itself is the credential. Use them in server-side scripts, background jobs, or agent pipelines that run unattended.
+An API key is a secret string that proves to Zoop who is making a request. Unlike the browser-based OAuth flow, there is no redirect or login screen — you attach the key directly to each request, and Zoop lets it through. Use API keys in server-side scripts, background jobs, or automated pipelines that run without a human present.
 
 ## Two key types
 
-Zoop issues two kinds of API key, distinguished by their prefix:
+Zoop issues two kinds of API key. You can tell them apart by their prefix — the short tag at the start of the key string:
 
 | Type | Prefix | Actor | Has `userId` | Can call user-only tools |
 |---|---|---|---|---|
 | User key | `zoop_uk_` | `user` | Yes — the issuing user | Yes |
 | Tenant key | `zoop_tk_` | `tenant` | No | No |
 
-**User keys** attribute writes to a specific team member. Any tool that stamps `created_by` or `updated_by`, or that requires a real user identity, requires a user key. Use a user key when your integration writes data on behalf of a specific person — for example, a job-creation script that records which technician submitted the work.
+**User keys** tie every write to a specific team member. Any API tool that records `created_by` or `updated_by`, or that otherwise requires a real user identity, needs a user key. Use a user key when your integration writes data on behalf of a specific person — for example, a job-creation script that should record which technician submitted the work.
 
-**Tenant keys** are for read-heavy integrations or unattributed pipelines where individual attribution does not matter — for example, a reporting dashboard that reads invoices and jobs. They cannot call tools that are gated on a user identity.
+**Tenant keys** are for read-heavy integrations or pipelines where individual attribution does not matter — for example, a reporting dashboard that reads invoices and jobs. They cannot call tools that require a user identity.
 
 <Callout type="info">
-The actor type on a key is set by the database row (`actor_kind` column), not solely by the prefix. The prefix is a hint, not the authority.
+The prefix (`zoop_uk_` / `zoop_tk_`) is a visual hint, not the source of truth. The actual actor type is set by the `actor_kind` column in the database when the key is created.
 </Callout>
 
 ## Create a key
 
 <Steps>
   <Step title="Open settings">
-    In Zoop, go to **Settings → API & MCP**. You need the owner role to manage API keys.
+    In Zoop, go to **Settings → API & MCP**. You need the owner role to manage API keys. If you do not see **API & MCP** in the Settings menu, ask your account owner to grant you access.
   </Step>
   <Step title="Click New API key">
-    Choose **User key** or **Tenant key**, then select the scopes your integration needs.
+    Choose **User key** or **Tenant key** (see [two key types](#two-key-types) above if you are unsure), then select the scopes your integration needs. Scopes control which API tools the key can call — pick the minimum set you actually need.
   </Step>
   <Step title="Copy the key immediately">
-    The plaintext key is shown **once**. Zoop stores only the SHA-256 hash — it cannot be retrieved again. If you lose it, revoke it and issue a new one.
+    The key value is shown **once, right now**. Zoop does not store the raw key — only a one-way hash of it — so there is no way to see it again later. Copy it to your password manager or secrets store before closing this screen. If you lose it, you will need to revoke it and create a new one — the key itself is not recoverable.
   </Step>
 </Steps>
 
@@ -43,7 +43,7 @@ The key is active immediately after creation.
 
 ## Send a request
 
-Pass the key as a `Bearer` token in the `Authorization` header on every request. There is no separate login step.
+To make an authenticated request, add your key to the `Authorization` header using the `Bearer` scheme — that just means the word `Bearer`, a space, then your key. You do this on every request; there is no separate login step first.
 
 <CodeGroup>
 ```bash cURL
@@ -75,37 +75,41 @@ const response = await fetch('https://app.zoop.example/api/mcp', {
 ```
 </CodeGroup>
 
-On every request, Zoop hashes the token with SHA-256 and looks it up in the `external_api_keys` table. There is no caching of the plaintext — the hash lookup happens on every call.
+On every request, Zoop hashes the token and looks it up in the database. There is no session or cache — the lookup happens on every single call.
 
 ## Scopes
 
-Scopes are set at issuance and stored on the key's database row. A key cannot call a tool that requires a scope it was not issued with. To add scopes to an existing key, you must revoke it and issue a new one with the broader scope set.
+Scopes are permissions. Each scope unlocks a set of API tools, and a key can only call tools covered by the scopes it was issued with. Scopes are fixed at creation — you cannot add scopes to an existing key. If you need more scopes later, revoke the key and create a new one with the broader set.
 
 See [scopes](/developers/authentication/scopes) for the full scope catalog.
 
 ## Key expiry
 
-Keys do not expire by default. You can set an expiry date at issuance. An expired key returns `401` with `error: "expired"`.
+Keys do not expire by default. You can set an expiry date when you create a key — once that date passes, the key stops working and returns a `401` error with `error: "expired"`. Set an expiry if you want automatic cleanup for short-lived integrations.
 
 ## Revoke a key
 
-Go to **Settings → API & MCP**, find the key, and revoke it. Revocation is instant — the key stops working on the next request. There is no grace period.
+Go to **Settings → API & MCP**, find the key in the list, and select **Revoke**. Revocation is instant — the key stops working on the very next request. There is no grace period, so make sure any running integrations that use it are updated first, or expect them to start returning `401` errors immediately.
 
 ## Rotate a key
 
+Key rotation means replacing an old key with a new one without downtime. Do this on a schedule, or whenever a key may have been exposed.
+
 <Steps>
   <Step title="Issue a new key">
-    Create a new key with the same type and scopes as the one you are replacing.
+    Create a new key with the same type and scopes as the one you are replacing. Keep the old key active for now.
   </Step>
   <Step title="Update your integration">
-    Deploy the new key value to your environment variables or secrets manager before revoking the old key.
+    Deploy the new key value to your environment variables or secrets manager. Verify your integration is making successful requests with the new key before moving on.
   </Step>
   <Step title="Revoke the old key">
-    Once your integration is running on the new key, revoke the old one from **Settings → API & MCP**.
+    Once your integration is confirmed working on the new key, revoke the old one from **Settings → API & MCP**. The old key stops working immediately.
   </Step>
 </Steps>
 
 ## Error reference
+
+If a request fails authentication or authorization, Zoop returns one of these responses:
 
 | Situation | Status | Body |
 |---|---|---|
@@ -116,14 +120,14 @@ Go to **Settings → API & MCP**, find the key, and revoke it. Revocation is ins
 | No `Authorization` header | `401` | `{"error":"missing_token"}` |
 | Rate limited | `429` | `Retry-After` header included |
 
-Handle `401` with `reason: "key_revoked"` as a permanent failure — the key will never work again. Pause your integration and alert an operator.
+If you receive `401` with `reason: "key_revoked"`, the key is permanently dead and retrying will not help. Stop the integration and issue a new key before restarting it.
 
 ## Security checklist
 
-- Store the key in an environment variable or a secrets manager, never in source code or version control.
-- Issue the minimum scopes your integration actually needs.
-- Use one key per integration. Separate keys mean separate blast radii and independent rotation schedules.
-- If a key may be compromised, revoke it immediately — revocation takes effect on the next request.
+- Store the key in an environment variable or a secrets manager. Never put it in source code or commit it to version control.
+- Request only the scopes your integration actually needs. Fewer scopes means less damage if the key leaks.
+- Use one key per integration. That way, if one key is compromised, you revoke only that key without affecting anything else.
+- If you think a key has been exposed, revoke it now — revocation takes effect on the next request, not at the next rotation cycle.
 
 ## Related
 
