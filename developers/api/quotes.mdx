@@ -154,7 +154,7 @@ This example creates a draft quote for a customer and then advances it to `sent`
 <Step title="Create the draft">
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -195,7 +195,7 @@ A successful response returns the new quote. The `status` field shows where the 
 After adding line items in the Zoop quote editor, mark the quote as sent. Use the `id` returned in step 1.
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -219,7 +219,7 @@ curl -X POST https://app.zoop.example/api/mcp \
 ## Example: list accepted quotes
 
 ```ts
-const response = await fetch('https://app.zoop.example/api/mcp', {
+const response = await fetch('https://app.zoop.pro/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

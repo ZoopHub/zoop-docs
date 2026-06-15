@@ -47,7 +47,7 @@ To make an authenticated request, add your key to the `Authorization` header usi
 
 <CodeGroup>
 ```bash cURL
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -55,7 +55,7 @@ curl -X POST https://app.zoop.example/api/mcp \
 ```
 
 ```ts TypeScript
-const response = await fetch('https://app.zoop.example/api/mcp', {
+const response = await fetch('https://app.zoop.pro/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

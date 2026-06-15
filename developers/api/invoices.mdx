@@ -215,7 +215,7 @@ The steps below walk through the full create-and-send flow for a single visit in
     Call `invoices.create` with your `customer_id` and line items. Zoop computes the totals and returns the new invoice's `id`.
 
     ```bash
-    curl -X POST https://app.zoop.example/api/mcp \
+    curl -X POST https://app.zoop.pro/api/mcp \
       -H "Authorization: Bearer zoop_uk_<your-secret>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json, text/event-stream" \
@@ -259,7 +259,7 @@ The steps below walk through the full create-and-send flow for a single visit in
     Call `invoices.update` with `status: "sent"`. Swap in the `id` from step 1. This status-only change does not require the invoice to be a draft.
 
     ```bash
-    curl -X POST https://app.zoop.example/api/mcp \
+    curl -X POST https://app.zoop.pro/api/mcp \
       -H "Authorization: Bearer zoop_uk_<your-secret>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json, text/event-stream" \
@@ -301,7 +301,7 @@ A successful create response looks like:
 The request below fetches the first page of `sent` invoices — the ones that have been sent to customers but not yet paid.
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -331,7 +331,7 @@ const limit = 20
 let allInvoices: unknown[] = []
 
 while (true) {
-  const response = await fetch('https://app.zoop.example/api/mcp', {
+  const response = await fetch('https://app.zoop.pro/api/mcp', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

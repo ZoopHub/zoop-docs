@@ -87,10 +87,10 @@ The full scope list is in [Authentication — scopes](/developers/authentication
 
 The example below calls `tools/list` — a built-in method that returns all the tools your token can access. It is a safe, read-only call you can use to confirm your token works before writing any real integration code.
 
-Replace `zoop_uk_<secret>` with your actual API key, and replace `https://app.zoop.example` with your Zoop app host.
+Replace `zoop_uk_<secret>` with your actual API key, and replace `https://app.zoop.pro` with your Zoop app host.
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -102,7 +102,7 @@ A successful response returns a JSON object containing a list of tool definition
 To call a specific tool, change `method` to `tools/call` and add a `params` body. The example below searches for customers matching "Henderson":
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
