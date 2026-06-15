@@ -6,6 +6,16 @@ audience: developer
 
 This page lists what has changed in Zoop and its docs. The newest entries are at the top. If something you relied on has changed, you'll find it here first.
 
+## 2026-06-15
+
+### Fixed: `customers.create` now works with tenant-key tokens over MCP
+
+Previously, calling `customers.create` through the MCP tool layer with a tenant-key token (`zoop_tk_`) returned an `internal` error. This was caused by a database function that assumed a user session was always present. The fix makes customer number generation safe for service-role calls, so tenant-key tokens can now create customers as documented.
+
+No changes to the tool interface or required scopes — if you had a workaround in place (such as switching to a user-key token for customer creation), you can revert to using your tenant key.
+
+---
+
 ## 2026-06-13
 
 ### Documentation launched
