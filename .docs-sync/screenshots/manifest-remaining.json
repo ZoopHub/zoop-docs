@@ -1,0 +1,17 @@
+[
+  {"id":"category-tree","route":"/{tenant}/pricebook/categories","filename":"using-zoop/pricebook/category-tree.png","fullPage":true,"alt":"Pricebook categories page"},
+  {"id":"item-form-pricing","route":"/{tenant}/pricebook/items/new","filename":"using-zoop/pricebook/item-form-pricing.png","fullPage":true,"alt":"New catalog item form with pricing fields"},
+  {"id":"crews-table","route":"/{tenant}/settings/team/crews","filename":"using-zoop/team/crews-table.png","fullPage":true,"alt":"Crews page"},
+  {"id":"booking-settings","route":"/{tenant}/settings?tab=scheduling","filename":"using-zoop/storefront/online-booking-settings.png","fullPage":true,"alt":"Scheduling settings with the online booking section"},
+  {"id":"contacts-tab","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b","filename":"using-zoop/customers/contacts-tab.png","fullPage":true,"alt":"Customer Contacts tab","actions":[{"click":"text=\"Contacts\"","waitMs":1000}]},
+  {"id":"timeline-tab","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b","filename":"using-zoop/customers/timeline-tab.png","fullPage":true,"alt":"Customer Timeline tab with channel filter chips","actions":[{"click":"text=\"Timeline\"","waitMs":1000}]},
+  {"id":"edit-customer-sheet","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b","filename":"using-zoop/customers/edit-customer-sheet.png","fullPage":false,"alt":"Edit customer sheet","actions":[{"click":"button:has-text(\"Edit\")","waitMs":1000}]},
+  {"id":"add-location-dialog","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b","filename":"using-zoop/customers/add-location-dialog.png","fullPage":false,"alt":"Add location dialog","actions":[{"click":"button:has-text(\"Add location\")","waitMs":1000}]},
+  {"id":"record-payment-dialog","route":"/{tenant}/invoices/ebe3d5a4-709f-4d2b-82f3-effb1d9be646","filename":"using-zoop/payments/record-payment-dialog.png","fullPage":false,"alt":"Record payment dialog","actions":[{"click":"button:has-text(\"Record payment\")","waitMs":1000}]},
+  {"id":"share-invoice-dialog","route":"/{tenant}/invoices/ebe3d5a4-709f-4d2b-82f3-effb1d9be646","filename":"using-zoop/payments/share-invoice-dialog.png","fullPage":false,"alt":"Share invoice dialog with payment link","actions":[{"click":"button:has-text(\"Share\")","waitMs":1000}]},
+  {"id":"plan-actions-dropdown","route":"/{tenant}/plans/324daf71-498f-4489-ae9e-dd7605ad9585","filename":"using-zoop/recurring-billing/plan-actions-dropdown.png","fullPage":false,"alt":"Plan actions dropdown","actions":[{"click":"button:has-text(\"Actions\")","waitMs":800}]},
+  {"id":"quote-share-dialog","route":"/{tenant}/quotes/9f802598-e9cc-45b0-a327-63ee71d1d2d1","filename":"using-zoop/quotes/share-dialog.png","fullPage":false,"alt":"Share quote dialog","actions":[{"click":"button:has-text(\"Share\")","waitMs":1000}]},
+  {"id":"notes-composer","route":"/{tenant}/notes","filename":"using-zoop/notes/notes-composer-modal.png","fullPage":false,"alt":"Note composer","actions":[{"click":"button:has-text(\"New note\")","waitMs":1000}]},
+  {"id":"calendar-new-event","route":"/{tenant}/calendar","filename":"using-zoop/calendar/new-event-modal.png","fullPage":false,"alt":"New event modal","actions":[{"click":"button:has-text(\"New event\")","waitMs":1000}]},
+  {"id":"job-create-invoice","route":"/{tenant}/jobs/1e9d8ca8-ccfa-42bd-aff0-4c20fb5af58a","filename":"using-zoop/jobs/job-detail-create-invoice.png","fullPage":true,"alt":"Job detail page with the Create invoice action"}
+]

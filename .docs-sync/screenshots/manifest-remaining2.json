@@ -1,0 +1,6 @@
+[
+  {"id":"calendar-new-event","route":"/{tenant}/calendar","filename":"using-zoop/calendar/new-event-modal.png","fullPage":false,"alt":"New event modal","actions":[{"click":"button:has-text(\"New\")","waitMs":1400}]},
+  {"id":"contacts-tab","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b?tab=contacts","filename":"using-zoop/customers/contacts-tab.png","fullPage":true,"alt":"Customer Contacts tab"},
+  {"id":"timeline-tab","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b?tab=timeline","filename":"using-zoop/customers/timeline-tab.png","fullPage":true,"alt":"Customer Timeline tab"},
+  {"id":"find-duplicates","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b","filename":"using-zoop/customers/find-duplicates-dialog.png","fullPage":false,"alt":"Find duplicates dialog","actions":[{"click":"button:has-text(\"Find Duplicates\")","waitMs":1400}]}
+]
