@@ -77,7 +77,9 @@ write in that register.
 - All pages are `.mdx`. Lowercase-with-hyphens filenames and directories.
 - `documentation.json` references pages by path **without** the `.mdx` extension.
 - Frontmatter: `title` (required, sentence case) and `description` (≤160 chars)
-  on every page. Add `audience: end-user | developer`.
+  on every page. Add `audience: end-user | developer`. **Quote any value that
+  contains a colon** (e.g. `description: "See it all: jobs, invoices"`) — an
+  unquoted colon breaks the YAML and dumps the frontmatter into the page body.
 - Internal links use **absolute, extensionless** paths: `[Quotes](/using-zoop/quotes)`.
 - Keep the directory shallow; align folders with the nav groups.
 
