@@ -1,6 +1,6 @@
 ---
 title: Jobs
-description: Create, schedule, and track work from unscheduled through done.
+description: 'Create, schedule, and track work from unscheduled through done.'
 audience: end-user
 ---
 
@@ -12,33 +12,38 @@ This is where you track your work. A job represents a single service call — wh
 
 Every job has one of four statuses:
 
-| Status | What it means |
-|---|---|
-| Unscheduled | Created but no start time set yet. |
-| Scheduled | A start time has been set. |
-| Done | Work is complete. Tapping "Mark done" moves the job here. |
-| Cancelled | Job was called off. |
+| Status      | What it means                                             |
+| ----------- | --------------------------------------------------------- |
+| Unscheduled | Created but no start time set yet.                        |
+| Scheduled   | A start time has been set.                                |
+| Done        | Work is complete. Tapping "Mark done" moves the job here. |
+| Cancelled   | Job was called off.                                       |
 
 At the top of the jobs list you'll see tabs: **All**, **Unscheduled**, **Scheduled**, and **Done**. Tap a tab to filter. You can also search by job title using the search bar.
 
 ## Create a job
 
 <Steps>
-  <Step title="Open the jobs list">
+  <Step title="Open the jobs list" title-type="p">
     Go to **Jobs** in the sidebar and tap **New job**.
   </Step>
-  <Step title="Fill in the basics">
+
+  <Step title="Fill in the basics" title-type="p">
     - **Title** — required. Keep it specific: "Replace water heater" or "Spring lawn treatment" is more useful than "Job 14".
+
     - **Customer** — search and select the customer. You can leave this blank and add it later.
+
     - **Assigned techs** — search by name and select one or more team members.
   </Step>
-  <Step title="Set the schedule">
+
+  <Step title="Set the schedule" title-type="p">
     Choose whether this is a one-time job or a recurring job.
 
     <Tabs>
       <Tab title="One-time">
         Set a **Start** and, optionally, an **End** time. If you leave both blank, the job is created as unscheduled — you can add the time later from the job detail page or from the [calendar](/using-zoop/calendar).
       </Tab>
+
       <Tab title="Recurring">
         Choose how often the job repeats (daily, weekly, monthly, or yearly), the start date, the timezone, and when the series ends. Zoop creates the series and schedules the upcoming visits automatically. See [recurring jobs](/using-zoop/recurring-jobs) for full details.
       </Tab>
@@ -54,7 +59,8 @@ At the top of the jobs list you'll see tabs: **All**, **Unscheduled**, **Schedul
   <Step title="Add notes">
     The **Notes** field is for job-level context: access instructions, gate codes, what the customer told you, what to watch out for. This is separate from the timestamped notes you and teammates can add later on the job detail page.
   </Step>
-  <Step title="Save">
+
+  <Step title="Save" title-type="p">
     Tap **Create job**. Zoop opens the job detail page.
   </Step>
 </Steps>
@@ -76,7 +82,9 @@ The job detail page is where you manage everything about a single job.
 Three cards appear near the top of the page:
 
 - **Customer** — name, phone, and email. Tap the name to open the customer record.
+
 - **Schedule** — the start time, end time, and duration for a one-time job. For a recurring instance, this shows the recurrence pattern and a link to the full series.
+
 - **Assigned techs** — the team members currently assigned to this job.
 
 ### Line items
@@ -103,13 +111,13 @@ Tap **Edit** at the top of the job detail page. You can change the title, custom
 
 For a recurring job, Zoop asks which visits to update:
 
-| Option | What changes |
-|---|---|
-| Just this occurrence | Only this date — others are unchanged. |
-| This and future occurrences | Splits the series from this date forward. |
-| All occurrences | Updates the series template for every occurrence. Past completed jobs are preserved. |
+| Option                      | What changes                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Just this occurrence        | Only this date — others are unchanged.                                               |
+| This and future occurrences | Splits the series from this date forward.                                            |
+| All occurrences             | Updates the series template for every occurrence. Past completed jobs are preserved. |
 
-<Callout type="info">TODO(screenshot): the "Apply changes to" modal showing the three radio options.</Callout>
+TODO(screenshot): the "Apply changes to" modal showing the three radio options.
 
 ## Assign a crew
 
