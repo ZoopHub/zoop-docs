@@ -1,3 +1,6 @@
 
 .DS_Store
 **/.DS_Store
+
+# Screenshots live in Cloudflare R2 (doc-assets.zoop.pro), not git
+images/

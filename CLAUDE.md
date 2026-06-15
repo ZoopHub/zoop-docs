@@ -61,10 +61,12 @@ write in that register.
   emails, phone numbers, or addresses). Where a shot belongs but isn't captured
   yet, leave `<Callout type="info">TODO(screenshot): <what to capture></Callout>` —
   never describe a UI you haven't seen as if it's certain.
-- Image hosting: reference images by absolute jsDelivr URL off this repo —
-  `https://cdn.jsdelivr.net/gh/ZoopHub/zoop-docs@main/images/<path>` — never via
-  the app/staging host. (A bare `/images/...` path does NOT render — Documentation.ai
-  does not serve repo files at that path.)
+- Image hosting: screenshots live in **Cloudflare R2** (bucket `zoop-docs`), served
+  at `https://doc-assets.zoop.pro/images/<path>` — reference images by that absolute
+  URL. The local `images/` dir is **gitignored** (R2 is the host, not git); after
+  capturing, upload with `.zoop-docs-src/r2-upload.mjs` (reads `.r2.env`). A bare
+  `/images/...` path does NOT render (Documentation.ai doesn't serve repo files), and
+  never use the app/staging host.
 - Never hardcode the Zoop app host (staging or production) in examples. Use the
   placeholder `https://app.zoop.example` and tell readers to resolve the real host
   from `GET /.well-known/oauth-protected-resource`.

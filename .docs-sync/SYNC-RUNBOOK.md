@@ -57,8 +57,16 @@ verify). Manual today; wrap in a `/schedule` cloud routine for unattended runs.
 When a change touches a documented UI surface, re-capture just that surface:
 `.docs-sync/screenshots/` holds the harness (`capture-screenshots.mjs`), the
 manifest, the seed scripts, and `REMAINING-SCREENSHOTS.md`. Re-run capture with
-`ONLY=<page-prefix>` to refresh only the affected shots; the build CDN-hosts
-repo images referenced as `<Image src="/images/…">`.
+`ONLY=<page-prefix>` to refresh only the affected shots (set `ZOOP_BASE`/
+`ZOOP_TENANT`/`ZOOP_USERDATA` for the demo env, `ZOOP_REDACT_EMAIL` to strip the
+owner email). Capture only from the demo account — **no real PII**.
+
+Images are hosted in **Cloudflare R2** (bucket `zoop-docs`, public at
+`https://doc-assets.zoop.pro/images/…`), not git — the local `images/` dir is
+gitignored. After capturing, upload with `.zoop-docs-src/r2-upload.mjs` (reads
+`.zoop-docs-src/.r2.env`). Reference images as
+`<Image src="https://doc-assets.zoop.pro/images/<path>" alt="…" />`. A bare
+`/images/…` path does NOT render.
 
 ## Cadence (recommended)
 
