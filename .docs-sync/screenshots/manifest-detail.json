@@ -1,17 +1,17 @@
 [
   {
     "id": "customer-detail-overview",
-    "route": "/{tenant}/customers/629283e3-4b4f-4df4-8463-f5ececea316e",
+    "route": "/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b",
     "filename": "using-zoop/customers/customer-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,
-    "alt": "A customer detail page showing the customer’s identity, contact, and quick-stats cards with their linked jobs and invoices.",
+    "alt": "A customer detail page showing the customer identity, contact, and quick-stats cards with their linked jobs and invoices.",
     "manual": false,
     "note": ""
   },
   {
     "id": "job-detail-overview",
-    "route": "/{tenant}/jobs/8af62a0b-c2f4-415d-b3f8-daeb87639960",
+    "route": "/{tenant}/jobs/1e9d8ca8-ccfa-42bd-aff0-4c20fb5af58a",
     "filename": "using-zoop/jobs/job-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,
@@ -21,7 +21,7 @@
   },
   {
     "id": "quote-detail-overview",
-    "route": "/{tenant}/quotes/89e1c5a9-83ed-42ac-935e-6078799acc56",
+    "route": "/{tenant}/quotes/9f802598-e9cc-45b0-a327-63ee71d1d2d1",
     "filename": "using-zoop/quotes/quote-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,
@@ -31,7 +31,7 @@
   },
   {
     "id": "invoice-detail-paid",
-    "route": "/{tenant}/invoices/26e1aa8f-ae82-4402-a7b4-5b1d34f5f1e5",
+    "route": "/{tenant}/invoices/315b95a0-48bc-4d75-a8bc-2ada54b39209",
     "filename": "using-zoop/invoices/invoice-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,
@@ -41,7 +41,7 @@
   },
   {
     "id": "plan-detail-overview",
-    "route": "/{tenant}/plans/b0c974f6-f8c0-415f-bf90-33e8694422b6",
+    "route": "/{tenant}/plans/324daf71-498f-4489-ae9e-dd7605ad9585",
     "filename": "using-zoop/recurring-billing/plan-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,
@@ -51,7 +51,7 @@
   },
   {
     "id": "series-detail-overview",
-    "route": "/{tenant}/jobs/series/b1db73bb-07ff-4576-82fe-95fe280d0820",
+    "route": "/{tenant}/jobs/series/756704dc-bbeb-4a74-aac2-eadcb650a574",
     "filename": "using-zoop/recurring-jobs/series-detail-overview.png",
     "viewport": "desktop",
     "fullPage": true,

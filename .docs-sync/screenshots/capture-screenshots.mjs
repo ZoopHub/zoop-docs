@@ -102,6 +102,17 @@ async function run() {
         if (step.waitMs) await page.waitForTimeout(step.waitMs);
       }
       await page.waitForTimeout(shot.settleMs ?? 700);
+      // Redact any real owner email (the logged-in account) from the UI before shooting.
+      const REDACT = (process.env.ZOOP_REDACT_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean);
+      if (REDACT.length) await page.evaluate((emails) => {
+        const sub = 'owner@valdezpainting.example';
+        const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        const hits = [];
+        while (w.nextNode()) { const v = w.currentNode.nodeValue; if (v && emails.some(e => v.includes(e))) hits.push(w.currentNode); }
+        hits.forEach(n => { emails.forEach(e => { n.nodeValue = n.nodeValue.split(e).join(sub); }); });
+        document.querySelectorAll('input,textarea').forEach(i => { if (i.value && emails.some(e => i.value.includes(e))) emails.forEach(e => { i.value = i.value.split(e).join(sub); }); });
+      }, REDACT).catch(() => {});
+      await page.waitForTimeout(120);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       await page.screenshot({ path: out, fullPage: shot.fullPage ?? false });
       results.ok.push(shot.filename);
