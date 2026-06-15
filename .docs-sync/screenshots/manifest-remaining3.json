@@ -1,0 +1,4 @@
+[
+  {"id":"add-location-dialog","route":"/{tenant}/customers/509d0bb2-f835-4c00-a7f5-5b0b035a950b?tab=locations","filename":"using-zoop/customers/add-location-dialog.png","fullPage":false,"alt":"Add location dialog","actions":[{"click":"button:has-text(\"Add location\")","waitMs":1500}]},
+  {"id":"csv-import","route":"/{tenant}/pricebook/items/import","filename":"using-zoop/pricebook/csv-import.png","fullPage":true,"alt":"Pricebook CSV import"}
+]
