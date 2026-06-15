@@ -1,5 +1,5 @@
 {
-  "name": "Zoop",
+  "name": "Zoop Docs",
   "initialRoute": "welcome",
   "template": "classic",
   "colors": {
@@ -285,5 +285,7 @@
   },
   "logo-dark": "https://blob-cdn.documentation.ai/org-f7c95a30-d7b4-4bfa-8b2e-094f1ef15310/doc-aa59330b-7e60-4b1f-badd-962871bcfac1/1781525700263-8ir6t00yvp-zoop-logo.png?fm=auto&auto=compress%2Cformat",
   "logo-light": "https://blob-cdn.documentation.ai/org-f7c95a30-d7b4-4bfa-8b2e-094f1ef15310/doc-aa59330b-7e60-4b1f-badd-962871bcfac1/1781525700263-8ir6t00yvp-zoop-logo.png?fm=auto&auto=compress%2Cformat",
-  "favicon": "https://blob-cdn.documentation.ai/org-f7c95a30-d7b4-4bfa-8b2e-094f1ef15310/doc-aa59330b-7e60-4b1f-badd-962871bcfac1/1781525715958-fucga2uw0gb-zoop-icon.png?fm=auto&auto=compress%2Cformat"
+  "favicon": "https://blob-cdn.documentation.ai/org-f7c95a30-d7b4-4bfa-8b2e-094f1ef15310/doc-aa59330b-7e60-4b1f-badd-962871bcfac1/1781525715958-fucga2uw0gb-zoop-icon.png?fm=auto&auto=compress%2Cformat",
+  "title": "Zoop Docs",
+  "description": "Guides and information on how to use Zoop, the easy to use, AI powered Field Service Management App for small and mid-sized businesses!"
 }
