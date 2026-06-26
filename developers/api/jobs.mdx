@@ -8,6 +8,10 @@ A job is the core unit of work in Zoop — a visit, task, or project you perform
 
 Jobs move through four statuses: `unscheduled` → `scheduled` → `done` (or `cancelled` at any point). See the [status machine](#status-machine) section for the full rules.
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `jobs.create`). When you call a tool, replace the dots with underscores — `jobs_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
 ## Required scopes
 
 Every API call in Zoop needs a **scope** — a permission that says what the token is allowed to do. You set scopes when you create an API key or start an OAuth flow.
@@ -89,8 +93,12 @@ Fetches the full record for a single job by its ID. The response includes line i
 
 **Scope:** `read:jobs`
 
-<ParamField body="id" type="string (UUID)" required>
-  The job ID.
+<ParamField body="id" type="string (UUID)">
+  The job ID. Provide either `id` or `job`.
+</ParamField>
+
+<ParamField body="job" type="object">
+  Look up the job by reference instead of by `id`. Pass `{ "query": "..." }` — Zoop matches the text against job titles and customer names. The `job` path additionally requires `read:customers`. An ambiguous or unknown reference returns a `needs_job` or `job_not_found` result — see [resolving by name](#resolving-by-name).
 </ParamField>
 
 Returns a `not_found` error if the job ID does not exist in this tenant.
@@ -124,6 +132,9 @@ Returns a `not_found` error if the job ID does not exist in this tenant.
 <ResponseField name="customer" type="object | null">
   Thin customer summary: `id` and `display_name`.
 </ResponseField>
+<ResponseField name="url" type="string">
+  A Verify on Zoop link straight to this job, of the form `https://app.zoop.example/<tenant-id>/jobs/<id>`.
+</ResponseField>
 
 ---
 
@@ -139,6 +150,10 @@ Creates a new job. Requires a user actor (see [user actor requirement](#user-act
 
 <ParamField body="customer_id" type="string (UUID)">
   Link the job to a customer. Omit or pass null to leave it unlinked.
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Identify the customer by name instead of by `customer_id`. Pass `{ "name": "...", "phone": "...", "email": "..." }` — only `name` is required. Zoop finds the matching customer, or creates a new one if there's no match, then links it. The `customer` path additionally requires both `read:customers` and `write:customers`. Use either `customer_id` or `customer`, not both. See [resolving by name](#resolving-by-name).
 </ParamField>
 
 <ParamField body="description" type="string">
@@ -170,7 +185,11 @@ Creates a new job. Requires a user actor (see [user actor requirement](#user-act
   Team members to assign to this job. Every ID must belong to your tenant — if even one ID is invalid, the entire request fails with `invalid_input`.
 </ParamField>
 
-Returns the newly created job row. The shape matches `jobs.get`, except the nested `job_line_items`, `job_assignments`, and `job_media` arrays are not included.
+<ParamField body="assignees" type="array of strings">
+  Assign team members by name instead of (or in addition to) `assigned_user_ids`. Each entry is a member's name; Zoop resolves it to a user and merges the result with any `assigned_user_ids`, removing duplicates. An ambiguous or unknown name returns a `needs_assignee` or `assignee_not_found` result — see [resolving by name](#resolving-by-name).
+</ParamField>
+
+Returns the newly created job row. The shape matches `jobs.get`, except the nested `job_line_items`, `job_assignments`, and `job_media` arrays are not included. The result also includes a top-level `url` (a Verify on Zoop link to the new job) and `customer_created` — `true` when the `customer` path created a new customer record.
 
 ---
 
@@ -180,8 +199,12 @@ Partially updates a job. Only the fields you send are changed — you do not nee
 
 **Scope:** `write:jobs`
 
-<ParamField body="id" type="string (UUID)" required>
-  The job to update.
+<ParamField body="id" type="string (UUID)">
+  The job to update. Provide either `id` or `job`.
+</ParamField>
+
+<ParamField body="job" type="object">
+  Identify the job by reference instead of by `id`. Pass `{ "query": "..." }` — Zoop matches against job titles and customer names. Requires `read:customers`. An ambiguous or unknown reference returns a `needs_job` or `job_not_found` result — see [resolving by name](#resolving-by-name).
 </ParamField>
 
 <ParamField body="title" type="string">
@@ -220,6 +243,10 @@ Partially updates a job. Only the fields you send are changed — you do not nee
   When supplied, **replaces** the entire assignment list. Omit this field to leave existing assignments untouched.
 </ParamField>
 
+<ParamField body="assignees" type="array of strings">
+  Assign team members by name. Resolved to users and merged with any `assigned_user_ids` you send (duplicates removed). An ambiguous or unknown name returns a `needs_assignee` or `assignee_not_found` result — see [resolving by name](#resolving-by-name).
+</ParamField>
+
 Returns the updated job row.
 
 ---
@@ -230,8 +257,12 @@ Cancels a job by setting its status to `cancelled`. The job record is preserved 
 
 **Scope:** `write:jobs`
 
-<ParamField body="id" type="string (UUID)" required>
-  The job to cancel.
+<ParamField body="id" type="string (UUID)">
+  The job to cancel. Provide either `id` or `job`.
+</ParamField>
+
+<ParamField body="job" type="object">
+  Identify the job by reference instead of by `id`. Pass `{ "query": "..." }`. Requires `read:customers`. See [resolving by name](#resolving-by-name).
 </ParamField>
 
 <Callout type="warning">
@@ -249,7 +280,7 @@ This example creates a job for a customer and assigns it to a team member. Repla
 <Tabs>
   <Tab title="cURL">
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -257,7 +288,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
     "id": 1,
     "method": "tools/call",
     "params": {
-      "name": "jobs.create",
+      "name": "jobs_create",
       "arguments": {
         "title": "Replace kitchen faucet",
         "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -284,7 +315,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
   </Tab>
   <Tab title="TypeScript">
 ```ts
-const response = await fetch('https://app.zoop.pro/api/mcp', {
+const response = await fetch('https://app.zoop.example/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,
@@ -295,7 +326,7 @@ const response = await fetch('https://app.zoop.pro/api/mcp', {
     id: 1,
     method: 'tools/call',
     params: {
-      name: 'jobs.create',
+      name: 'jobs_create',
       arguments: {
         title: 'Replace kitchen faucet',
         customer_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
@@ -339,6 +370,38 @@ const result = await response.json()
     The response contains the persisted job row, including the server-assigned `id` and `created_at`.
   </Step>
 </Steps>
+
+---
+
+## Resolving by name
+
+Several job tools let you work with names and free text instead of UUIDs: `customer` (a customer name) and `assignees` on create and update, and `job` (a reference) on get, update, and cancel. When a reference matches exactly one record, the tool proceeds normally. When it's ambiguous or finds nothing, the tool returns a structured result asking you to choose — these are **normal results to handle, not errors**. Ask the user which one they meant, then call again with the specific ID.
+
+- **`needs_customer`** — the `customer.name` matched more than one customer:
+
+  ```json
+  { "needs_customer": { "query": "Maxine", "candidates": [
+    { "id": "...", "display_name": "Maxine Ortiz", "primary_phone": "+15125550143", "primary_email": "maxine@example.com" }
+  ] } }
+  ```
+
+  When a `customer` name matches nothing, `jobs.create` instead **creates** a new individual customer (the first word becomes the first name, the rest the last name; `phone`/`email` are saved if you passed them) and returns `customer_created: true`.
+
+- **`needs_assignee`** / **`assignee_not_found`** — an `assignees` name matched more than one member, or none:
+
+  ```json
+  { "needs_assignee": { "query": "Sam", "candidates": [
+    { "user_id": "...", "display_name": "Sam Cole" }
+  ] } }
+  ```
+
+- **`needs_job`** / **`job_not_found`** — a `job.query` matched more than one job, or none:
+
+  ```json
+  { "needs_job": { "query": "repipe", "candidates": [
+    { "id": "...", "title": "Repipe master bath", "status": "scheduled", "scheduled_start": "2026-06-16T09:00:00Z", "customer_name": "Maxine Ortiz" }
+  ] } }
+  ```
 
 ---
 

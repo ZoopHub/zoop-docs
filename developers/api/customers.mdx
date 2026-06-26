@@ -14,6 +14,12 @@ All tools in this group require the `read:customers` or `write:customers` scope 
 If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to learn how to connect and authenticate.
 </Callout>
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `customers.create`). When you call a tool, replace the dots with underscores — `customers_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
+These are your account's own records: `customers.search` and `customers.get` return each customer's contact details — phone, email, and addresses — for you to use. You can also create or attach a customer by name (no UUID needed) from the [jobs](/developers/api/jobs#jobs-create), [invoices](/developers/api/invoices), [quotes](/developers/api/quotes), and [plans](/developers/api/plans) create tools — each accepts a `customer` object and finds or creates the matching customer for you.
+
 ---
 
 ## Scopes
@@ -65,7 +71,7 @@ Search customers by name, phone, tag, or status. Returns a list of matching cust
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "customers.search",
+    "name": "customers_search",
     "arguments": {
       "q": "Nguyen",
       "status": "active",
@@ -94,7 +100,7 @@ Search customers by name, phone, tag, or status. Returns a list of matching cust
 
 ### `customers.get`
 
-Fetch one customer's full record by `id`, including their contacts and locations.
+Fetch one customer's full record by `id`, including their contacts and locations. The response includes a top-level `url` — a Verify on Zoop link straight to the customer, of the form `https://app.zoop.example/<tenant-id>/customers/<id>`.
 
 <ParamField body="id" type="string (UUID)" required>
   The customer's `id`. Get this from `customers.search`.
@@ -109,7 +115,7 @@ Create a new customer. The `customer_type` field determines which other fields a
 - For `individual`: `first_name` is required.
 - For `company`: `company_name` is required.
 
-You cannot change `customer_type` after creation, so pick the right one up front.
+You cannot change `customer_type` after creation, so pick the right one up front. The result includes a top-level `url` — a Verify on Zoop link straight to the new customer.
 
 <ParamField body="customer_type" type="string" required>
   `individual` or `company`.
@@ -170,7 +176,7 @@ You cannot change `customer_type` after creation, so pick the right one up front
   "id": 2,
   "method": "tools/call",
   "params": {
-    "name": "customers.create",
+    "name": "customers_create",
     "arguments": {
       "customer_type": "individual",
       "first_name": "Marco",
@@ -196,7 +202,7 @@ You cannot change `customer_type` after creation, so pick the right one up front
     "content": [
       {
         "type": "text",
-        "text": "{\"id\":\"c9d8e7f6-...\",\"customer_type\":\"individual\",\"customer_number\":\"C-0042\",\"display_name\":\"Marco Reyes\",\"status\":\"active\",\"primary_phone\":\"+15105550199\",\"primary_email\":\"marco@example.com\",\"created_at\":\"2026-06-13T18:00:00.000Z\"}"
+        "text": "{\"id\":\"c9d8e7f6-...\",\"customer_type\":\"individual\",\"customer_number\":\"C-0042\",\"display_name\":\"Marco Reyes\",\"status\":\"active\",\"primary_phone\":\"+15105550199\",\"primary_email\":\"marco@example.com\",\"created_at\":\"2026-06-13T18:00:00.000Z\",\"url\":\"https://app.zoop.example/<tenant-id>/customers/c9d8e7f6-...\"}"
       }
     ]
   }

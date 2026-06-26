@@ -107,12 +107,12 @@ Connect Stripe to accept credit and debit card payments from customers. Stripe i
   </Step>
 </Steps>
 
-Once active, the card payments panel shows a green **Active** badge with your charges and payout status. You can open your Stripe dashboard directly from here or disconnect Stripe if needed.
+Once active, the card payments panel shows a green **Active** badge with your charges and payout status. You can open your Stripe dashboard directly from here.
 
 **Offline payment instructions** — add a note (up to 4,000 characters) for customers who pay by check, Zelle, or another offline method. This text appears on invoices alongside online-payment options.
 
-<Callout type="warning">
-Disconnecting Stripe stops new card payments immediately. Your past invoices, completed payouts, and customer records are not affected — nothing is deleted.
+<Callout type="info">
+Disconnecting Stripe from within Zoop isn't available right now — the control is hidden while a safe disconnect-and-reconnect flow is built. See [Getting paid](/using-zoop/payments#disconnect-stripe).
 </Callout>
 
 ## Tax rates
@@ -170,12 +170,50 @@ Select **Save changes** to apply.
 
 ## API & MCP
 
-This section is for connecting Zoop to other tools and scripts — most users won't need it. If you're not sure what an API key is, you can skip this section.
+This is the **API access** panel. It lets you connect ChatGPT, Claude, or your own tools to Zoop so they can work with your jobs, customers, and invoices — with permissions you control.
 
-API keys let you connect Zoop to tools like Zapier, Claude Code, or your own custom scripts. Only account owners can create or revoke keys.
+If you've never connected an outside tool to Zoop, you can skip this section.
 
-Select **Manage API keys** to create or revoke keys. See [API keys](/developers/authentication/api-keys) for full setup instructions.
+<Callout type="info">TODO(screenshot): the API & MCP settings panel showing the MCP server address, the Connect a client tabs, and the API keys / Connected apps cards.</Callout>
 
-<Callout type="info">
-If you're an office manager or technician and need API access, ask your account owner to create a key for you.
-</Callout>
+### Your MCP server address
+
+The panel shows **Your MCP server address** with a **Copy** button (it reads **Copied** for a moment after you tap it). This is the address you paste into ChatGPT, Claude, or another tool so it knows how to reach your Zoop account.
+
+### Connect a client
+
+The **Connect a client** switch has three tabs:
+
+- **ChatGPT** and **Claude** connect over OAuth. Add a connector in that tool, paste your MCP server address, then sign in to Zoop and approve what it can access. Nothing happens to your data until you approve.
+- **Claude Code** connects with an API key instead. An owner creates the key from the API keys card below.
+
+### What a connection can do
+
+A connected app or key can only ever do what the person who connected it is allowed to do. If a tech can't see your customer list, no app that tech connects can see it either. To widen or tighten what someone — and anything they connect — can reach, set their access on the [Team page](/using-zoop/team).
+
+### Manage cards (owners only)
+
+Two cards at the bottom are for owners:
+
+- **API keys** — "For Claude Code & scripts. Create with the exact permissions you want; revoke anytime." Select **Manage API keys** to create or revoke keys; see [API keys](/developers/authentication/api-keys) for setup. If you're not an owner, you'll see "Only owners can manage API keys. Ask your owner to create one if you need MCP access."
+- **Connected apps** — "See what's connected (ChatGPT, Claude), what it can do, and cut it off." Select **View connected apps** to open the list below. Non-owners see "Only owners can review or revoke connected apps."
+
+### Connected apps
+
+The **Connected apps** view is owner-only. It lists every app your team has connected through OAuth, with the subtext "Apps your team has connected through OAuth. Each app acts with the permissions the member who connected it granted." Before anyone connects anything, it reads "No connected apps yet." and "When a teammate connects an app over OAuth, it shows up here."
+
+Each app shows:
+
+- The app name.
+- **Connected by {name} ({role})** — who linked it and their role.
+- The permission areas it was granted, as badges like "Customers & contacts: View".
+- **Last used {date}**.
+
+For each app, owners can:
+
+- **Manage** — re-adjust what the app can do. You can't grant an app more than the member who connected it is allowed.
+- **Revoke** — the trash button. A dialog titled "Revoke {name}?" appears with the body "This app will immediately lose access to your Zoop data. It can be reconnected later by going through OAuth again." Select **Cancel** to back out or **Revoke access** to cut it off.
+
+<Callout type="info">TODO(screenshot): the Connected apps list showing an app with permission badges and the Manage and Revoke actions.</Callout>
+
+Developers who want the full list of permission areas and what each one covers can read the [scopes reference](/developers/authentication/scopes).

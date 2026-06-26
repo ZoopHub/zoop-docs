@@ -129,7 +129,11 @@ If you have a spreadsheet of items — from a previous system or built in Excel 
   <Step title="Upload your file">
     Drag your CSV file onto the upload area, or select **Browse files**. The file must be in CSV format (`.csv`) and under 20 MB.
 
-    Three columns are required in your file: **Name**, **Kind**, and **Retail Price**. Everything else is optional.
+    Three columns are required in your file. The wizard lists them as **Name**, **Item type**, and **Retail Price**. Everything else is optional.
+
+    <Callout type="warning">
+    The wizard labels this field **Item type**, but the automatic column matching still looks for a spreadsheet column literally named `kind`. A column headed "Item type" won't auto-match — you'll need to map it by hand in step 2.
+    </Callout>
 
     Optional columns you can include:
 
@@ -164,6 +168,8 @@ If you have a spreadsheet of items — from a previous system or built in Excel 
 </Steps>
 
 <Image src="https://doc-assets.zoop.pro/images/using-zoop/pricebook/csv-import.png" alt="The CSV import wizard: step 1, upload your CSV file (required columns: Name, Kind, Retail Price)" />
+
+<Callout type="info">TODO(screenshot): recapture the CSV import wizard showing the "Item type" column label</Callout>
 
 <Callout type="warning">If a row's kind is `discount`, the `discount_type` column is required. Rows missing it are skipped.</Callout>
 

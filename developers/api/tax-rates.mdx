@@ -12,6 +12,10 @@ All tools in this group require `read:tax_rates` or `write:tax_rates`. There is 
 New to the Zoop MCP tool layer? Start at [MCP overview](/developers/mcp) to learn how to connect and authenticate before calling any tools on this page.
 </Callout>
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `tax_rates.create`). When you call a tool, replace the dots with underscores — `tax_rates_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
 ---
 
 ## Scopes
@@ -57,7 +61,7 @@ Archived (soft-deleted) rates are excluded by default. Pass `include_archived: t
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "tax_rates.list",
+    "name": "tax_rates_list",
     "arguments": {}
   }
 }
@@ -96,7 +100,7 @@ Fetch a single tax rate by its `id`. Returns `not_found` if the rate does not ex
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "tax_rates.get",
+    "name": "tax_rates_get",
     "arguments": {
       "id": "d4e5f6a7-..."
     }
@@ -134,7 +138,7 @@ Create a new tax rate. The name must be unique among active rates in your tenant
   "id": 2,
   "method": "tools/call",
   "params": {
-    "name": "tax_rates.create",
+    "name": "tax_rates_create",
     "arguments": {
       "name": "CA sales tax",
       "rate_percentage": 8.25,
@@ -196,7 +200,7 @@ Two fields cannot be patched directly: `rate_decimal` (use `rate_percentage` ins
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "tax_rates.update",
+    "name": "tax_rates_update",
     "arguments": {
       "id": "d4e5f6a7-...",
       "rate_percentage": 9.0
@@ -231,7 +235,7 @@ If you archive the current default rate, the tenant default is cleared. New invo
   "id": 4,
   "method": "tools/call",
   "params": {
-    "name": "tax_rates.archive",
+    "name": "tax_rates_archive",
     "arguments": {
       "id": "d4e5f6a7-..."
     }

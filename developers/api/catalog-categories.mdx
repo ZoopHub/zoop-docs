@@ -16,6 +16,10 @@ The five tools are `list`, `get`, `create`, `update`, and `delete`. All require 
 New to the Zoop API? Start at [MCP overview](/developers/mcp) to learn how to connect and authenticate before calling any tools.
 </Callout>
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `catalog_categories.create`). When you call a tool, replace the dots with underscores — `catalog_categories_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
 ---
 
 ## Scopes
@@ -45,7 +49,7 @@ This tool takes no input parameters.
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.list",
+    "name": "catalog_categories_list",
     "arguments": {}
   }
 }
@@ -84,7 +88,7 @@ Fetch a single category by its `id`. Returns a `not_found` error if the ID does 
   "id": 2,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.get",
+    "name": "catalog_categories_get",
     "arguments": {
       "id": "a1b2c3d4-0002-0000-0000-000000000000"
     }
@@ -130,7 +134,7 @@ This tool requires a token linked to a specific user. API keys generated without
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.create",
+    "name": "catalog_categories_create",
     "arguments": {
       "name": "HVAC",
       "description": "Heating, ventilation, and air conditioning",
@@ -148,7 +152,7 @@ This tool requires a token linked to a specific user. API keys generated without
   "id": 4,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.create",
+    "name": "catalog_categories_create",
     "arguments": {
       "name": "Filters & media",
       "parent_id": "a1b2c3d4-0010-0000-0000-000000000000",
@@ -219,7 +223,7 @@ You cannot move a category under one of its own descendants — that would creat
   "id": 5,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.update",
+    "name": "catalog_categories_update",
     "arguments": {
       "id": "a1b2c3d4-0002-0000-0000-000000000000",
       "name": "Drain, sewer & jetting",
@@ -258,7 +262,7 @@ This is a permanent delete. There is no archive or recycle bin for categories. T
   "id": 6,
   "method": "tools/call",
   "params": {
-    "name": "catalog_categories.delete",
+    "name": "catalog_categories_delete",
     "arguments": {
       "id": "a1b2c3d4-0002-0000-0000-000000000000"
     }

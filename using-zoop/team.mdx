@@ -82,6 +82,50 @@ You cannot remove the last owner of the account.
 
 ---
 
+## Control MCP & API access per member
+
+Roles set what a person sees in Zoop. This setting controls something separate: what they — and any API key or AI assistant they connect — can reach through Zoop's MCP server and API. Think of it as a ceiling.
+
+On the **Members** table, each row has a shield icon ("Manage MCP & API access for {name}"). Select it to open the **MCP & API access** dialog. It reads "Choose what {name} can reach through Zoop's MCP server and API. This is the ceiling for any key or assistant they connect." The dialog starts "Seeded from this member's current access," and a **Reset to {role} defaults** button puts it back to the defaults for their role.
+
+<Callout type="info">TODO(screenshot): a team member row with the shield icon visible.</Callout>
+
+You set access one area at a time. Each of these can be **None**, **View**, or **Edit**:
+
+- Customers & contacts
+- Jobs & scheduling
+- Quotes & estimates
+- Invoices & payments
+- Catalog & pricing
+- Messages & notes
+- Business settings
+
+Owners also see an **Admin access** toggle — billing, tenant settings, and credentials.
+
+Select **Save access** when done.
+
+<Callout type="info">TODO(screenshot): the MCP & API access dialog showing the permission areas set to None, View, or Edit.</Callout>
+
+<Callout type="warning">
+This is the ceiling — the most any API key or AI assistant that member connects can ever do. Tightening an area immediately limits everything they've already connected, not just future connections.
+</Callout>
+
+### Set access when you invite someone
+
+The invite form has a collapsible **Customize MCP/API access** preview that shows the selected role's defaults. The ceiling is applied from the role when the member accepts. Each role's defaults:
+
+| Role | Default access |
+|------|----------------|
+| **Owner** | Full access including billing, integrations, and team management. |
+| **Office** | Operational access — schedule, customers, jobs. No financials, no settings. |
+| **Tech** | Own assigned jobs only. No customer list, no settings. |
+
+New members default to **Tech**. After they accept, you can fine-tune their ceiling any time with the shield icon above.
+
+To see what each member's apps are actually doing with that access, owners can review the [Connected apps list](/using-zoop/settings#connected-apps) in Settings. For more on how Zoop's AI features use this access, see [AI features](/using-zoop/ai-features).
+
+---
+
 ## Crews
 
 A crew is a named group of teammates. When you dispatch a job to a crew, all members of that crew are assigned to it — no need to add people one by one.

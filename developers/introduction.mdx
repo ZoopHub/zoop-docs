@@ -8,6 +8,8 @@ This page explains how the Zoop API works and how to make your first request.
 
 Zoop's API is built on [MCP](https://modelcontextprotocol.io) (Model Context Protocol) — an open standard for calling structured tools over HTTP. You send a request to one endpoint, name the tool you want to run (for example `customers.search`), and get back structured data. This is the same tool layer the in-product Zoop AI agent uses, exposed as a stable API for your own integrations.
 
+When you make the call, you send the tool's **wire name** — the dotted canonical name with each dot replaced by an underscore (`customers.search` → `customers_search`). See [tool names](/developers/concepts#tool-names).
+
 <Callout type="info">
 There is no OpenAPI/REST spec yet. All programmatic access goes through the MCP endpoint described here.
 </Callout>
@@ -87,10 +89,10 @@ The full scope list is in [Authentication — scopes](/developers/authentication
 
 The example below calls `tools/list` — a built-in method that returns all the tools your token can access. It is a safe, read-only call you can use to confirm your token works before writing any real integration code.
 
-Replace `zoop_uk_<secret>` with your actual API key, and replace `https://app.zoop.pro` with your Zoop app host.
+Replace `zoop_uk_<secret>` with your actual API key, and replace `https://app.zoop.example` with your Zoop app host (resolve the real host from `GET /.well-known/oauth-protected-resource`).
 
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -102,7 +104,7 @@ A successful response returns a JSON object containing a list of tool definition
 To call a specific tool, change `method` to `tools/call` and add a `params` body. The example below searches for customers matching "Henderson":
 
 ```bash
-curl -X POST https://app.zoop.pro/api/mcp \
+curl -X POST https://app.zoop.example/api/mcp \
   -H "Authorization: Bearer zoop_uk_<secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -111,7 +113,7 @@ curl -X POST https://app.zoop.pro/api/mcp \
     "id": 2,
     "method": "tools/call",
     "params": {
-      "name": "customers.search",
+      "name": "customers_search",
       "arguments": { "q": "Henderson" }
     }
   }'

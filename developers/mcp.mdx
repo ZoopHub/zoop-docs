@@ -134,6 +134,8 @@ Both blocks give the client a `url` and an `Authorization` header. Zoop's MCP se
 
 Replace `<your-zoop-base-url>` with the base URL for your environment (look it up from `/.well-known/oauth-protected-resource`). Replace `<your-api-key-or-token>` with a `zoop_uk_` or `zoop_tk_` key from [API keys](/developers/authentication/api-keys).
 
+On connect, the server also hands the model a short **back-office assistant brief** — it sets Zoop's own voice, a confirm-then-link style (acknowledge what was done, then share a "Verify on Zoop" link), a rule to confirm before anything destructive, and a standing instruction to never invent facts. ChatGPT honors this brief; on Claude end-user clients it is best-effort.
+
 ## Making requests directly with curl
 
 If you want to call the endpoint yourself without an MCP client library, use `curl`. The examples below show the exact request format.
@@ -161,7 +163,7 @@ The response lists every available tool with its name, description, and the fiel
   "result": {
     "tools": [
       {
-        "name": "customers.search",
+        "name": "customers_search",
         "description": "Search customers by name, phone, tag, or status.",
         "inputSchema": {
           "type": "object",
@@ -176,6 +178,10 @@ The response lists every available tool with its name, description, and the fiel
 }
 ```
 
+<Callout type="info">
+Tools whose input is a discriminated union or an intersection — for example `customers.create`, `customers.update`, `invoices.create`, and `catalog_items.create` — now advertise their real input fields in `tools/list` (previously these tools showed no arguments). One caveat: the advertised schema may mark some branch-specific fields as optional, but the server still strictly validates every call.
+</Callout>
+
 ### Call a specific tool
 
 ```bash
@@ -187,7 +193,7 @@ curl -X POST https://<your-zoop-base-url>/api/mcp \
     "id": 2,
     "method": "tools/call",
     "params": {
-      "name": "customers.search",
+      "name": "customers_search",
       "arguments": {
         "query": "Sarah",
         "limit": 5
@@ -254,7 +260,11 @@ Auth failures happen before any tool runs and use standard HTTP status codes: `4
 
 There are **65 tools** across **13 entities**. Every entity follows a five-verb pattern: list or search, get, create, update, and a destructive verb (usually `archive`, but some entities diverge — see the notes under each section).
 
-Tool names follow the `<entity>.<verb>` format, for example `customers.search` or `job_series.list`. **U** marks tools that require a user actor — tenant-key tokens (`zoop_tk_`) cannot call them.
+Tool names follow the `<entity>.<verb>` format, for example `customers.search` or `job_series.list` — that dotted form is the **canonical name** used throughout this catalog. When you actually call a tool, send its **wire name**: the same name with each dot replaced by an underscore (`customers_search`, `job_series_list`). See [tool names](/developers/concepts#tool-names). **U** marks tools that require a user actor — tenant-key tokens (`zoop_tk_`) cannot call them.
+
+<Callout type="warning">
+**Canonical name vs wire name.** Throughout these docs and in Zoop's audit logs, every tool has a dotted canonical name like `customers.create`. But the name you send in a `tools/call` replaces each dot with an underscore — `customers_create` — because MCP web connectors (Claude.ai, ChatGPT) and the Anthropic API require tool names to match `^[a-zA-Z0-9_-]{1,64}$`. A dotted name in `tools/call` matches nothing. Read it as `customers.create`; call it as `customers_create`.
+</Callout>
 
 ### Customers — `read:customers` / `write:customers`
 
@@ -424,6 +434,61 @@ Two pagination styles are used across the tool catalog:
 
 - **Cursor-based** (`customers.search`, `notes.list`): pass the `cursor` value from the previous response to fetch the next page. Check `hasMore` to know if there are more results, and read `nextCursor` to get the value to pass next time.
 - **Page-based** (all other list tools): pass a `page` integer starting at `1`.
+
+## Tool annotations
+
+Every tool ships with a set of **annotations** — standard MCP hints that describe how a tool behaves so a client can present it sensibly (for example, showing a confirm prompt before a destructive action).
+
+| Annotation | Meaning |
+|---|---|
+| `title` | A human-readable name for the tool. |
+| `readOnlyHint` | `true` when all of the tool's required scopes are `read:*`. |
+| `destructiveHint` | `true` for the remove verbs — `archive`, `delete`, `cancel`, `void`, and `end`. |
+| `openWorldHint` | Always `false`. Every tool acts only on your own tenant; nothing reaches outside it. |
+
+`idempotentHint` is not advertised.
+
+<Callout type="warning">
+Annotations are **advisory hints**, not a security control. A client may use `destructiveHint` to ask for confirmation before it calls a tool, but the real gate on every call is the scope check — the server enforces scopes no matter what any hint says.
+</Callout>
+
+## Verify on Zoop links
+
+The `get` and `create` tools for **customers, jobs, invoices, quotes, and plans** include a top-level `url` field in their result — a direct link to that record in Zoop, so a person can open it and confirm the work. The link has the form `https://app.zoop.example/<tenant-id>/<resource>/<id>`, where `<resource>` is plural (for example `jobs` or `invoices`). Resolve the real host from `/.well-known/oauth-protected-resource` — `https://app.zoop.example` is a placeholder.
+
+The `update` tools, the remove verbs, and the `list` / `search` tools do **not** return a `url`.
+
+## Resources
+
+Beyond tools, Zoop's MCP server exposes a small set of **MCP resources** — discoverable, read-only records a client can browse and pull into context. These are not the same as Zoop's 13 data resources from [Core concepts](/developers/concepts#resources); here "resource" means the MCP-protocol object.
+
+There are four, one per record type, each with a URI template — note the **singular** path segment:
+
+| Resource | URI template |
+|---|---|
+| Customer | `zoop://customer/{id}` |
+| Job | `zoop://job/{id}` |
+| Invoice | `zoop://invoice/{id}` |
+| Quote | `zoop://quote/{id}` |
+
+There is no plan resource.
+
+- **`resources/list`** returns up to 25 recent records for each entity you hold the read scope for. Entities you lack the read scope for are silently omitted — not errored.
+- **`resources/read`** takes a resource URI, requires a valid UUID, and returns the same JSON shape as the matching `*.get` tool (`zoop://customer/{id}` mirrors `customers.get`, and so on).
+
+Resources are a convenience for Claude clients — ChatGPT connectors currently ignore them. They grant no extra access: everything reachable as a resource is also reachable through the read tools, and the same scope checks apply.
+
+## Prompts
+
+The server also publishes three **MCP prompts** — prepared, parameterized workflows a client can offer the user by name. Prompt names use hyphens.
+
+| Prompt | Arguments | Requires | What it does |
+|---|---|---|---|
+| `customer-job-draft` | `customer_id` (required), `notes` | `read:customers` | Drafts a job for the customer, then calls `jobs_create`. |
+| `draft-invoice` | `customer_id` (required), `work_summary` | `read:customers` | Itemizes the work into an invoice draft, then calls `invoices_create`. It lets the tool compute totals and tax — it never invents numbers. |
+| `plan-my-day` | `date` (optional, defaults to today) | `read:jobs` | Lays out the day's jobs via `jobs_list`. |
+
+Like resources, prompts are a convenience for Claude clients. They never bypass a tool's scope check — the underlying tool still enforces every scope it requires.
 
 ## What is not available yet
 

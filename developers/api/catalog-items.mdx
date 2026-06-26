@@ -23,6 +23,10 @@ All tools in this group require the `read:catalog_items` or `write:catalog_items
 If you are new to the MCP layer, read [MCP overview](/developers/mcp) first to learn how to connect and authenticate.
 </Callout>
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `catalog_items.create`). When you call a tool, replace the dots with underscores — `catalog_items_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
 ---
 
 ## Scopes
@@ -85,7 +89,7 @@ List catalog items for the tenant. Results are newest first. Each row includes t
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.list",
+    "name": "catalog_items_list",
     "arguments": {
       "kind": "service",
       "active": true,
@@ -128,7 +132,7 @@ Fetch one catalog item by `id`. Bundle items include a `components` array listin
   "id": 2,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.get",
+    "name": "catalog_items_get",
     "arguments": {
       "id": "b9c8d7e6-0000-0000-0000-000000000002"
     }
@@ -245,7 +249,7 @@ Create a new catalog item. The `kind` field is required and determines which oth
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.create",
+    "name": "catalog_items_create",
     "arguments": {
       "kind": "service",
       "name": "Drain cleaning",
@@ -266,7 +270,7 @@ Create a new catalog item. The `kind` field is required and determines which oth
   "id": 4,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.create",
+    "name": "catalog_items_create",
     "arguments": {
       "kind": "discount",
       "name": "Senior discount",
@@ -285,7 +289,7 @@ Create a new catalog item. The `kind` field is required and determines which oth
   "id": 5,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.create",
+    "name": "catalog_items_create",
     "arguments": {
       "kind": "bundle",
       "name": "HVAC tune-up package",
@@ -393,7 +397,7 @@ For bundle items, passing `components` **replaces the entire component list** in
   "id": 6,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.update",
+    "name": "catalog_items_update",
     "arguments": {
       "id": "e1f2a3b4-0000-0000-0000-000000000001",
       "unit_price": 195.00
@@ -410,7 +414,7 @@ For bundle items, passing `components` **replaces the entire component list** in
   "id": 7,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.update",
+    "name": "catalog_items_update",
     "arguments": {
       "id": "b9c8d7e6-0000-0000-0000-000000000002",
       "components": [
@@ -461,7 +465,7 @@ You cannot archive a catalog item that is still a component in an active bundle.
   "id": 8,
   "method": "tools/call",
   "params": {
-    "name": "catalog_items.archive",
+    "name": "catalog_items_archive",
     "arguments": {
       "id": "e1f2a3b4-0000-0000-0000-000000000001"
     }

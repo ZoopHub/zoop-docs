@@ -115,14 +115,49 @@ Request admin scopes only when strictly necessary. Most integrations do not need
 
 ## User-actor vs tenant-actor
 
-Every authenticated request in Zoop runs as one of two "actor" types. This affects which scopes you can actually receive.
+Every credential in Zoop acts as one of two "actor" types, and the actor type decides whether a per-member ceiling applies.
 
-- **User-actor** — the token represents a specific human user (owner, office staff, or technician) who clicked "Authorize" in your OAuth flow. The scopes your token receives are capped by that user's role. For example, a technician-role user cannot authorize `admin:tenant` even if your client requests it — Zoop silently drops scopes the user's role doesn't allow.
-- **Tenant-actor** — an API key that acts on behalf of the business as a whole, not tied to any individual user. The scopes are exactly what you set when creating the key.
+- **User-actor** — the credential represents a specific team member. Both OAuth access tokens and user API keys (`zoop_uk_…`) are user-actor credentials. Their effective scopes are bounded by that member's **ceiling** — see [the per-member ceiling](#the-per-member-ceiling) below.
+- **Tenant-actor** — a tenant API key (`zoop_tk_…`) that acts on behalf of the business as a whole, not tied to any individual. Tenant keys are **not** bound to any member ceiling; their scopes are exactly what you set when creating the key.
 
-In short: OAuth gives you user-actor tokens, and API keys give you tenant-actor tokens.
+So OAuth always gives you a user-actor token, while API keys come in both kinds depending on the type you create.
 
 See [OAuth](/developers/authentication/oauth) and [API keys](/developers/authentication/api-keys) for setup details.
+
+## The per-member ceiling
+
+Every team member has a **ceiling**: the maximum set of external (API and MCP) scopes any credential they connect can ever use. The ceiling lives on their membership. An empty ceiling means no external access at all.
+
+- The member's **role sets the default ceiling** when they accept their invite. An owner can then tighten or widen it per member from the [Team](/using-zoop/team) page, in the **MCP & API access** dialog.
+- The **effective scope** of any user-actor credential is `granted ∩ ceiling` — the scopes attached to the credential intersected with the member's current ceiling. This is re-evaluated on **every request**. So if an owner lowers a member's ceiling, every outstanding OAuth token *and* user API key for that member is narrowed immediately — not just on the next token refresh.
+- Only owners can grant the admin scopes (`admin:tenant`, `admin:billing`, `admin:credentials`) to an external client.
+
+Default ceilings by role:
+
+| Role | Default ceiling |
+|---|---|
+| Owner | Every area, read + write, plus admin |
+| Office | Every area read + write, except catalog and settings are read-only; no admin |
+| Tech | Customers, jobs, quotes, and messages read + write; invoices and catalog read-only; no settings; no admin |
+
+Tenant keys (`zoop_tk_…`) ignore all of this — they represent the account, not a person.
+
+## Permission areas
+
+In the consent screen and the per-member access dialog, scopes are not shown one by one. They are grouped into seven plain-language **permission areas**, each set to **None**, **View**, or **Edit**, plus an owner-only **Admin** toggle. View maps to the `read:*` scopes for that area; Edit adds the `write:*` scopes.
+
+| Permission area | View grants | Edit adds |
+|---|---|---|
+| Customers & contacts | `read:customers` | `write:customers` |
+| Jobs & scheduling | `read:jobs`, `read:job_series` | `write:jobs`, `write:job_series` |
+| Quotes & estimates | `read:quotes`, `read:estimates` | `write:quotes`, `write:estimates` |
+| Invoices & payments | `read:invoices`, `read:plans` | `write:invoices`, `write:plans` |
+| Catalog & pricing | `read:catalog`, `read:catalog_items`, `read:catalog_categories`, `read:tax_rates` | `write:catalog`, `write:catalog_items`, `write:catalog_categories`, `write:tax_rates` |
+| Messages & notes | `read:communications`, `read:notes` | `write:communications`, `write:notes` |
+| Business settings | `read:settings`, `read:companies` | `write:settings`, `write:companies` |
+| Admin access (owner only) | `admin:tenant`, `admin:billing`, `admin:credentials` | — |
+
+These same areas appear when an owner sets a member's ceiling on the [Team](/using-zoop/team) page and on the [Settings](/using-zoop/settings) screens. When a member connects an [OAuth](/developers/authentication/oauth) client, the consent screen offers the areas inside their current ceiling: a fresh self-registered client is offered the member's whole ceiling to choose from (there is no fixed read-only default set anymore), and a client that pre-registered scopes is narrowed down to the ceiling.
 
 ## Requesting scopes
 
@@ -141,7 +176,7 @@ Pass your chosen scopes as a space-separated list in the `scope` parameter. The 
   </Tab>
   <Tab title="API key (scopes set at creation)">
     ```bash
-    curl -X POST https://api.zoopapp.com/{tenantId}/api/external-access \
+    curl -X POST https://app.zoop.example/{tenantId}/api/external-access \
       -H "Authorization: Bearer ADMIN_TOKEN" \
       -H "Content-Type: application/json" \
       -d '{
@@ -151,6 +186,8 @@ Pass your chosen scopes as a space-separated list in the `scope` parameter. The 
     ```
   </Tab>
 </Tabs>
+
+`https://app.zoop.example` is a placeholder. Resolve your real host from `GET /.well-known/oauth-protected-resource` — never hardcode it.
 
 ## Choosing the right scopes
 

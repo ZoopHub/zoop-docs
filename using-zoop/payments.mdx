@@ -17,7 +17,7 @@ TODO(screenshot): The Settings → Payments page showing the "Set up payments" s
 To accept credit and debit cards, you need to connect a Stripe account. Stripe moves the money; Zoop keeps the record. If you only take cash or checks, you can skip this section.
 
 <Callout type="warning">
-Only the account owner can connect or disconnect Stripe. Other team roles do not see Settings → Payments.
+Only the account owner can connect Stripe and manage payment settings. Other team roles do not see Settings → Payments.
 </Callout>
 
 <Steps>
@@ -51,7 +51,7 @@ From Settings → Payments, select **Open Stripe dashboard** to view payouts, di
 
 ### Disconnect Stripe
 
-Select **Disconnect** on the Settings → Payments page to remove the Stripe connection. New card payments stop immediately. Past invoices, payments, and customer records are preserved in Zoop — nothing is deleted.
+Disconnecting Stripe from within Zoop isn't available right now. The **Disconnect** control is hidden while a safe disconnect-and-reconnect flow is built — disconnecting mid-stream would block charges on in-flight invoices and stop refunds. Either way, your invoices, payments, and customer records always stay in Zoop and are never deleted.
 
 ---
 

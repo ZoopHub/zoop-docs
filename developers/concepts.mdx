@@ -47,6 +47,8 @@ If your integration creates jobs, notes, or other records that need an author at
 
 Zoop organizes its data into **13 resources** — the core objects you read and write through the API. Each resource maps to a set of tools and a pair of **scopes** (permissions): one for reading (`read:<resource>`) and one for writing (`write:<resource>`). Your token must hold the relevant scope or the call will be rejected.
 
+"Resources" in this section means Zoop's data objects. Separately, the MCP server exposes a small set of discoverable, read-only "resources" in the MCP-protocol sense — a convenience for AI clients. Those are a different thing; see [MCP](/developers/mcp).
+
 | Resource | What it represents | Scope pair |
 |---|---|---|
 | Customers | People and companies you do work for | `read:customers` / `write:customers` |
@@ -79,7 +81,15 @@ Every resource exposes exactly five operations (sometimes called CRUD — create
 | **update** | Partially updates an existing record — only the fields you send are changed. |
 | **remove verb** | Removes or terminates the record. Usually `archive`, but a few resources use a different verb (see below). |
 
-Tool names follow the pattern `<resource>.<verb>`, for example `customers.search`, `jobs.create`, `invoices.void`.
+### Tool names
+
+Every tool has a dotted **canonical name** in the form `<resource>.<verb>` — for example `customers.search`, `jobs.create`, `invoices.void`. That is the name you see throughout these docs, in headings, and in Zoop's audit logs.
+
+But when you actually call a tool over MCP, you send a **wire name** that swaps each dot for an underscore: `customers.search` becomes `customers_search`, and `job_series.list` becomes `job_series_list`. The mapping is one-to-one — only the dot separator changes. Any underscore that is already part of a resource name (like the one in `job_series`) stays put.
+
+<Callout type="warning">
+**Canonical name vs wire name.** Throughout these docs and in Zoop's audit logs, every tool has a dotted canonical name like `customers.create`. But the name you send in a `tools/call` replaces each dot with an underscore — `customers_create` — because MCP web connectors (Claude.ai, ChatGPT) and the Anthropic API require tool names to match `^[a-zA-Z0-9_-]{1,64}$`. A dotted name in `tools/call` matches nothing. Read it as `customers.create`; call it as `customers_create`.
+</Callout>
 
 ### List and search
 

@@ -130,7 +130,7 @@ See [Rate limits](/developers/rate-limits) for per-credential and per-tenant lim
 On `401` responses, Zoop includes a `WWW-Authenticate` header. OAuth 2.0 clients can follow the URL in that header to auto-discover the authorization server, supported scopes, and token endpoint:
 
 ```http
-WWW-Authenticate: Bearer realm="zoop", resource_metadata="https://app.zoop.pro/.well-known/oauth-protected-resource"
+WWW-Authenticate: Bearer realm="zoop", resource_metadata="https://app.zoop.example/.well-known/oauth-protected-resource"
 ```
 
 If you're using a simple API key, you can ignore this header.

@@ -6,7 +6,95 @@ audience: developer
 
 This page lists what has changed in Zoop and its docs. The newest entries are at the top. If something you relied on has changed, you'll find it here first.
 
+## 2026-06-26
+
+### Changed: disconnecting Stripe is temporarily unavailable
+
+The **Disconnect** button on Settings → Payments is hidden for now while a safe disconnect-and-reconnect flow is built — disconnecting mid-stream would block charges on in-flight invoices and stop refunds. Your invoices, payments, and customer records are unaffected. See [Getting paid](/using-zoop/payments#disconnect-stripe).
+
+---
+
+## 2026-06-25
+
+### Improved: faster, clearer create flows
+
+- Starting a job, quote, or invoice from a customer's page now pre-fills that customer on the form.
+- Adding a customer ("+ New", or "Add a customer" on the dashboard) now opens a full page instead of a popup.
+- The internal customer number no longer appears in the customers list.
+- Notes render markdown — headings, lists, bold/italic, links, and code — in a compact style, and show the author's name.
+- Deleting a contact now asks you to confirm in a dialog.
+- The pricebook CSV importer labels the item-kind column **Item type** (a column named differently must be mapped by hand).
+
+---
+
+## 2026-06-22
+
+### New: setup checklist for new accounts
+
+New owners get a setup checklist on the dashboard — add business details, add your first customer, connect Stripe — that checks itself off as you go and disappears once you're set up. See [Get set up](/using-zoop/getting-started).
+
+---
+
+## 2026-06-19
+
+### New: MCP resources, prompts, and tool annotations
+
+The MCP server now advertises more of itself to connected clients:
+
+- **Resources** — read-only `zoop://customer/{id}`, `zoop://job/{id}`, `zoop://invoice/{id}`, and `zoop://quote/{id}` records, discoverable via `resources/list` and `resources/read`.
+- **Prompts** — `customer-job-draft`, `draft-invoice`, and `plan-my-day`.
+- **Tool annotations** — each tool advertises `readOnlyHint`, `destructiveHint`, `openWorldHint`, and a human `title`. These are advisory hints for clients, not a security control — the scope check is still the real gate.
+
+Tools whose input is a discriminated union or intersection (such as `customers.create` and `invoices.create`) now advertise their real input fields — previously some clients saw no arguments for these. See [MCP](/developers/mcp).
+
+### New: role-aware dashboard
+
+The dashboard now shows live, role-aware cards — money and jobs for owners, today's schedule and needs-attention for owners and dispatchers, and their own day for crew. See [Your dashboard](/using-zoop/dashboard).
+
+---
+
+## 2026-06-17
+
+### New: resolve customers, jobs, and assignees by name
+
+- `jobs.create`, `invoices.create`, `quotes.create`, and `plans.create` accept a `customer` object (`{ name, phone?, email? }`) and find or create the matching customer. The result includes a `customer_created` flag. The by-name path additionally requires `read:customers` and `write:customers`.
+- `jobs.create` and `jobs.update` accept `assignees` (team-member names); `jobs.get`, `jobs.update`, and `jobs.cancel` accept `job: { query }` (matched against title or customer). Ambiguous lookups return `needs_customer`, `needs_assignee`, or `needs_job` results to disambiguate — these are normal results, not errors. See [Jobs](/developers/api/jobs#resolving-by-name).
+
+### New: "Verify on Zoop" links
+
+`get` and `create` for customers, jobs, invoices, quotes, and plans now return a top-level `url` linking straight to the record. See [MCP](/developers/mcp#verify-on-zoop-links).
+
+---
+
+## 2026-06-16
+
+### New: per-member API & MCP permissions
+
+- Each team member now has a permission **ceiling** — the most any API key or connected app they connect can ever do. Owners set it per member from Settings → Team ("MCP & API access"); it's seeded from the member's role.
+- A user-actor credential's effective scopes are its granted scopes intersected with the member's ceiling, re-checked on every request — so lowering a ceiling immediately narrows that member's outstanding tokens and keys. Tenant keys are not capped by a member ceiling.
+- Owners can review and revoke connected apps under Settings → API & MCP → Connected apps.
+
+See [Scopes & permissions](/developers/authentication/scopes) and [Team & crews](/using-zoop/team).
+
+---
+
 ## 2026-06-15
+
+### Changed: call MCP tools by their underscore wire name
+
+MCP tool names are now exposed to clients with underscores instead of dots (`customers.create` → `customers_create`), so web connectors (ChatGPT, Claude) and the Anthropic API accept the tool list. Call tools by this wire name — the dotted form is canonical only and will not match in a `tools/call`. See [tool names](/developers/concepts#tool-names).
+
+### New: self-serve OAuth client registration
+
+Public MCP clients can now self-register via OAuth Dynamic Client Registration (DCR) against the authorization server — no admin needed — and OAuth discovery (`/.well-known/oauth-protected-resource`) is reachable without authentication. A self-registered client holds no access until a user consents; clients that never complete consent are removed after 30 days. See [OAuth](/developers/authentication/oauth#self-serve-client-registration).
+
+### Changed: OAuth consent now offers the member's ceiling
+
+Self-registered clients are no longer auto-granted a fixed read-only scope set (which previously included `write:communications`). At consent, a client is offered the connecting member's permission ceiling to choose from. See [OAuth](/developers/authentication/oauth).
+
+### New: connect instructions in Settings
+
+Settings → API & MCP now shows your MCP server address and step-by-step instructions for connecting ChatGPT, Claude, and Claude Code.
 
 ### Fixed: `customers.create` now works with tenant-key tokens over MCP
 

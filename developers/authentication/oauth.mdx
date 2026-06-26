@@ -31,13 +31,13 @@ Your app              Supabase auth             Zoop
 
 ## Prerequisites
 
-Before you run this flow, you need three things set up by a Zoop admin.
+Before you run this flow, you need an OAuth client and a redirect URI.
 
-1. **A registered OAuth client.** Ask your Zoop instance admin to register one via the Supabase dashboard or Management API. You get back a `client_id`. Server-side (confidential) clients also get a `client_secret`.
+1. **An OAuth client.** Public clients — ChatGPT, Claude, MCP connectors, native apps, SPAs — **self-register** against the Supabase auth server using [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591) Dynamic Client Registration. No Zoop admin is involved. You discover the `registration_endpoint` from the authorization server metadata (see [Discovery](#discovery)) and POST your client details to it; you get back a `client_id`. See [Self-serve client registration](#self-serve-client-registration) below. Confidential (server-side) clients that need a `client_secret` can still be registered by a Zoop admin.
 
-2. **Allowed scopes.** Zoop uses a default-deny scope model — a new client has no permissions until an admin adds specific scopes to the `oauth_client_registrations` table. The consent screen shows exactly those registered scopes, regardless of what you put in the `scope` query parameter.
+2. **A redirect URI.** The URL in your app where Zoop sends the user after they approve access. You register it with the client — unregistered URIs are rejected.
 
-3. **A pre-registered redirect URI.** The URL in your app where Zoop sends the user after they approve access. It must be registered with the client in advance — unregistered URIs are rejected.
+A freshly registered client holds **no access** until a user completes the consent flow (default-deny). What that user can grant is bounded by their ceiling, not by the client alone — see [Scopes](#scopes) below.
 
 <Callout type="info">
 If you are building an MCP integration, the OAuth flow is the same. The token you receive can be sent directly to `POST /api/mcp` with an `Authorization: Bearer` header.
@@ -48,22 +48,22 @@ If you are building an MCP integration, the OAuth flow is the same. The token yo
 Before you build any URLs, find out which authorization server your Zoop instance uses. Do not hardcode it — resolve it from the protected-resource metadata endpoint:
 
 ```bash
-GET https://app.zoop.pro/.well-known/oauth-protected-resource
+GET https://app.zoop.example/.well-known/oauth-protected-resource
 ```
 
 Response:
 
 ```json
 {
-  "resource": "https://app.zoop.pro",
+  "resource": "https://app.zoop.example",
   "authorization_servers": ["https://<project>.supabase.co/auth/v1"],
   "bearer_methods_supported": ["header"],
-  "resource_documentation": "https://docs.zoop.work/api"
+  "resource_documentation": "https://docs.zoop.example/api"
 }
 ```
 
 <Callout type="warning">
-The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.pro`. You will need the exact `resource` string when you build the authorization URL and the token request.
+The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.example`. You will need the exact `resource` string when you build the authorization URL and the token request.
 </Callout>
 
 The `authorization_servers` array tells you which Supabase project handles auth for this instance. Use that URL to fetch the authorization server metadata — this gives you the exact `authorization_endpoint` and `token_endpoint` you will need in the steps below:
@@ -72,7 +72,17 @@ The `authorization_servers` array tells you which Supabase project handles auth 
 GET https://<project>.supabase.co/auth/v1/.well-known/oauth-authorization-server
 ```
 
-This endpoint returns standard OAuth 2.0 server metadata including supported grants, PKCE methods, and scopes.
+This endpoint returns standard OAuth 2.0 server metadata: supported grants, PKCE methods, scopes, and the `registration_endpoint` you use for [self-serve client registration](#self-serve-client-registration).
+
+## Self-serve client registration
+
+Public MCP clients register themselves — there is no Zoop admin step. Fetch the authorization server metadata (see [Discovery](#discovery)), read its `registration_endpoint`, and POST your client metadata there following [RFC 7591](https://datatracker.ietf.org/doc/html/rfc7591) Dynamic Client Registration. You get back a `client_id` (and, for confidential clients, a `client_secret`). Registration runs against the **Supabase** auth server, not the Zoop app.
+
+A self-registered client starts with **no allow-list and no access**. At consent it is offered the connecting member's whole ceiling to choose from — there is no fixed read-only default scope set. See [Scopes](#scopes).
+
+<Callout type="warning">
+A self-registered client that never completes consent is removed automatically after 30 days. To keep a client alive, have a user complete the consent flow for it.
+</Callout>
 
 ## The authorization flow
 
@@ -110,7 +120,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
       &code_challenge_method=S256
       &state=<state>
       &scope=openid
-      &resource=https://app.zoop.pro
+      &resource=https://app.zoop.example
     ```
 
     Key parameters:
@@ -140,7 +150,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
     </ParamField>
 
     <ParamField name="scope" type="string">
-      OIDC scopes (`openid`, `email`). Custom Zoop scopes come from the client's registered scope list — what you send here does not change what appears on the consent screen.
+      OIDC scopes only (`openid`, `email`). Zoop scopes are **not** set here — they are offered at consent from the connecting member's ceiling ∩ the client's allow-list, so what you send here does not change what appears on the consent screen. See [Scopes](#scopes).
     </ParamField>
 
     <ParamField name="resource" type="string" required>
@@ -150,10 +160,14 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
     Supabase validates the parameters and redirects the user to the Zoop consent screen:
 
     ```text
-    https://app.zoop.pro/oauth/consent?authorization_id=<opaque_id>
+    https://app.zoop.example/oauth/consent?authorization_id=<opaque_id>
     ```
 
     If the user is not signed in, they see the login page first and are returned here after. If they have multiple Zoop tenants, they choose which one to give your app access to.
+
+    The consent screen groups the access being requested into plain-language **permission areas** (Customers & contacts, Jobs & scheduling, and so on), each shown as None, View, or Edit. The areas offered come from the member's ceiling: a fresh self-registered client is offered the member's whole ceiling to pick from, and a client that pre-registered scopes is narrowed down to that ceiling. The OIDC `scope` parameter you sent above does not drive this. See [Scopes](#scopes) and the [permission areas](/developers/authentication/scopes#permission-areas) reference.
+
+    <Callout type="info">TODO(screenshot): consent screen showing grouped permission areas (View/Edit) — demo account only, no real PII</Callout>
 
     <Callout type="warning">
     One grant per client and user. If a user re-consents for a different tenant, the previous grant is overwritten — your app loses access to the old tenant and gains access to the new one. You cannot hold grants for multiple tenants from the same user simultaneously.
@@ -197,7 +211,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.pro"
+          --data-urlencode "resource=https://app.zoop.example"
         ```
       </Tab>
       <Tab title="Public client (native app / SPA)">
@@ -211,7 +225,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.pro"
+          --data-urlencode "resource=https://app.zoop.example"
         ```
       </Tab>
     </Tabs>
@@ -236,7 +250,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
     Send the access token in the `Authorization` header on every API request, using the `Bearer` scheme.
 
     ```bash
-    curl -X POST https://app.zoop.pro/api/mcp \
+    curl -X POST https://app.zoop.example/api/mcp \
       -H "Authorization: Bearer <access_token>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json, text/event-stream" \
@@ -246,7 +260,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
     The `Accept: application/json, text/event-stream` header is required — Zoop's MCP endpoint uses the streamable HTTP transport and needs both content types declared.
 
     ```ts
-    const res = await fetch('https://app.zoop.pro/api/mcp', {
+    const res = await fetch('https://app.zoop.example/api/mcp', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -258,7 +272,7 @@ This endpoint returns standard OAuth 2.0 server metadata including supported gra
         id: 1,
         method: 'tools/call',
         params: {
-          name: 'customers.search',
+          name: 'customers_search',
           arguments: { q: 'Henderson' },
         },
       }),
@@ -295,7 +309,7 @@ The access token is a JWT signed with ES256. If you want to inspect what's insid
 </ResponseField>
 
 <ResponseField name="scopes" type="array">
-  The scopes granted at consent time. Comes from the `oauth_client_grants` row written when the user approved the consent screen — not from whatever was in the `scope` parameter at authorization.
+  The scopes granted at consent time — not whatever was in the `scope` parameter at authorization. Effective access is re-checked against the member's current ceiling on every request, so it can be narrower than what's printed here (for example, if an owner lowered that member's ceiling after the token was issued).
 </ResponseField>
 
 <ResponseField name="client_id" type="string">
@@ -318,7 +332,7 @@ Access tokens expire after one hour. When that happens, use the refresh token to
       -H "Content-Type: application/x-www-form-urlencoded" \
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.pro"
+      --data-urlencode "resource=https://app.zoop.example"
     ```
   </Tab>
   <Tab title="Public client">
@@ -328,7 +342,7 @@ Access tokens expire after one hour. When that happens, use the refresh token to
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "client_id=<your_client_id>" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.pro"
+      --data-urlencode "resource=https://app.zoop.example"
     ```
   </Tab>
 </Tabs>
@@ -339,9 +353,15 @@ If the refresh request returns `401` with `error: "invalid_token"`, the user's s
 
 ## Scopes
 
-Scopes control what your app can read or write. They are set by the client's registration in `oauth_client_registrations`, not by the `scope` parameter you send in the authorization request. A new client has no scopes by default — a Zoop admin must add them before users can grant access.
+What your app can read or write is decided at consent, not by the `scope` parameter in the authorization request (that parameter only carries OIDC scopes like `openid`). The scopes a user can grant are bounded by **the connecting member's ceiling ∩ your client's allow-list**:
 
-Common scope sets:
+- A **fresh self-registered client** has no allow-list, so it is offered the member's *whole* ceiling to choose from.
+- A client that **pre-registered scopes** is narrowed down to the member's ceiling — anything outside the ceiling is dropped.
+- If the member's ceiling is **empty**, nothing is offered and the grant gives no access.
+
+There is no fixed read-only default scope set for self-registered clients anymore. Granted scopes are re-checked against the member's current ceiling on every request, so if an owner lowers that member's ceiling later, the token narrows immediately. See [scopes & permissions](/developers/authentication/scopes) for the ceiling model and the [permission areas](/developers/authentication/scopes#permission-areas) shown on the consent screen.
+
+Common scope sets to request:
 
 | Use case | Scopes |
 |---|---|

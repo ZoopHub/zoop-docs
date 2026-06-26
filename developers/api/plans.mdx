@@ -14,6 +14,10 @@ Plans require their own permission scopes: `read:plans` and `write:plans`. There
 If you are new to the MCP layer, start at [MCP overview](/developers/mcp) to understand how to connect and authenticate before calling tools.
 </Callout>
 
+<Callout type="info">
+Tool names appear here in their canonical dotted form (for example `plans.create`). When you call a tool, replace the dots with underscores — `plans_create`. See [tool names](/developers/concepts#tool-names). The example payloads below already use the wire form.
+</Callout>
+
 ---
 
 ## Scopes
@@ -79,7 +83,7 @@ List recurring plans for the tenant, most recent first. Returns a page of plan r
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "plans.list",
+    "name": "plans_list",
     "arguments": {
       "status": "active",
       "page": 1
@@ -113,7 +117,7 @@ Fetch a single recurring plan by `id`. The response includes the plan's line ite
   The plan's `id`. You can get this from `plans.list`.
 </ParamField>
 
-Returns a `not_found` error if the plan does not exist in this tenant.
+The response includes a top-level `url` — a Verify on Zoop link to the plan. Returns a `not_found` error if the plan does not exist in this tenant.
 
 ---
 
@@ -125,8 +129,12 @@ Create a recurring plan template. The plan starts in `active` status and Zoop ca
 `plans.create` requires a **user actor**. Tokens issued from tenant-bound API keys cannot call this tool. Use a user-bound API key or an OAuth token.
 </Callout>
 
-<ParamField body="customer_id" type="string (UUID)" required>
-  The customer this plan belongs to. Must exist in this tenant. Cannot be changed after creation.
+<ParamField body="customer_id" type="string (UUID)">
+  The customer this plan belongs to. Must exist in this tenant. Cannot be changed after creation. Provide either `customer_id` or `customer`.
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Identify the customer by name instead of by `customer_id`. Pass `{ "name": "...", "phone": "...", "email": "..." }` — only `name` is required. Zoop finds the matching customer or creates a new one. The `customer` path additionally requires both `read:customers` and `write:customers`. If the name matches more than one customer, the tool returns a `needs_customer` result (a `query` plus a `candidates` list of `id`/`display_name`/`primary_phone`/`primary_email`) instead of creating the plan — ask which one, then call again with `customer_id`. Pass `customer_id` or `customer`, not both.
 </ParamField>
 
 <ParamField body="title" type="string" required>
@@ -183,6 +191,8 @@ Create a recurring plan template. The plan starts in `active` status and Zoop ca
   Explicit anchor date for computing `next_invoice_at`. Defaults to the current time when omitted.
 </ParamField>
 
+The result includes a top-level `url` (a Verify on Zoop link to the new plan, of the form `https://app.zoop.example/<tenant-id>/plans/<id>`) and `customer_created` — `true` when the `customer` path created a new customer.
+
 #### Example
 
 ```json
@@ -191,7 +201,7 @@ Create a recurring plan template. The plan starts in `active` status and Zoop ca
   "id": 2,
   "method": "tools/call",
   "params": {
-    "name": "plans.create",
+    "name": "plans_create",
     "arguments": {
       "customer_id": "cccccccc-cccc-cccc-cccc-cccccccccccc",
       "title": "Monthly lawn care",
@@ -219,7 +229,7 @@ Create a recurring plan template. The plan starts in `active` status and Zoop ca
     "content": [
       {
         "type": "text",
-        "text": "{\"id\":\"p9a8b7c6-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"cccccccc-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-13T00:00:00.000Z\",\"lead_offset_days\":3,\"auto_charge_enabled\":false,\"items\":[{\"description\":\"Mow front and back\",\"quantity\":1,\"unit_price\":75,\"is_taxable\":true}],\"created_at\":\"2026-06-13T18:00:00.000Z\"}"
+        "text": "{\"id\":\"p9a8b7c6-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"cccccccc-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-13T00:00:00.000Z\",\"lead_offset_days\":3,\"auto_charge_enabled\":false,\"items\":[{\"description\":\"Mow front and back\",\"quantity\":1,\"unit_price\":75,\"is_taxable\":true}],\"created_at\":\"2026-06-13T18:00:00.000Z\",\"customer_created\":false,\"url\":\"https://app.zoop.example/<tenant-id>/plans/p9a8b7c6-...\"}"
       }
     ]
   }
@@ -284,7 +294,7 @@ Do not pass `customer_id` or `status` in the update body — the schema rejects 
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "plans.update",
+    "name": "plans_update",
     "arguments": {
       "id": "p9a8b7c6-...",
       "title": "Bi-monthly lawn care",
@@ -322,7 +332,7 @@ Calling `plans.cancel` on a plan that is already cancelled returns a `conflict` 
   "id": 4,
   "method": "tools/call",
   "params": {
-    "name": "plans.cancel",
+    "name": "plans_cancel",
     "arguments": {
       "id": "p9a8b7c6-..."
     }
