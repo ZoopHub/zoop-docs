@@ -23,7 +23,10 @@
     }
   },
   "redirects": [
-    { "source": "using-zoop/ai-features", "destination": "ai/automations" }
+    {
+      "source": "using-zoop/ai-features",
+      "destination": "ai/automations"
+    }
   ],
   "navigation": {
     "tabs": [
@@ -63,7 +66,8 @@
                 "title": "Receptionist & automations",
                 "path": "ai/automations"
               }
-            ]
+            ],
+            "icon": "lucide-sparkles"
           },
           {
             "group": "Customers & jobs",
