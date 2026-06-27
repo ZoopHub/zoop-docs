@@ -1,83 +1,81 @@
 # Remaining screenshots
 
-Auto-capture covered the list, form, settings, and detail pages. These callouts
-still need a shot — they are interactive dialogs that need a click to open, states
-that need specific data, or pages that can't be reached while logged in
-(login/onboarding, the public storefront, token-gated portal pages, native mobile).
-**40 screenshots remaining.**
+_Last updated 2026-06-27._
 
-Each is marked inline in the docs as `TODO(screenshot)`.
+Each pending shot is marked inline in the docs as
+`<Callout type="info">TODO(screenshot): …</Callout>`. Capture only from the
+**Valdez demo** (`app.zoop.mom`) — **no real PII** — and make sure the demo is on
+current `nextgen` first, or shots will contradict the docs.
 
-## using-zoop/calendar.mdx
-- Holds inbox panel open with one or two pending hold requests.
+## Pipeline (all in this folder)
 
-## using-zoop/communications.mdx
-- customer timeline showing a mix of inbound and outbound SMS and email entries.
-- timeline entry showing failed delivery with a reason visible.
+- `capture-screenshots.mjs` — Playwright. Logs in once (session persists in
+  `.userdata/`), walks a manifest, writes PNGs to `../../images/`. Redacts the PII
+  map in `.redact.json`, hides transient banners, supports `scrollY` actions.
+- `r2-upload.mjs` — uploads to the `zoop-docs` R2 bucket → `doc-assets.zoop.pro`.
+- `.redact.json` / `.r2.env` — gitignored (PII map / R2 creds).
 
-## using-zoop/customer-portal.mdx
-- customer portal home — header with business name/logo, outstanding quotes section, past invoices list, saved payment methods, and auto-pay section.
-- invoice page pay block with "Pay now" button and "Or pay offline" disclosure.
-- portal access section on the customer detail page — "Active" badge, created/last seen timestamps, Generate and Revoke buttons.
-- auto-pay section on the portal — consent row with plan name, card, "Granted" date, and "Turn off" button.
+```
+cd .docs-sync/screenshots
+# first run: omit HEADLESS, log in when the browser opens
+ZOOP_BASE=https://app.zoop.mom ZOOP_TENANT=valdez-painting \
+ZOOP_USERDATA="$PWD/.userdata" MANIFEST=<your>.json node capture-screenshots.mjs
+node r2-upload.mjs ../../images/path/to/shot.png   # scope to the files you captured
+```
 
-## using-zoop/dashboard.mdx
-- route intelligence card in both the empty and populated states.
-- payment recovery card showing all three buckets with non-zero counts, and the empty "all caught up" state side by side.
+Then replace the matching `TODO(screenshot)` callout with
+`<Image src="https://doc-assets.zoop.pro/images/<path>" alt="…" />`.
 
-## using-zoop/dispatch.mdx
-- the dispatch board with three member columns, the unassigned rail on the left, and colored map pins above.
-- a member column with a Likely late badge on one stop card and the colored dot in the column header.
+## Captured (this run, 2026-06-26/27)
 
-## using-zoop/getting-started.mdx
-- onboarding screen showing the company name field and trade picker
-- Business info tab in Settings showing logo upload, company name, tagline, trade types, brand color, contact information, and address fields (recapture once the demo account's tagline/website fields are tidied).
-- Settings → Card payments page in the active state, showing the green Active badge and the "Open Stripe dashboard" button
+- using-zoop/dashboard — owner dashboard
+- using-zoop/customers — Add Customer page
+- using-zoop/settings — API & MCP panel; Connected apps
+- using-zoop/pricebook — CSV import wizard ("Item type")
+- using-zoop/getting-started — Card payments (active state)
+- using-zoop/team — member row with the shield; MCP & API access dialog
+- using-zoop/dispatch — dispatch board (seeded today's jobs across both members)
 
-## using-zoop/invoices.mdx
-- job detail page showing the "Create invoice" action or button.
-- quote detail page showing the "Create invoice" action.
+## Remaining (45), grouped by what's blocking them
 
-## using-zoop/jobs.mdx
-- the "Apply changes to" modal showing the three radio options.
+### Needs data or an interaction in the demo (web-reachable with setup)
+Exist in the app but need a populated record, a dialog opened, or a specific state.
+Seed via the Zoop MCP where the tool allows it — jobs/invoices support line items +
+scheduling; **quote writes are owner-gated and the MCP connection is not
+owner-scoped**, so accept/line-item quote shots need the UI as an owner.
+- **quotes** — line-items table; editor with sections; "what's next" sidebar on an
+  *accepted* quote; lawn-estimator polygon + tool-inputs chip (needs a drawn measurement).
+- **payments** — Share-invoice dialog (payment link + QR); Issue-a-refund dialog
+  (needs a card-paid invoice); "set up" + active states side by side.
+- **invoices** — job detail & quote detail "Create invoice" action (conditional).
+- **jobs / recurring-jobs** — "Apply changes to" scope modal (edit a series job).
+- **team** — pending-invites table (needs a pending invite); job assignee picker (crew + members).
+- **calendar** — holds inbox with pending requests.
+- **communications** — customer timeline (SMS/email mix; failed-delivery entry) — needs message history.
+- **notes** — version-history panel (needs a multi-version note).
+- **recurring-billing** — auto-pay status card (needs a plan with auto-pay on).
+- **getting-started** — Business info tab, full page (recapture once tagline/website fields are tidied).
+- **customer-portal** — portal-access section on the customer *detail* page (Generate/Revoke) — web-reachable.
 
-## using-zoop/mobile.mdx
-- App store listing / home screen icon for iOS and Android.
-- LoginScreen and TenantPicker on a phone.
-- TodayScreen with a short list of jobs.
-- JobsScreen with status filter chips visible.
-- CustomersScreen showing the Active badge on a customer.
-- InvoicesScreen with the outstanding / paid-this-month summary cards.
-- QuotesScreen with the accepted-quotes banner.
-- NoteComposer with recording in progress.
+### Dashboard card close-ups (need element-level capture)
+The full owner dashboard is captured; these want cropped cards / specific states.
+Add element-screenshot support to the harness (capture a selector, not the page):
+- stat-card row; Today's schedule (with jobs + empty); Needs attention (items + all-clear);
+  payment recovery (buckets + "all caught up"); route intelligence (empty + populated).
 
-## using-zoop/notes.mdx
-- the version history panel open on the right side, showing a list of versions with v1, v2, etc., author name, relative time, and a Restore button beside each entry.
+### Fresh-owner account only
+Render only for a brand-new owner mid-onboarding — not reproducible on the established Valdez tenant:
+- onboarding screen (company name + trade picker); "Welcome to Zoop" dialog;
+  setup-checklist card; amber "Connect Stripe" banner.
 
-## using-zoop/payments.mdx
-- The Settings → Payments page showing the "Set up payments" state and the active Stripe card side by side.
-- The "Share invoice" dialog showing the payment link field, copy button, and QR code.
-- The "Issue a refund" dialog with the amount, reason, and notify toggle.
+### Off-web / separate surface
+- **Mobile app (8):** app-store/home icon; LoginScreen + TenantPicker; TodayScreen;
+  JobsScreen; CustomersScreen; InvoicesScreen; QuotesScreen; NoteComposer — native app, capture on a device/simulator.
+- **Customer portal (3):** portal home; invoice pay block; auto-pay section — token-gated customer surface.
+- **Storefront:** published storefront page — enable the public storefront first (Settings → Business info toggle is off).
+- **Developers / OAuth:** consent screen with grouped permission areas — needs a client mid-OAuth-flow.
 
-## using-zoop/quotes.mdx
-- Line items table with a catalog item selected and the unit price filled in.
-- Quote editor with two sections expanded, each with their own line items and date badge.
-- Satellite map view with a closed green polygon over a yard and the area readout visible.
-- Tool inputs panel showing a lawn measurement chip with square footage and address.
-- "What would you like to do next?" sidebar panel on an accepted quote, with the Create job and Create invoice buttons.
-
-## using-zoop/recurring-billing.mdx
-- Auto-pay status card on the plan detail page showing "Auto-pay is on" with card brand and last 4 digits.
-
-## using-zoop/recurring-jobs.mdx
-- Edit job page showing the three scope options (just this one, this and future, all occurrences).
-
-## using-zoop/storefront.mdx
-- the published storefront page showing the hero section, services grid, booking widget, service area, and contact/hours panel.
-
-## using-zoop/team.mdx
-- Pending invites table with resend and revoke icons visible.
-- Job assignee picker showing a crew name alongside individual team members.
-
-## welcome.mdx
-- Zoop dashboard showing open jobs, upcoming schedule, pending invoices, and active customers at a glance.
+### Quick win (reuse)
+- **welcome.mdx** — dashboard hero: reuse `using-zoop/dashboard/dashboard-owner.png`
+  (its callout still has the stale "pending invoices" wording).
+</content>

@@ -121,6 +121,7 @@ async function run() {
       for (const step of shot.actions || []) {
         if (step.click) await page.click(step.click, { timeout: 8000 }).catch(() => {});
         if (step.fill) await page.fill(step.fill[0], step.fill[1]).catch(() => {});
+        if (step.scrollY !== undefined) await page.evaluate(y => window.scrollTo(0, y), step.scrollY).catch(() => {});
         if (step.waitFor) await page.waitForSelector(step.waitFor, { timeout: 8000 }).catch(() => {});
         if (step.waitMs) await page.waitForTimeout(step.waitMs);
       }
