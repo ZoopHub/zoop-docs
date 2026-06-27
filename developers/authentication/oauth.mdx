@@ -48,22 +48,22 @@ If you are building an MCP integration, the OAuth flow is the same. The token yo
 Before you build any URLs, find out which authorization server your Zoop instance uses. Do not hardcode it — resolve it from the protected-resource metadata endpoint:
 
 ```bash
-GET https://app.zoop.example/.well-known/oauth-protected-resource
+GET https://app.zoop.pro/.well-known/oauth-protected-resource
 ```
 
 Response:
 
 ```json
 {
-  "resource": "https://app.zoop.example",
+  "resource": "https://app.zoop.pro",
   "authorization_servers": ["https://<project>.supabase.co/auth/v1"],
   "bearer_methods_supported": ["header"],
-  "resource_documentation": "https://docs.zoop.example/api"
+  "resource_documentation": "https://docs.zoop.pro/api"
 }
 ```
 
 <Callout type="warning">
-The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.example`. You will need the exact `resource` string when you build the authorization URL and the token request.
+The `resource` value is environment-specific (production, staging, local). Always read it from the discovery response — do not hardcode `https://app.zoop.pro`. You will need the exact `resource` string when you build the authorization URL and the token request.
 </Callout>
 
 The `authorization_servers` array tells you which Supabase project handles auth for this instance. Use that URL to fetch the authorization server metadata — this gives you the exact `authorization_endpoint` and `token_endpoint` you will need in the steps below:
@@ -120,7 +120,7 @@ A self-registered client that never completes consent is removed automatically a
       &code_challenge_method=S256
       &state=<state>
       &scope=openid
-      &resource=https://app.zoop.example
+      &resource=https://app.zoop.pro
     ```
 
     Key parameters:
@@ -160,7 +160,7 @@ A self-registered client that never completes consent is removed automatically a
     Supabase validates the parameters and redirects the user to the Zoop consent screen:
 
     ```text
-    https://app.zoop.example/oauth/consent?authorization_id=<opaque_id>
+    https://app.zoop.pro/oauth/consent?authorization_id=<opaque_id>
     ```
 
     If the user is not signed in, they see the login page first and are returned here after. If they have multiple Zoop tenants, they choose which one to give your app access to.
@@ -211,7 +211,7 @@ A self-registered client that never completes consent is removed automatically a
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.example"
+          --data-urlencode "resource=https://app.zoop.pro"
         ```
       </Tab>
       <Tab title="Public client (native app / SPA)">
@@ -225,7 +225,7 @@ A self-registered client that never completes consent is removed automatically a
           --data-urlencode "code=<authorization_code>" \
           --data-urlencode "redirect_uri=<your_registered_redirect_uri>" \
           --data-urlencode "code_verifier=<codeVerifier>" \
-          --data-urlencode "resource=https://app.zoop.example"
+          --data-urlencode "resource=https://app.zoop.pro"
         ```
       </Tab>
     </Tabs>
@@ -250,7 +250,7 @@ A self-registered client that never completes consent is removed automatically a
     Send the access token in the `Authorization` header on every API request, using the `Bearer` scheme.
 
     ```bash
-    curl -X POST https://app.zoop.example/api/mcp \
+    curl -X POST https://app.zoop.pro/api/mcp \
       -H "Authorization: Bearer <access_token>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json, text/event-stream" \
@@ -260,7 +260,7 @@ A self-registered client that never completes consent is removed automatically a
     The `Accept: application/json, text/event-stream` header is required — Zoop's MCP endpoint uses the streamable HTTP transport and needs both content types declared.
 
     ```ts
-    const res = await fetch('https://app.zoop.example/api/mcp', {
+    const res = await fetch('https://app.zoop.pro/api/mcp', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -332,7 +332,7 @@ Access tokens expire after one hour. When that happens, use the refresh token to
       -H "Content-Type: application/x-www-form-urlencoded" \
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.example"
+      --data-urlencode "resource=https://app.zoop.pro"
     ```
   </Tab>
   <Tab title="Public client">
@@ -342,7 +342,7 @@ Access tokens expire after one hour. When that happens, use the refresh token to
       --data-urlencode "grant_type=refresh_token" \
       --data-urlencode "client_id=<your_client_id>" \
       --data-urlencode "refresh_token=<refresh_token>" \
-      --data-urlencode "resource=https://app.zoop.example"
+      --data-urlencode "resource=https://app.zoop.pro"
     ```
   </Tab>
 </Tabs>

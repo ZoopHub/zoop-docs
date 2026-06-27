@@ -8,7 +8,7 @@ This guide walks you through getting an API key and sending your first two reque
 
 **What you need:** a Zoop account with owner-level access and a terminal with `curl`.
 
-**Base URL:** examples use the placeholder base URL `https://app.zoop.example`. For your actual environment (production, staging, or local), fetch `GET /.well-known/oauth-protected-resource` — the `resource` field is the canonical base URL for whatever environment you're hitting.
+**Base URL:** examples use the placeholder base URL `https://app.zoop.pro`. For your actual environment (production, staging, or local), fetch `GET /.well-known/oauth-protected-resource` — the `resource` field is the canonical base URL for whatever environment you're hitting.
 
 ---
 
@@ -63,7 +63,7 @@ export ZOOP_API_KEY="zoop_uk_<the rest of your key>"
 Send the request with `curl`:
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer $ZOOP_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -108,7 +108,7 @@ You call tools by their **wire name**: the dotted canonical name with each dot t
 </Callout>
 
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer $ZOOP_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \

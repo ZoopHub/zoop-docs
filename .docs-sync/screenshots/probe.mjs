@@ -20,6 +20,9 @@ for (const r of routes) {
       const href = e.tagName === 'A' ? '  -> ' + (e.getAttribute('href') || '') : '';
       if (t.trim()) out.push(e.tagName.toLowerCase() + ': ' + t + href);
     });
+    document.querySelectorAll('input,textarea').forEach(e => {
+      out.push('FIELD ' + (e.name || e.id || e.getAttribute('placeholder') || e.type) + ' = ' + JSON.stringify((e.value || '').slice(0, 30)));
+    });
     return [...new Set(out)];
   });
   console.log(`\n=== ${r}  ->  ${page.url()} ===`);

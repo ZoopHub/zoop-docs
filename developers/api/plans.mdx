@@ -191,7 +191,7 @@ Create a recurring plan template. The plan starts in `active` status and Zoop ca
   Explicit anchor date for computing `next_invoice_at`. Defaults to the current time when omitted.
 </ParamField>
 
-The result includes a top-level `url` (a Verify on Zoop link to the new plan, of the form `https://app.zoop.example/<tenant-id>/plans/<id>`) and `customer_created` — `true` when the `customer` path created a new customer.
+The result includes a top-level `url` (a Verify on Zoop link to the new plan, of the form `https://app.zoop.pro/<tenant-id>/plans/<id>`) and `customer_created` — `true` when the `customer` path created a new customer.
 
 #### Example
 
@@ -229,7 +229,7 @@ The result includes a top-level `url` (a Verify on Zoop link to the new plan, of
     "content": [
       {
         "type": "text",
-        "text": "{\"id\":\"p9a8b7c6-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"cccccccc-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-13T00:00:00.000Z\",\"lead_offset_days\":3,\"auto_charge_enabled\":false,\"items\":[{\"description\":\"Mow front and back\",\"quantity\":1,\"unit_price\":75,\"is_taxable\":true}],\"created_at\":\"2026-06-13T18:00:00.000Z\",\"customer_created\":false,\"url\":\"https://app.zoop.example/<tenant-id>/plans/p9a8b7c6-...\"}"
+        "text": "{\"id\":\"p9a8b7c6-...\",\"title\":\"Monthly lawn care\",\"status\":\"active\",\"customer_id\":\"cccccccc-...\",\"cadence_rrule\":\"FREQ=MONTHLY;INTERVAL=1\",\"next_invoice_at\":\"2026-07-13T00:00:00.000Z\",\"lead_offset_days\":3,\"auto_charge_enabled\":false,\"items\":[{\"description\":\"Mow front and back\",\"quantity\":1,\"unit_price\":75,\"is_taxable\":true}],\"created_at\":\"2026-06-13T18:00:00.000Z\",\"customer_created\":false,\"url\":\"https://app.zoop.pro/<tenant-id>/plans/p9a8b7c6-...\"}"
       }
     ]
   }

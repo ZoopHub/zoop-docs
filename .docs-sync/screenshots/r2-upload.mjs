@@ -85,7 +85,7 @@ for (const file of files) {
       Key: key,
       Body: fs.readFileSync(file),
       ContentType: CONTENT_TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
-      CacheControl: 'public, max-age=31536000, immutable',
+      CacheControl: 'public, max-age=86400',
     }));
     ok++;
     console.log('  uploaded', `${PUBLIC_BASE}/${key}`);

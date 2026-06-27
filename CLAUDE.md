@@ -68,9 +68,11 @@ write in that register.
   resolves at that URL (via the Cloudflare dashboard or a project upload script).
   A bare `/images/...` path does NOT render (Documentation.ai doesn't serve repo
   files), and never use the app/staging host.
-- Never hardcode the Zoop app host (staging or production) in examples. Use the
-  placeholder `https://app.zoop.example` and tell readers to resolve the real host
-  from `GET /.well-known/oauth-protected-resource`.
+- Use `https://app.zoop.pro` as the Zoop app host in all examples and screenshots —
+  it is the production app domain. Do NOT use a placeholder like `app.zoop.example`
+  or the demo host `app.zoop.mom`; those confuse readers. (Developers integrating can
+  still resolve their own environment's host from
+  `GET /.well-known/oauth-protected-resource`, but examples should show `app.zoop.pro`.)
 - Prefer the product's own terminology (see Glossary in `glossary.mdx`).
 
 ## File & path conventions

@@ -454,7 +454,7 @@ Annotations are **advisory hints**, not a security control. A client may use `de
 
 ## Verify on Zoop links
 
-The `get` and `create` tools for **customers, jobs, invoices, quotes, and plans** include a top-level `url` field in their result — a direct link to that record in Zoop, so a person can open it and confirm the work. The link has the form `https://app.zoop.example/<tenant-id>/<resource>/<id>`, where `<resource>` is plural (for example `jobs` or `invoices`). Resolve the real host from `/.well-known/oauth-protected-resource` — `https://app.zoop.example` is a placeholder.
+The `get` and `create` tools for **customers, jobs, invoices, quotes, and plans** include a top-level `url` field in their result — a direct link to that record in Zoop, so a person can open it and confirm the work. The link has the form `https://app.zoop.pro/<tenant-id>/<resource>/<id>`, where `<resource>` is plural (for example `jobs` or `invoices`). Resolve the real host from `/.well-known/oauth-protected-resource` — `https://app.zoop.pro` is a placeholder.
 
 The `update` tools, the remove verbs, and the `list` / `search` tools do **not** return a `url`.
 

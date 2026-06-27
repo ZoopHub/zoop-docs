@@ -248,7 +248,7 @@ The example below creates a series that generates a job every Monday starting 20
 <Tabs>
   <Tab title="cURL">
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer zoop_uk_<your-secret>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
@@ -279,7 +279,7 @@ curl -X POST https://app.zoop.example/api/mcp \
   </Tab>
   <Tab title="TypeScript">
 ```ts
-const response = await fetch('https://app.zoop.example/api/mcp', {
+const response = await fetch('https://app.zoop.pro/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,
@@ -335,7 +335,7 @@ A successful response looks like:
 To list the generated job instances after creating the series:
 
 ```ts
-const instancesResponse = await fetch('https://app.zoop.example/api/mcp', {
+const instancesResponse = await fetch('https://app.zoop.pro/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,
@@ -407,7 +407,7 @@ let page = 1
 let allSeries: unknown[] = []
 
 while (true) {
-  const response = await fetch('https://app.zoop.example/api/mcp', {
+  const response = await fetch('https://app.zoop.pro/api/mcp', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${process.env.ZOOP_API_KEY}`,

@@ -133,7 +133,7 @@ Returns a `not_found` error if the job ID does not exist in this tenant.
   Thin customer summary: `id` and `display_name`.
 </ResponseField>
 <ResponseField name="url" type="string">
-  A Verify on Zoop link straight to this job, of the form `https://app.zoop.example/<tenant-id>/jobs/<id>`.
+  A Verify on Zoop link straight to this job, of the form `https://app.zoop.pro/<tenant-id>/jobs/<id>`.
 </ResponseField>
 
 ---
@@ -280,7 +280,7 @@ This example creates a job for a customer and assigns it to a team member. Repla
 <Tabs>
   <Tab title="cURL">
 ```bash
-curl -X POST https://app.zoop.example/api/mcp \
+curl -X POST https://app.zoop.pro/api/mcp \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -315,7 +315,7 @@ curl -X POST https://app.zoop.example/api/mcp \
   </Tab>
   <Tab title="TypeScript">
 ```ts
-const response = await fetch('https://app.zoop.example/api/mcp', {
+const response = await fetch('https://app.zoop.pro/api/mcp', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${accessToken}`,

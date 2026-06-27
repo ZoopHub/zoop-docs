@@ -100,7 +100,7 @@ Search customers by name, phone, tag, or status. Returns a list of matching cust
 
 ### `customers.get`
 
-Fetch one customer's full record by `id`, including their contacts and locations. The response includes a top-level `url` — a Verify on Zoop link straight to the customer, of the form `https://app.zoop.example/<tenant-id>/customers/<id>`.
+Fetch one customer's full record by `id`, including their contacts and locations. The response includes a top-level `url` — a Verify on Zoop link straight to the customer, of the form `https://app.zoop.pro/<tenant-id>/customers/<id>`.
 
 <ParamField body="id" type="string (UUID)" required>
   The customer's `id`. Get this from `customers.search`.
@@ -202,7 +202,7 @@ You cannot change `customer_type` after creation, so pick the right one up front
     "content": [
       {
         "type": "text",
-        "text": "{\"id\":\"c9d8e7f6-...\",\"customer_type\":\"individual\",\"customer_number\":\"C-0042\",\"display_name\":\"Marco Reyes\",\"status\":\"active\",\"primary_phone\":\"+15105550199\",\"primary_email\":\"marco@example.com\",\"created_at\":\"2026-06-13T18:00:00.000Z\",\"url\":\"https://app.zoop.example/<tenant-id>/customers/c9d8e7f6-...\"}"
+        "text": "{\"id\":\"c9d8e7f6-...\",\"customer_type\":\"individual\",\"customer_number\":\"C-0042\",\"display_name\":\"Marco Reyes\",\"status\":\"active\",\"primary_phone\":\"+15105550199\",\"primary_email\":\"marco@example.com\",\"created_at\":\"2026-06-13T18:00:00.000Z\",\"url\":\"https://app.zoop.pro/<tenant-id>/customers/c9d8e7f6-...\"}"
       }
     ]
   }
