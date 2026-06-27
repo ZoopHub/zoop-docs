@@ -49,6 +49,23 @@
             ]
           },
           {
+            "group": "AI Features",
+            "pages": [
+              {
+                "title": "Your AI assistant",
+                "path": "ai/assistant"
+              },
+              {
+                "title": "Connect a chat app",
+                "path": "ai/connect"
+              },
+              {
+                "title": "Receptionist & automations",
+                "path": "ai/automations"
+              }
+            ]
+          },
+          {
             "group": "Customers & jobs",
             "pages": [
               {
@@ -146,29 +163,6 @@
               }
             ],
             "icon": "brain-cog"
-          }
-        ]
-      },
-      {
-        "tab": "AI Features",
-        "icon": "bot",
-        "groups": [
-          {
-            "group": "AI Features",
-            "pages": [
-              {
-                "title": "Your AI assistant",
-                "path": "ai/assistant"
-              },
-              {
-                "title": "Connect a chat app",
-                "path": "ai/connect"
-              },
-              {
-                "title": "Receptionist & automations",
-                "path": "ai/automations"
-              }
-            ]
           }
         ]
       },
