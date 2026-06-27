@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local doc-sync watcher. Install:
+       cp .docs-sync/com.zoop.docs-sync.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.zoop.docs-sync.plist
+     Stop:
+       launchctl unload ~/Library/LaunchAgents/com.zoop.docs-sync.plist
+     Runs the watcher every 15 minutes (and once at load). -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.zoop.docs-sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/david/Repo/zoop-docs/.docs-sync/sync-watch.sh</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>900</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/david/Repo/zoop-docs/.docs-sync/launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/david/Repo/zoop-docs/.docs-sync/launchd.err.log</string>
+</dict>
+</plist>
