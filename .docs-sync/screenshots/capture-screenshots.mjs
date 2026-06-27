@@ -57,6 +57,29 @@ function urlFor(shot) {
 
 const iPhone = devices['iPhone 14 Pro'];
 
+// Redaction map: explicit find→replace pairs from .redact.json (gitignored — it
+// holds real PII), plus any owner emails from ZOOP_REDACT_EMAIL. Applied to every
+// shot before it's written. Longest find first so a substring can't pre-empt a
+// longer match (e.g. "riceguitar@gmail.com" before "riceguitar").
+const REDACT_FILE = path.resolve(__dirname, process.env.ZOOP_REDACT_FILE || '.redact.json');
+const redactMap = [];
+if (fs.existsSync(REDACT_FILE)) {
+  try {
+    for (const e of JSON.parse(fs.readFileSync(REDACT_FILE, 'utf8'))) {
+      if (e && e.find) redactMap.push({ find: String(e.find), replace: String(e.replace ?? '') });
+    }
+  } catch (e) { console.warn('Could not parse', REDACT_FILE, '-', e.message); }
+}
+for (const e of (process.env.ZOOP_REDACT_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean)) {
+  redactMap.push({ find: e, replace: 'owner@valdezpainting.example' });
+}
+redactMap.sort((a, b) => b.find.length - a.find.length);
+if (redactMap.length) console.log(`Redaction: scrubbing ${redactMap.length} pattern(s) from every shot.`);
+
+// Transient/notification banners to hide before shooting (not part of the
+// documented UI). Pipe-separated phrases via ZOOP_HIDE_TEXT.
+const HIDE_TEXTS = (process.env.ZOOP_HIDE_TEXT || 'Team roles updated').split('|').map(s => s.trim()).filter(Boolean);
+
 async function waitForAuth(page) {
   // The capture tenant dashboard is the signal we're logged in.
   const target = `${BASE}/${TENANT}/dashboard`;
@@ -102,16 +125,29 @@ async function run() {
         if (step.waitMs) await page.waitForTimeout(step.waitMs);
       }
       await page.waitForTimeout(shot.settleMs ?? 700);
-      // Redact any real owner email (the logged-in account) from the UI before shooting.
-      const REDACT = (process.env.ZOOP_REDACT_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean);
-      if (REDACT.length) await page.evaluate((emails) => {
-        const sub = 'owner@valdezpainting.example';
+      // Scrub real PII (redaction map) from text, form values, and common
+      // attributes (title/aria-label/alt), and hide transient banners, before shooting.
+      if (redactMap.length || HIDE_TEXTS.length) await page.evaluate(({ pairs, hideTexts }) => {
+        const apply = (s) => { for (const { find, replace } of pairs) if (s.includes(find)) s = s.split(find).join(replace); return s; };
         const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        const hits = [];
-        while (w.nextNode()) { const v = w.currentNode.nodeValue; if (v && emails.some(e => v.includes(e))) hits.push(w.currentNode); }
-        hits.forEach(n => { emails.forEach(e => { n.nodeValue = n.nodeValue.split(e).join(sub); }); });
-        document.querySelectorAll('input,textarea').forEach(i => { if (i.value && emails.some(e => i.value.includes(e))) emails.forEach(e => { i.value = i.value.split(e).join(sub); }); });
-      }, REDACT).catch(() => {});
+        const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+        nodes.forEach(n => { const v = n.nodeValue; if (v) { const nv = apply(v); if (nv !== v) n.nodeValue = nv; } });
+        document.querySelectorAll('input,textarea').forEach(i => { if (i.value) i.value = apply(i.value); });
+        document.querySelectorAll('[title],[aria-label],[alt]').forEach(el => {
+          for (const a of ['title', 'aria-label', 'alt']) { const v = el.getAttribute(a); if (v) el.setAttribute(a, apply(v)); }
+        });
+        for (const phrase of hideTexts) {
+          // Only the banner box itself: contains the phrase AND its whole text is
+          // short (so we never hide a big layout container that merely wraps it).
+          const cands = [...document.querySelectorAll('div,section,aside,li,[role=alert],[role=status]')]
+            .filter(e => e.textContent && e.textContent.includes(phrase) && e.textContent.trim().length < phrase.length + 240 && e.children.length < 12);
+          if (cands.length) {
+            let el = cands[0];
+            cands.forEach(c => { if (c.contains(el)) el = c; }); // outermost short wrapper = the styled banner
+            el.style.display = 'none';
+          }
+        }
+      }, { pairs: redactMap, hideTexts: HIDE_TEXTS }).catch(() => {});
       await page.waitForTimeout(120);
       fs.mkdirSync(path.dirname(out), { recursive: true });
       await page.screenshot({ path: out, fullPage: shot.fullPage ?? false });

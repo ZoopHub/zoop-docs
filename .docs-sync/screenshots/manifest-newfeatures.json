@@ -1,0 +1,74 @@
+[
+  {
+    "id": "dashboard-owner",
+    "route": "/{tenant}/dashboard",
+    "filename": "using-zoop/dashboard/dashboard-owner.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 1500,
+    "alt": "Owner dashboard with role-aware stat cards, today's schedule, and needs attention.",
+    "actions": []
+  },
+  {
+    "id": "add-customer-page",
+    "route": "/{tenant}/customers/new",
+    "filename": "using-zoop/customers/add-customer-page.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 1000,
+    "alt": "Add Customer page with breadcrumb Customers / New and the Individual/Company form.",
+    "actions": []
+  },
+  {
+    "id": "settings-landing",
+    "route": "/{tenant}/settings",
+    "filename": "using-zoop/settings/business-info.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 1000,
+    "alt": "Settings business info tab with company details.",
+    "actions": []
+  },
+  {
+    "id": "settings-team",
+    "route": "/{tenant}/settings/team",
+    "filename": "using-zoop/team/team-list.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 1000,
+    "alt": "Team page showing member rows with the MCP & API access shield icon.",
+    "actions": []
+  },
+  {
+    "id": "settings-payments",
+    "route": "/{tenant}/settings/payments",
+    "filename": "using-zoop/payments/settings-payments.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 1200,
+    "alt": "Settings Payments page showing the Stripe connection state.",
+    "actions": []
+  },
+  {
+    "id": "settings-external-access",
+    "route": "/{tenant}/settings/external-access",
+    "filename": "using-zoop/settings/connected-apps.png",
+    "viewport": "desktop",
+    "fullPage": true,
+    "settleMs": 1200,
+    "alt": "External access page showing API keys and connected apps.",
+    "actions": []
+  },
+  {
+    "id": "settings-api-mcp-panel",
+    "route": "/{tenant}/settings",
+    "filename": "using-zoop/settings/api-mcp-panel.png",
+    "viewport": "desktop",
+    "fullPage": false,
+    "settleMs": 800,
+    "alt": "Settings API & MCP panel with the MCP server address and connect instructions.",
+    "actions": [
+      { "click": "text=API & MCP", "waitMs": 1200 }
+    ]
+  }
+]

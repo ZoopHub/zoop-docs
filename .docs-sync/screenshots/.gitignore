@@ -1,6 +1,7 @@
-# Never commit anything that could carry credentials or session state.
+# Never commit anything that could carry credentials, session state, or real PII.
 node_modules/
 .userdata/
 *.env
 .env
+.redact.json
 package-lock.json
