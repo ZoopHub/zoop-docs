@@ -289,6 +289,10 @@
             "group": "Resources",
             "pages": [
               {
+                "title": "Get help",
+                "path": "get-help"
+              },
+              {
                 "title": "Changelog",
                 "path": "changelog"
               },

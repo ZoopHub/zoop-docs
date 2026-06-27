@@ -48,6 +48,7 @@
     { "path": "developers/webhooks", "audience": "developer", "sources": ["src/app/api/webhooks", "src/lib/communications/webhook-verify.ts"] },
     { "path": "developers/errors", "audience": "developer", "sources": ["src/lib/agent/runtime.ts", "src/lib/auth/external/verify.ts"] },
     { "path": "developers/rate-limits", "audience": "developer", "sources": ["src/lib/auth/external/rateLimit.ts"] },
+    { "path": "get-help", "audience": "end-user", "sources": [] },
     { "path": "changelog", "audience": "developer", "sources": [] },
     { "path": "glossary", "audience": "end-user", "sources": ["docs/content-style.md", "supabase/migrations"] }
   ]
