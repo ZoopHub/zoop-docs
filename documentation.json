@@ -22,7 +22,9 @@
       }
     }
   },
-  "redirects": [],
+  "redirects": [
+    { "source": "using-zoop/ai-features", "destination": "ai/automations" }
+  ],
   "navigation": {
     "tabs": [
       {
@@ -132,10 +134,6 @@
               {
                 "title": "The mobile app",
                 "path": "using-zoop/mobile"
-              },
-              {
-                "title": "AI features",
-                "path": "using-zoop/ai-features"
               }
             ]
           },
@@ -148,6 +146,29 @@
               }
             ],
             "icon": "brain-cog"
+          }
+        ]
+      },
+      {
+        "tab": "AI Features",
+        "icon": "bot",
+        "groups": [
+          {
+            "group": "AI Features",
+            "pages": [
+              {
+                "title": "Your AI assistant",
+                "path": "ai/assistant"
+              },
+              {
+                "title": "Connect a chat app",
+                "path": "ai/connect"
+              },
+              {
+                "title": "Receptionist & automations",
+                "path": "ai/automations"
+              }
+            ]
           }
         ]
       },

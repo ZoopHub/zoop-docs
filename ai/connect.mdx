@@ -1,0 +1,68 @@
+---
+title: Connect a chat app
+description: Connect Zoop to ChatGPT, Claude, Perplexity, or any MCP app — paste your server address, sign in, and approve what it can do.
+audience: end-user
+---
+
+To use your [AI assistant](/ai/assistant), connect Zoop to your chat app once. You paste one address, sign in, and approve what it can reach. It takes a couple of minutes.
+
+## Find your server address
+
+In Zoop, open **Settings → API & MCP**. Under **Your MCP server address**, select **Copy**. It looks like `https://app.zoop.example/api/mcp` — yours is specific to your business, so copy the real one from that screen.
+
+<Callout type="info">
+Only an owner can manage API keys and connected apps. Any team member can copy the server address, but turning on what a connected app may create or edit is an owner action — see below.
+</Callout>
+
+## Connect your app
+
+<Tabs>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Add a connector">
+        In ChatGPT, add a connector and paste your Zoop MCP server address.
+      </Step>
+      <Step title="Sign in and approve">
+        Sign in to Zoop and approve what it can access. The approval screen lists the areas — Customers, Jobs, Invoices, and so on — at view or edit level.
+      </Step>
+      <Step title="Start chatting">
+        It can now work with the areas you allowed — nothing more. Ask it what's on your schedule to test it.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Claude">
+    <Steps>
+      <Step title="Add a connector">
+        In Claude, add a connector and paste your Zoop MCP server address.
+      </Step>
+      <Step title="Sign in and approve">
+        Sign in to Zoop and approve what it can access.
+      </Step>
+      <Step title="Start chatting">
+        It can now work with the areas you allowed.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Perplexity or another MCP app">
+    Any app that speaks MCP connects the same way: add a custom MCP connector, paste your Zoop server address, and authenticate when prompted. If the app sends you to a Zoop sign-in and approval screen, approve the areas you want it to reach.
+  </Tab>
+  <Tab title="Claude Code or scripts">
+    Claude Code and your own scripts connect with an API key instead of a sign-in. An owner creates a key under **Settings → API & MCP → Manage API keys**, then adds it to the tool's config. See [MCP](/developers/mcp) for the exact setup.
+  </Tab>
+</Tabs>
+
+Nothing happens to your data until you approve.
+
+## What it can do is up to you
+
+- Out of the box, ChatGPT and Claude connect **read-only** — they can look things up, but not change anything.
+- To let a connected app create or edit — book jobs, draft invoices, add customers — an owner widens its access under **Settings → API & MCP → Connected apps**, or sets a member's access on the [Team page](/using-zoop/team). A connected app can never do more than the person who connected it is allowed.
+- Owners can review what's connected, change what it can reach, or cut it off entirely under **Connected apps**.
+
+See [Settings](/using-zoop/settings) and [Control MCP & API access per member](/using-zoop/team) for the full picture.
+
+## Next
+
+<Card title="Your AI assistant" href="/ai/assistant">
+  See everything you can do by chat, with sample conversations.
+</Card>
