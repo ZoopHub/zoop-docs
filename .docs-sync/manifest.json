@@ -1,9 +1,9 @@
 {
   "$schema_version": 1,
   "source_repo": "ZoopHub/nextgen",
-  "documented_sha": "73a1b38216839f2e957e5fe9021d9028f7b5b077",
-  "documented_at": "2026-06-26",
-  "notes": "Documented through 73a1b382 (nextgen main, 2026-06-26). This run cleared the backlog since the 36d9a66 baseline: MCP tool-name wire format (dots->underscores), self-serve DCR + OAuth discovery, the per-member API/MCP permission model + connected apps, MCP resources/prompts/annotations + Verify-on-Zoop links + name resolvers, the role-aware dashboard, and the onboarding setup checklist. The three trailing 2026-06-26 commits were reviewed: ZOO-679 (Disconnect Stripe button hidden) is reflected in payments.mdx + settings.mdx; ZOO-667 (phone validation) and ZOO-545 (cockpit notify error message) need no doc changes. Every incremental run diffs nextgen since documented_sha, updates affected pages, then advances this SHA. See .docs-sync/policy.md.",
+  "documented_sha": "2319dfc41946648a2c76282d3530362ee5a4a3b2",
+  "documented_at": "2026-06-27",
+  "notes": "Documented through 2319dfc4 (nextgen main, 2026-06-27). Incremental sync of 73a1b382..2319dfc4 (16 commits): reframed the AI receptionist/maintenance/late-text and the Notifications settings as 'coming soon' (ZOO-685 hid the AI & Automation settings tab; ZOO-684 locked the Notifications form); added Team to the Settings nav (ZOO-672); added Route intelligence to the Scheduler sidebar (ZOO-651); tax-rate row actions now icon-only (ZOO-675); note delete now a confirmation dialog (ZOO-661); demotion narrows a member's external-scope ceiling (ZOO-611). HELD: ZOO-622 (resolveCatalogItemRef / catalog item by name) is an unwired building block — not imported by any MCP tool yet, so deliberately not documented. Screenshots flagged for assisted re-capture: settings-sidebar-nav (Team added, AI & automation removed); the two ai/automations 'AI & automation tab' shots now depict a hidden surface and were removed from the page. Every incremental run diffs nextgen since documented_sha, updates affected pages, then advances this SHA. See .docs-sync/policy.md.",
   "pages": [
     { "path": "welcome", "audience": "end-user", "sources": ["README.md", "Documentation/Personas", "docs/content-style.md"] },
     { "path": "using-zoop/getting-started", "audience": "end-user", "sources": ["src/app/auth", "src/lib/auth", "src/app/[tenantId]/(management)/settings", "src/lib/setup-checklist", "src/components/setup-checklist"] },
