@@ -1,14 +1,13 @@
 ---
 title: Settings
-description: "Configure your business: hours, service area, tax rates, payments, and more."
+description: 'Configure your business: hours, service area, tax rates, payments, and more.'
 audience: end-user
 ---
-
 Settings is where you tell Zoop about your business: your name and logo, where you work, when you're open, and how you get paid. You only need to do this once when you start, and you can come back any time to change something.
 
 Go to **Settings** in the left navigation menu. A sidebar on the left lists each section — select a section name to open it.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/settings-sidebar-nav.png" alt="Settings sidebar showing Business info, Service area & hours, Scheduling, Payment methods, Notifications, AI & automation, API & MCP, Card payments, and Tax rates sections" />
+<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/settings-sidebar-nav.png" width="2880" height="1800" alt="Settings sidebar showing Business info, Service area & hours, Scheduling, Payment methods, Notifications, AI & automation, API & MCP, Card payments, and Tax rates sections" />
 
 ## Business info
 
@@ -75,11 +74,17 @@ Choose which payment methods you accept and set up late-payment reminders.
 **Accepted payment methods** — check any that apply:
 
 - Stripe (credit/debit card) — lets customers pay by card online. Requires card payment setup; see [Card payments](#card-payments) below
+
 - Cash
+
 - Check
+
 - Zelle
+
 - Venmo
+
 - Cash App
+
 - Other
 
 When you enable Zelle, Venmo, Cash App, or Other, extra fields appear for your handle, cashtag, or a custom payment link (e.g. Square or PayPal).
@@ -93,16 +98,19 @@ Select **Save changes** to apply.
 Connect Stripe to accept credit and debit card payments from customers. Stripe is the payment processor Zoop uses — you'll create a free Stripe account during setup. Funds land in your bank account on Stripe's standard payout schedule (typically 2 business days).
 
 <Steps>
-  <Step title="Open card payments">
+  <Step title="Open card payments" title-type="p">
     In the settings sidebar, select **Card payments**.
   </Step>
-  <Step title="Start onboarding">
+
+  <Step title="Start onboarding" title-type="p">
     Select **Set up payments**. You'll be taken to Stripe's onboarding flow, which takes about 5 minutes.
   </Step>
-  <Step title="Finish on Stripe">
+
+  <Step title="Finish on Stripe" title-type="p">
     Complete Stripe's identity and business verification steps. This is standard for any payment processor — Stripe needs to confirm who you are. When done, you're returned to Zoop automatically.
   </Step>
-  <Step title="Check status">
+
+  <Step title="Check status" title-type="p">
     Zoop shows a checklist of any remaining requirements. If Stripe still needs something, select **Finish on Stripe** to resume. Select **Refresh status** to pull the latest from Stripe at any time.
   </Step>
 </Steps>
@@ -111,8 +119,8 @@ Once active, the card payments panel shows a green **Active** badge with your ch
 
 **Offline payment instructions** — add a note (up to 4,000 characters) for customers who pay by check, Zelle, or another offline method. This text appears on invoices alongside online-payment options.
 
-<Callout type="info">
-Disconnecting Stripe from within Zoop isn't available right now — the control is hidden while a safe disconnect-and-reconnect flow is built. See [Getting paid](/using-zoop/payments#disconnect-stripe).
+<Callout kind="note" collapsed="false">
+  Disconnecting Stripe from within Zoop isn't available right now — the control is hidden while a safe disconnect-and-reconnect flow is built. See [Getting paid](/using-zoop/payments#disconnect-stripe).
 </Callout>
 
 ## Tax rates
@@ -120,13 +128,15 @@ Disconnecting Stripe from within Zoop isn't available right now — the control 
 Set up the sales-tax rates you charge customers. Adding a rate here means Zoop can apply it to invoices automatically — you won't have to calculate tax by hand. One rate can be marked as the default for new invoices.
 
 <Steps>
-  <Step title="Open tax rates">
+  <Step title="Open tax rates" title-type="p">
     In the settings sidebar, select **Tax rates**.
   </Step>
-  <Step title="Add a rate">
+
+  <Step title="Add a rate" title-type="p">
     Select **Add tax rate**. Enter a name (e.g. "TX Sales Tax") and a percentage (e.g. 8.25 for 8.25%). Check **Default for new invoices** if this rate should apply automatically.
   </Step>
-  <Step title="Save">
+
+  <Step title="Save" title-type="p">
     Select **Save**. The rate appears in the active rates table.
   </Step>
 </Steps>
@@ -135,16 +145,16 @@ Each rate's row has icon actions: select the **pencil** icon to edit, or the **t
 
 To change the default rate, select the radio button in the **Default for new invoices** column of the rate you want to use.
 
-<Callout type="info">
-Editing a rate does not change past invoices. Zoop snapshots the rate name and percentage at the time an invoice is issued.
+<Callout kind="note" collapsed="false">
+  Editing a rate does not change past invoices. Zoop snapshots the rate name and percentage at the time an invoice is issued.
 </Callout>
 
 ## Notifications
 
 Control which automatic messages Zoop sends to your customers.
 
-<Callout type="info">
-**Coming soon.** Notification preferences aren't live yet — these controls are locked until sending is ready. On the Notifications tab they appear switched off and greyed out, with a **Coming soon** badge, and **Save changes** is disabled.
+<Callout kind="note" collapsed="false">
+  **Coming soon.** Notification preferences aren't live yet — these controls are locked until sending is ready. On the Notifications tab they appear switched off and greyed out, with a **Coming soon** badge, and **Save changes** is disabled.
 </Callout>
 
 **SMS notifications** — send job confirmations, reminders, and invoice alerts via text message.
@@ -165,7 +175,7 @@ This is the **API access** panel. It lets you connect ChatGPT, Claude, or your o
 
 If you've never connected an outside tool to Zoop, you can skip this section.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/api-mcp-panel-v2.png" alt="The API & MCP settings panel showing the MCP server address with a Copy button, the Connect a client tabs (ChatGPT, Claude, Claude Code), and the API keys and Connected apps cards." />
+<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/api-mcp-panel-v2.png" width="2880" height="1800" alt="The API & MCP settings panel showing the MCP server address with a Copy button, the Connect a client tabs (ChatGPT, Claude, Claude Code), and the API keys and Connected apps cards." />
 
 ### Your MCP server address
 
@@ -176,6 +186,7 @@ The panel shows **Your MCP server address** with a **Copy** button (it reads **C
 The **Connect a client** switch has three tabs:
 
 - **ChatGPT** and **Claude** connect over OAuth. Add a connector in that tool, paste your MCP server address, then sign in to Zoop and approve what it can access. Nothing happens to your data until you approve.
+
 - **Claude Code** connects with an API key instead. An owner creates the key from the API keys card below.
 
 ### What a connection can do
@@ -187,6 +198,7 @@ A connected app or key can only ever do what the person who connected it is allo
 Two cards at the bottom are for owners:
 
 - **API keys** — "For Claude Code & scripts. Create with the exact permissions you want; revoke anytime." Select **Manage API keys** to create or revoke keys; see [API keys](/developers/authentication/api-keys) for setup. If you're not an owner, you'll see "Only owners can manage API keys. Ask your owner to create one if you need MCP access."
+
 - **Connected apps** — "See what's connected (ChatGPT, Claude), what it can do, and cut it off." Select **View connected apps** to open the list below. Non-owners see "Only owners can review or revoke connected apps."
 
 ### Connected apps
@@ -196,15 +208,19 @@ The **Connected apps** view is owner-only. It lists every app your team has conn
 Each app shows:
 
 - The app name.
-- **Connected by {name} ({role})** — who linked it and their role.
+
+- **Connected by&#x20;****&#x20;(****)** — who linked it and their role.
+
 - The permission areas it was granted, as badges like "Customers & contacts: View".
-- **Last used {date}**.
+
+- **Last used&#x20;**.
 
 For each app, owners can:
 
 - **Manage** — re-adjust what the app can do. You can't grant an app more than the member who connected it is allowed.
-- **Revoke** — the trash button. A dialog titled "Revoke {name}?" appears with the body "This app will immediately lose access to your Zoop data. It can be reconnected later by going through OAuth again." Select **Cancel** to back out or **Revoke access** to cut it off.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/connected-apps-v2.png" alt="The external access page showing API keys and the Connected apps list, where each app shows who connected it, its granted permission-area badges, and Manage and Revoke actions." />
+- **Revoke** — the trash button. A dialog titled "Revoke ?" appears with the body "This app will immediately lose access to your Zoop data. It can be reconnected later by going through OAuth again." Select **Cancel** to back out or **Revoke access** to cut it off.
+
+<Image src="https://doc-assets.zoop.pro/images/using-zoop/settings/connected-apps-v2.png" width="2880" height="5676" alt="The external access page showing API keys and the Connected apps list, where each app shows who connected it, its granted permission-area badges, and Manage and Revoke actions." />
 
 Developers who want the full list of permission areas and what each one covers can read the [scopes reference](/developers/authentication/scopes).

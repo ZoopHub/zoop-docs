@@ -19,7 +19,13 @@
       "primary": {
         "title": "Get Zoop",
         "link": "https://zoop.pro"
-      }
+      },
+      "links": [
+        {
+          "title": "Support",
+          "link": "https://zoop.pro/support"
+        }
+      ]
     }
   },
   "redirects": [

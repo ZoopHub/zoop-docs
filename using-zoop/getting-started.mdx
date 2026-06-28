@@ -1,123 +1,118 @@
 ---
 title: Get set up
-description: Sign in, set up your business, and connect payments so you can start booking jobs.
+description: >-
+  Sign in, set up your business, and connect payments so you can start booking
+  jobs.
 audience: end-user
 ---
-
 This page walks you through everything you need to do before your first job: create an account, tell Zoop about your business, and connect payments. The whole thing takes around ten minutes.
 
-<Callout type="info">
-New owner? Zoop shows a setup checklist right on your [dashboard](/using-zoop/dashboard) that mirrors the steps below — add your business details, add your first customer, and connect Stripe. Work through it here or from the dashboard; either way it updates itself as you go, reading your real account. See [The setup checklist on your dashboard](#the-setup-checklist-on-your-dashboard) below.
+<Callout kind="note" collapsed="false">
+  New owner? Zoop shows a setup checklist right on your [dashboard](/using-zoop/dashboard) that mirrors the steps below — add your business details, add your first customer, and connect Stripe. Work through it here or from the dashboard; either way it updates itself as you go, reading your real account. See [The setup checklist on your dashboard](#the-setup-checklist-on-your-dashboard) below.
 </Callout>
 
 <Steps>
+  <Step title="Create your account" title-type="p">
+    Go to [app.zoop.pro](https://app.zoop.pro) and choose how you want to sign in.
 
-<Step title="Create your account">
+    <Tabs>
+      <Tab title="Continue with Google">
+        Select **Continue with Google** and pick your Google account. No password needed — Google signs you in automatically.
+      </Tab>
 
-Go to [app.zoop.pro](https://app.zoop.pro) and choose how you want to sign in.
+      <Tab title="Email and password">
+        Select **Sign up** from the sign-in page, enter your email address and a password, then select **Create account**. Zoop sends you a confirmation email — open it and select the link to activate your account.
 
-<Tabs>
-<Tab title="Continue with Google">
+        <Image src="https://doc-assets.zoop.pro/images/using-zoop/getting-started/sign-in-page.png" width="2560" height="1800" alt="The Zoop sign-in page with email and password fields and a Continue with Google button" />
+      </Tab>
+    </Tabs>
+  </Step>
 
-Select **Continue with Google** and pick your Google account. No password needed — Google signs you in automatically.
+  <Step title="Name your company and pick your trade" title-type="p">
+    After signing in for the first time, Zoop asks you two quick things:
 
-</Tab>
-<Tab title="Email and password">
+    - **Company name** — what your business is called (for example, "Mike's Plumbing"). You can change this any time in [Settings](/using-zoop/settings).
 
-Select **Sign up** from the sign-in page, enter your email address and a password, then select **Create account**. Zoop sends you a confirmation email — open it and select the link to activate your account.
+    - **What kind of work do you do?** — pick the trade that fits best: plumbing, HVAC, electrical, landscaping, cleaning, roofing, general, garage door, pest control, or other. This sets defaults throughout Zoop.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/getting-started/sign-in-page.png" alt="The Zoop sign-in page with email and password fields and a Continue with Google button" />
+    Select **Get started** when you're done.
 
-</Tab>
-</Tabs>
+    TODO(screenshot): onboarding screen showing the company name field and trade picker
 
-</Step>
+    <Callout kind="note" collapsed="false">
+      If someone invited you to join an existing Zoop account, you'll see a pending invitation here. Accept it instead of creating a new company.
+    </Callout>
+  </Step>
 
-<Step title="Name your company and pick your trade">
+  <Step title="Fill in your business profile" title-type="p">
+    Open **Settings** (bottom of the left sidebar) and select the **Business info** tab. Fill in:
 
-After signing in for the first time, Zoop asks you two quick things:
+    - **Company logo** — shown on your storefront, invoices, and customer messages.
 
-- **Company name** — what your business is called (for example, "Mike's Plumbing"). You can change this any time in [Settings](/using-zoop/settings).
-- **What kind of work do you do?** — pick the trade that fits best: plumbing, HVAC, electrical, landscaping, cleaning, roofing, general, garage door, pest control, or other. This sets defaults throughout Zoop.
+    - **Tagline** — a short description of your business (up to 255 characters).
 
-Select **Get started** when you're done.
+    - **Trade types** — you can select more than one if you do multiple kinds of work.
 
-<Callout type="info">TODO(screenshot): onboarding screen showing the company name field and trade picker</Callout>
+    - **Contact information** — business phone, email, and website.
 
-<Callout type="info">
-If someone invited you to join an existing Zoop account, you'll see a pending invitation here. Accept it instead of creating a new company.
-</Callout>
+    - **Business address** — your base location. Start typing and select from the suggestions.
 
-</Step>
+    - **Brand color** — used on your customer-facing storefront.
 
-<Step title="Fill in your business profile">
+    Select **Save changes** when you're done.
 
-Open **Settings** (bottom of the left sidebar) and select the **Business info** tab. Fill in:
+    TODO(screenshot): Business info tab in Settings showing logo upload, company name, tagline, trade types, brand color, contact information, and address fields (recapture once the demo account's tagline/website fields are tidied).
+  </Step>
 
-- **Company logo** — shown on your storefront, invoices, and customer messages.
-- **Tagline** — a short description of your business (up to 255 characters).
-- **Trade types** — you can select more than one if you do multiple kinds of work.
-- **Contact information** — business phone, email, and website.
-- **Business address** — your base location. Start typing and select from the suggestions.
-- **Brand color** — used on your customer-facing storefront.
+  <Step title="Set your service area and hours" title-type="p">
+    In **Settings**, select the **Service area & hours** tab.
 
-Select **Save changes** when you're done.
+    ### Service area
 
-<Callout type="info">TODO(screenshot): Business info tab in Settings showing logo upload, company name, tagline, trade types, brand color, contact information, and address fields (recapture once the demo account's tagline/website fields are tidied).</Callout>
+    - **Service radius** — how far you travel from your base location, in miles (1–200).
 
-</Step>
+    - **Service ZIP codes** — optional. Type a ZIP code and press Enter to add it. When you add ZIP codes, Zoop shows those instead of the radius on your customer-facing storefront.
 
-<Step title="Set your service area and hours">
+    ### Business hours
 
-In **Settings**, select the **Service area & hours** tab.
+    - Set your **time zone** first. Zoop shows your open and close times to customers in your time zone.
 
-### Service area
+    - Toggle each day on or off, then set your open and close times. Times go from 6:00 AM to 10:00 PM in 30-minute steps.
 
-- **Service radius** — how far you travel from your base location, in miles (1–200).
-- **Service ZIP codes** — optional. Type a ZIP code and press Enter to add it. When you add ZIP codes, Zoop shows those instead of the radius on your customer-facing storefront.
+    ### After-hours and emergency
 
-### Business hours
+    - **After-hours message** — what customers see when they request service outside your hours (up to 500 characters).
 
-- Set your **time zone** first. Zoop shows your open and close times to customers in your time zone.
-- Toggle each day on or off, then set your open and close times. Times go from 6:00 AM to 10:00 PM in 30-minute steps.
+    - **Emergency dispatch** — turn this on if you want to take after-hours emergency calls. You can set an emergency dispatch fee once it's enabled.
 
-### After-hours and emergency
+    Select **Save changes** when you're done.
 
-- **After-hours message** — what customers see when they request service outside your hours (up to 500 characters).
-- **Emergency dispatch** — turn this on if you want to take after-hours emergency calls. You can set an emergency dispatch fee once it's enabled.
+    <Image src="https://doc-assets.zoop.pro/images/using-zoop/getting-started/settings-service-area-hours.png" width="2880" height="3468" alt="Service area and hours tab in Settings showing service radius, ZIP code input, business hours table by day, after-hours message, and emergency dispatch options" />
+  </Step>
 
-Select **Save changes** when you're done.
+  <Step title="Connect payments" title-type="p">
+    Zoop uses Stripe to process card payments. Stripe is a payment service that holds your money until it's deposited into your bank account — you set it up once, and Zoop handles the rest.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/getting-started/settings-service-area-hours.png" alt="Service area and hours tab in Settings showing service radius, ZIP code input, business hours table by day, after-hours message, and emergency dispatch options" />
+    In **Settings**, select **Card payments** from the left nav.
 
-</Step>
+    Select **Set up payments**. Zoop opens a Stripe form — fill in your business details and bank account information. This takes around five minutes.
 
-<Step title="Connect payments">
+    When you're done, come back to Zoop. Your payment status updates automatically. You'll see a green **Active** badge once your account is fully enabled.
 
-Zoop uses Stripe to process card payments. Stripe is a payment service that holds your money until it's deposited into your bank account — you set it up once, and Zoop handles the rest.
+    Until Stripe is active, Zoop shows a slim amber banner across your other pages — "Connect Stripe to start getting paid by card" — that brings you right back here. See [The setup checklist on your dashboard](#the-setup-checklist-on-your-dashboard) below for how it works.
 
-In **Settings**, select **Card payments** from the left nav.
+    <Image src="https://doc-assets.zoop.pro/images/using-zoop/payments/settings-payments.png" width="2880" height="1800" alt="Settings → Card payments in the active state, with a green Active badge, charges and payouts enabled, and the Open Stripe dashboard button." />
 
-Select **Set up payments**. Zoop opens a Stripe form — fill in your business details and bank account information. This takes around five minutes.
+    <Callout kind="note" collapsed="false">
+      If you see "Action needed" or "Setup in progress," Stripe still needs more information from you. Select **Finish on Stripe** to continue. If you've already finished on Stripe but the status hasn't changed, select **Refresh status**.
+    </Callout>
 
-When you're done, come back to Zoop. Your payment status updates automatically. You'll see a green **Active** badge once your account is fully enabled.
+    ### Offline payment instructions
 
-Until Stripe is active, Zoop shows a slim amber banner across your other pages — "Connect Stripe to start getting paid by card" — that brings you right back here. See [The setup checklist on your dashboard](#the-setup-checklist-on-your-dashboard) below for how it works.
+    If some customers pay by check, Zelle, or another method, add instructions in the **Offline payment instructions** box on the same page. This text shows up on your invoices alongside the online payment link.
 
-<Image src="https://doc-assets.zoop.pro/images/using-zoop/payments/settings-payments.png" alt="Settings → Card payments in the active state, with a green Active badge, charges and payouts enabled, and the Open Stripe dashboard button." />
-
-<Callout type="warning">
-If you see "Action needed" or "Setup in progress," Stripe still needs more information from you. Select **Finish on Stripe** to continue. If you've already finished on Stripe but the status hasn't changed, select **Refresh status**.
-</Callout>
-
-### Offline payment instructions
-
-If some customers pay by check, Zelle, or another method, add instructions in the **Offline payment instructions** box on the same page. This text shows up on your invoices alongside the online payment link.
-
-For more on how payments work — including how customers pay invoices and how payouts reach your bank — see [Payments](/using-zoop/payments).
-
-</Step>
-
+    For more on how payments work — including how customers pay invoices and how payouts reach your bank — see [Payments](/using-zoop/payments).
+  </Step>
 </Steps>
 
 ## The setup checklist on your dashboard
@@ -126,21 +121,21 @@ You don't have to keep this page open to track your progress. Zoop puts the same
 
 The first time you sign in as an owner, Zoop shows a one-time "Welcome to Zoop" popup: "Three quick things and you're ready to get paid: add your business details, add your first customer, and connect Stripe. We'll keep the checklist on your dashboard." Select **Let's go** to dismiss it.
 
-<Callout type="info">TODO(screenshot): the "Welcome to Zoop" dialog with the "Let's go" button.</Callout>
+TODO(screenshot): the "Welcome to Zoop" dialog with the "Let's go" button.
 
-After that, a setup checklist card sits at the top of your dashboard, headed **Finish setting up — {n} of 3 done** — it starts at "0 of 3". The three steps:
+After that, a setup checklist card sits at the top of your dashboard, headed **Finish setting up —&#x20;****&#x20;of 3 done** — it starts at "0 of 3". The three steps:
 
-| Step | Sub-line | Where it takes you, and when it's done |
-|---|---|---|
-| Add your business details | "So your invoices and quotes look official." | Opens Settings to fill in your business info. Done once you've added a phone or email and a complete mailing address. |
-| Add your first customer | "Then you can send a quote or invoice." | Opens your customers list. Done once you have at least one customer. |
-| Connect Stripe to get paid | "Let customers pay by card — takes a few minutes." | Opens Card payments settings. Done once card payments are active. |
+| Step                       | Sub-line                                           | Where it takes you, and when it's done                                                                                |
+| -------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Add your business details  | "So your invoices and quotes look official."       | Opens Settings to fill in your business info. Done once you've added a phone or email and a complete mailing address. |
+| Add your first customer    | "Then you can send a quote or invoice."            | Opens your customers list. Done once you have at least one customer.                                                  |
+| Connect Stripe to get paid | "Let customers pay by card — takes a few minutes." | Opens Card payments settings. Done once card payments are active.                                                     |
 
 The first unfinished step shows a **Start** button; the others show **Open**. You never tick anything off by hand — Zoop reads your real account and checks each step automatically as you finish it.
 
 Closing the card with its **X** dismisses the whole checklist — the card, the welcome popup, and the Stripe banner (below) — for good, on every device.
 
-<Callout type="info">TODO(screenshot): the dashboard setup checklist card headed "Finish setting up — 0 of 3 done".</Callout>
+TODO(screenshot): the dashboard setup checklist card headed "Finish setting up — 0 of 3 done".
 
 ### The "connect Stripe" banner
 
@@ -148,16 +143,19 @@ Once your business details and first customer are done but Stripe still isn't, a
 
 Its **X** also dismisses the entire checklist — so if you want to take card payments, connect Stripe rather than dismissing the banner.
 
-<Callout type="info">TODO(screenshot): the amber "Connect Stripe to start getting paid by card" banner.</Callout>
+TODO(screenshot): the amber "Connect Stripe to start getting paid by card" banner.
 
 ## What's next
 
 Once you're set up, you're ready to add customers and start booking jobs.
 
 - [Add your first customer](/using-zoop/customers)
+
 - [Book a job](/using-zoop/jobs)
+
 - [Understand your settings](/using-zoop/settings)
 
-<Callout type="info">
-Hit a snag while setting up? Email [support@zoop.pro](mailto:support@zoop.pro) — we reply fast, and we're happy to hop on a call or screenshare. More at [Get help](/get-help).
+<Callout kind="note" collapsed="false">
+  Hit a snag while setting up? Email [support@zoop.pro](mailto:support@zoop.pro) — we reply fast, and we're happy to hop on a call or screenshare. More at [Get help](/get-help).
 </Callout>
+
