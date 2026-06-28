@@ -34,6 +34,14 @@ HEAD="$(git -C "$NEXTGEN" rev-parse origin/main)"
 BASE="$(node -e "process.stdout.write(require('$DOCS/.docs-sync/manifest.json').documented_sha)")"
 
 if [ "$HEAD" = "$BASE" ]; then echo "[$(ts)] up to date ($BASE)"; exit 0; fi
+
+# A docs-sync PR only advances documented_sha when it MERGES. Until then this delta
+# is still open — skip, or we'd open a duplicate PR every interval.
+if command -v gh >/dev/null 2>&1; then
+  OPEN_PRS="$(cd "$DOCS" && gh pr list --state open --base main --json headRefName -q '.[].headRefName' 2>/dev/null | grep -c '^docs-sync/' || true)"
+  if [ "${OPEN_PRS:-0}" != "0" ]; then echo "[$(ts)] a docs-sync PR is already open — waiting for review/merge; skipping"; exit 0; fi
+fi
+
 echo "[$(ts)] nextgen advanced ${BASE:0:9} -> ${HEAD:0:9}; starting sync"
 
 cd "$DOCS" || exit 0
