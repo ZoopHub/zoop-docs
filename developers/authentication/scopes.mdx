@@ -128,7 +128,7 @@ See [OAuth](/developers/authentication/oauth) and [API keys](/developers/authent
 
 Every team member has a **ceiling**: the maximum set of external (API and MCP) scopes any credential they connect can ever use. The ceiling lives on their membership. An empty ceiling means no external access at all.
 
-- The member's **role sets the default ceiling** when they accept their invite. An owner can then tighten or widen it per member from the [Team](/using-zoop/team) page, in the **MCP & API access** dialog.
+- The member's **role sets the default ceiling** when they accept their invite. An owner can then tighten or widen it per member from the [Team](/using-zoop/team) page, in the **MCP & API access** dialog. **Demoting** a member (for example owner → tech) automatically narrows their ceiling to the new role's defaults, intersected with their current scopes — so a demotion can never leave them with more API or MCP access than the new role allows, while any owner-set scopes still within the new role's bounds are kept.
 - The **effective scope** of any user-actor credential is `granted ∩ ceiling` — the scopes attached to the credential intersected with the member's current ceiling. This is re-evaluated on **every request**. So if an owner lowers a member's ceiling, every outstanding OAuth token *and* user API key for that member is narrowed immediately — not just on the next token refresh.
 - Only owners can grant the admin scopes (`admin:tenant`, `admin:billing`, `admin:credentials`) to an external client.
 
